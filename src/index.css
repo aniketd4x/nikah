@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 12 78 43;
+    --color-gold: 197 155 39;
+    --color-cream: 250 248 242;
+    --color-charcoal: 27 36 32;
+  }
+
+  body {
+    background-color: #FAF8F2;
+    color: #1B2420;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F4EFE6;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #DBD0BE;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #C59B27;
+  }
+}
+
+/* Subtle luxury patterns */
+.bg-islamic-pattern {
+  background-color: #FAF8F2;
+  background-image: radial-gradient(#0c4e2b 0.65px, transparent 0.65px), radial-gradient(#C59B27 0.65px, #FAF8F2 0.65px);
+  background-size: 26px 26px;
+  background-position: 0 0, 13px 13px;
+  background-opacity: 0.04;
+}
+
+.bg-islamic-pattern-dark {
+  background-color: #0c4e2b;
+  background-image: radial-gradient(#158040 0.75px, transparent 0.75px), radial-gradient(#C59B27 0.75px, #0c4e2b 0.75px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #DFB752 0%, #C59B27 50%, #9A7416 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-gradient {
+  background: linear-gradient(135deg, #0c4e2b 0%, #116536 60%, #052e18 100%);
+}
+
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+.card-shine::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 30%
+  );
+  transform: rotate(30deg);
+  pointer-events: none;
+  transition: transform 0.8s ease;
+}
+.card-shine:hover::after {
+  transform: rotate(30deg) translate(20%, 20%);
+}
+
+/* Glass effect */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.glass-dark {
+  background: rgba(12, 78, 43, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 155, 39, 0.2);
+}
+
+/* Animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.03); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s infinite ease-in-out;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
