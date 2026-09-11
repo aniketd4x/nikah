@@ -93,20 +93,33 @@ export const DiscoverScreen: React.FC = () => {
   const hasSent = interests.some((i) => i.profileId === currentProfile.id && i.type === 'sent');
   const isBlur = currentProfile.blurPhotoByDefault && privacySettings.photoVisibility !== 'public';
 
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const photos = currentProfile?.galleryPhotos?.length ? currentProfile.galleryPhotos : [currentProfile.photo];
+
+  const handleNextPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
+  };
+
+  const handlePrevPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPhotoIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
+  };
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10 space-y-6 pb-24 md:pb-12">
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-28 md:pb-12 select-none">
       {/* Top Controls Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
-            Halal Discovery Mode
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-100/80 px-2.5 py-1 rounded-full border border-gold-300">
+            Halal Discovery
           </span>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold text-emerald-950 mt-1">
-            Discover Compatible Singles
-          </h1>
+          <span className="text-xs font-bold text-emerald-950 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+            {currentProfile.maritalStatus}
+          </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-charcoal-500 font-medium">
+        <div className="flex items-center gap-1 text-xs text-charcoal-500 font-bold bg-white px-3 py-1 rounded-full border border-cream-300 shadow-soft">
           <span>{currentIndex + 1}</span>
           <span>/</span>
           <span>{availableProfiles.length}</span>
@@ -114,30 +127,56 @@ export const DiscoverScreen: React.FC = () => {
       </div>
 
       {/* DISCOVERY PROFILE CARD CONTAINER */}
-      <div className="relative bg-white rounded-[2.5rem] border border-cream-300 shadow-floating overflow-hidden transition-all duration-300">
+      <div className="relative bg-white rounded-[2rem] sm:rounded-[2.5rem] border border-cream-300 shadow-floating overflow-hidden transition-all duration-300">
         {/* Main Photo Gallery & Overlay */}
-        <div className="relative h-[380px] sm:h-[440px] w-full overflow-hidden bg-cream-200 group">
+        <div className="relative h-[400px] sm:h-[460px] w-full overflow-hidden bg-cream-200 group">
+          {/* Story Progress Indicators */}
+          {photos.length > 1 && (
+            <div className="absolute top-2.5 left-4 right-4 z-20 flex items-center gap-1.5">
+              {photos.map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-1 flex-1 rounded-full overflow-hidden bg-black/40 backdrop-blur-sm"
+                >
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      idx === photoIndex ? 'bg-gold-400' : idx < photoIndex ? 'bg-white' : 'bg-transparent'
+                    }`}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Photo */}
           <img
-            src={currentProfile.photo}
+            src={photos[photoIndex] || currentProfile.photo}
             alt={currentProfile.name}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
+            className={`w-full h-full object-cover transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent" />
+
+          {/* Left / Right Tap Zones for Instant Photo Swapping */}
+          <div className="absolute inset-0 z-10 flex">
+            <div onClick={handlePrevPhoto} className="w-1/2 h-full cursor-pointer" />
+            <div onClick={handleNextPhoto} className="w-1/2 h-full cursor-pointer" />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/95 via-emerald-950/20 to-transparent pointer-events-none" />
 
           {/* Top Badges */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 gap-2">
+          <div className="absolute top-6 left-4 right-4 flex items-center justify-between z-20 pointer-events-auto">
             <div className="flex flex-wrap gap-1.5 max-w-[80%]">
               <Badge variant="match" size="sm">
-                {currentProfile.compatibilityScore}% Compatibility
+                {currentProfile.compatibilityScore}% Match
               </Badge>
               {currentProfile.verified.photo && (
                 <Badge variant="verified" size="sm">
-                  100% Verified
+                  Verified
                 </Badge>
               )}
               {currentProfile.polygynyInfo && (
-                <span className="bg-emerald-950/80 backdrop-blur-md text-gold-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-gold-500/40 shadow-sm">
-                  {currentProfile.polygynyInfo.structure}
+                <span className="bg-emerald-950/90 backdrop-blur-md text-gold-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-gold-500/40 shadow-sm">
+                  {currentProfile.polygynyInfo.structure || 'Polygyny'}
                 </span>
               )}
             </div>
@@ -145,7 +184,7 @@ export const DiscoverScreen: React.FC = () => {
             {/* Save Heart */}
             <button
               onClick={() => toggleFavorite(currentProfile.id)}
-              className={`p-2.5 rounded-full backdrop-blur-md transition-all shadow-md ${
+              className={`p-2.5 rounded-full backdrop-blur-md transition-all shadow-md active:scale-90 ${
                 isFav
                   ? 'bg-rose-500 text-white'
                   : 'bg-black/40 hover:bg-black/60 text-white'
@@ -157,7 +196,7 @@ export const DiscoverScreen: React.FC = () => {
           </div>
 
           {/* Bottom Card Identity Info */}
-          <div className="absolute bottom-5 left-5 right-5 text-white z-10 space-y-1.5">
+          <div className="absolute bottom-4 left-4 right-4 text-white z-20 space-y-1.5 pointer-events-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight">
@@ -170,18 +209,18 @@ export const DiscoverScreen: React.FC = () => {
 
               <button
                 onClick={() => setShowFullPeek(!showFullPeek)}
-                className="text-xs bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1 transition-colors"
+                className="text-xs bg-white/25 hover:bg-white/35 backdrop-blur-md text-white px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 transition-colors active:scale-95"
               >
                 <Info className="w-3.5 h-3.5" />
                 <span>{showFullPeek ? 'Hide' : 'Quick Details'}</span>
               </button>
             </div>
 
-            <p className="text-xs sm:text-sm text-cream-200 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-gold-400 shrink-0" />
+            <p className="text-xs text-cream-200 flex items-center gap-1.5 flex-wrap">
+              <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
               <span>{currentProfile.city}, {currentProfile.country}</span>
               <span>•</span>
-              <span>{currentProfile.maritalStatus}</span>
+              <span>{currentProfile.profession}</span>
               <span>•</span>
               <span>{currentProfile.height}</span>
             </p>
@@ -189,9 +228,9 @@ export const DiscoverScreen: React.FC = () => {
         </div>
 
         {/* Quick Details / Summary Section */}
-        <div className="p-5 sm:p-6 space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           {/* Quick Badges Grid */}
-          <div className="grid grid-cols-2 gap-2 text-xs text-charcoal-700 bg-cream-50 p-3.5 rounded-2xl border border-cream-200">
+          <div className="grid grid-cols-2 gap-2 text-xs text-charcoal-700 bg-cream-50 p-3 rounded-2xl border border-cream-200">
             <div className="flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-emerald-800 shrink-0" />
               <span className="truncate font-medium">{currentProfile.profession}</span>
@@ -212,74 +251,64 @@ export const DiscoverScreen: React.FC = () => {
 
           {/* About preview */}
           <div className="space-y-1">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal-500">About Me</h4>
-            <p className="text-xs sm:text-sm text-charcoal-700 leading-relaxed">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-charcoal-500">About Character</h4>
+            <p className="text-xs text-charcoal-700 leading-relaxed line-clamp-2">
               "{currentProfile.aboutMe}"
             </p>
-          </div>
-
-          {/* Why Match Section */}
-          <div className="bg-emerald-50/80 p-3.5 rounded-2xl border border-emerald-200/80 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-950">
-              <Sparkles className="w-3.5 h-3.5 text-gold-600" />
-              <span>Why This Match?</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {currentProfile.matchReasons.map((reason, i) => (
-                <span
-                  key={i}
-                  className="bg-white/90 text-emerald-900 text-[11px] font-medium px-2.5 py-1 rounded-xl border border-emerald-200 shadow-sm"
-                >
-                  ✓ {reason}
-                </span>
-              ))}
-            </div>
           </div>
 
           {/* Expanded peek info if clicked */}
           {showFullPeek && (
             <div className="space-y-3 pt-3 border-t border-cream-200 animate-in fade-in">
-              <div className="text-xs space-y-1">
-                <span className="font-bold text-emerald-950">Partner Expectations:</span>
+              <div className="text-xs space-y-1 bg-emerald-50/70 p-3 rounded-2xl border border-emerald-200">
+                <span className="font-bold text-emerald-950 block">Partner Expectations:</span>
                 <p className="text-charcoal-600">{currentProfile.lookingForSummary}</p>
               </div>
-              <div className="text-xs space-y-1">
-                <span className="font-bold text-emerald-950">Family Background:</span>
+              <div className="text-xs space-y-1 bg-cream-100 p-3 rounded-2xl border border-cream-200">
+                <span className="font-bold text-emerald-950 block">Family & Values:</span>
                 <p className="text-charcoal-600">{currentProfile.familyType} Family, {currentProfile.familyValues} Values</p>
               </div>
             </div>
           )}
 
-          {/* ACTION BUTTONS (Pass, View Profile, Send Interest) */}
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-cream-200">
+          {/* FLOATING ACTION DOCK */}
+          <div className="flex items-center justify-center gap-3 sm:gap-5 pt-2">
+            {/* Rewind */}
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="w-12 h-12 rounded-full bg-cream-100 text-charcoal-500 border border-cream-300 flex items-center justify-center shadow-soft active:scale-90 transition-all disabled:opacity-40"
+              title="Previous Match"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
             {/* Pass */}
             <button
               onClick={handlePass}
-              className="w-14 h-14 rounded-full bg-cream-100 hover:bg-cream-200 text-charcoal-500 hover:text-charcoal-900 flex items-center justify-center border border-cream-300 shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
-              aria-label="Pass profile"
+              className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center shadow-md active:scale-90 hover:bg-rose-100 transition-all"
+              title="Pass Profile"
             >
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6 stroke-[2.5]" />
             </button>
 
             {/* View Full Profile */}
-            <Button
-              variant="outline"
-              size="md"
-              className="flex-1"
+            <button
               onClick={() => navigateTo('profile-details', currentProfile.id)}
+              className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center justify-center shadow-soft active:scale-90 hover:bg-emerald-100 transition-all"
+              title="View Full Profile Details"
             >
-              View Full Profile
-            </Button>
+              <Info className="w-5 h-5" />
+            </button>
 
             {/* Send Interest */}
             <button
               onClick={handleInterest}
               disabled={hasSent}
-              className="h-14 px-6 rounded-full bg-gradient-to-r from-emerald-900 to-emerald-800 hover:from-emerald-800 hover:to-emerald-700 text-gold-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-gold-500/40 shadow-card hover:scale-105 active:scale-95 transition-all shrink-0 disabled:opacity-50"
-              aria-label="Send interest"
+              className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-950 via-emerald-800 to-emerald-900 text-gold-300 border-2 border-gold-400 flex items-center justify-center shadow-floating active:scale-90 hover:scale-105 transition-all disabled:opacity-50"
+              title={hasSent ? 'Interest Sent' : 'Send Interest Request'}
             >
-              <Heart className="w-5 h-5 fill-gold-400 text-gold-400" />
-              <span>{hasSent ? 'Interest Sent' : 'Send Interest'}</span>
+              <Heart className="w-7 h-7 fill-gold-400 text-gold-400 stroke-[1.5]" />
             </button>
           </div>
         </div>

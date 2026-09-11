@@ -28,22 +28,95 @@ export const DashboardScreen: React.FC = () => {
     setIsVerificationModalOpen,
     setIsUpgradeModalOpen,
     currentPlan,
-    unreadNotificationsCount
+    unreadNotificationsCount,
+    setFilterState
   } = useApp();
 
   // Top recommended profiles (excluding self)
   const recommendedProfiles = profiles.slice(0, 6);
+  const onlineSingles = profiles.filter((p) => p.online || p.compatibilityScore > 85);
   const dailyPick = profiles[0]; // Ayesha Khan
 
+  const quickFilters = [
+    { label: '🌟 2nd Wife (Polygyny)', action: () => setFilterState((p) => ({ ...p, maritalStatus: 'Married (Seeking 2nd Wife)' })) },
+    { label: '🩺 Doctors', action: () => setFilterState((p) => ({ ...p, profession: 'Doctor' })) },
+    { label: '💻 Software Engineers', action: () => setFilterState((p) => ({ ...p, profession: 'Software' })) },
+    { label: '🇦🇪 UAE / Dubai', action: () => setFilterState((p) => ({ ...p, country: 'United Arab Emirates' })) },
+    { label: '🇬🇧 London / UK', action: () => setFilterState((p) => ({ ...p, country: 'United Kingdom' })) },
+    { label: '🤲 Strict 5x Salah', action: () => setFilterState((p) => ({ ...p, religiousPractice: 'Always' })) }
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-20 md:pb-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-24 md:pb-12">
+      {/* ACTIVE SINGLES STORY BUBBLES */}
+      <div className="bg-white rounded-3xl p-3 sm:p-4 border border-cream-300 shadow-soft">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wider">Active Verified Singles</span>
+          </div>
+          <button onClick={() => navigateTo('discover')} className="text-[11px] font-bold text-gold-700 hover:text-gold-800">
+            View All
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-1 px-1">
+          {/* My Story Tile */}
+          <div 
+            onClick={() => navigateTo('my-profile')}
+            className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group active:scale-95 transition-transform"
+          >
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr from-cream-300 to-cream-400 group-hover:from-emerald-700 group-hover:to-gold-500 transition-all">
+              <img src={currentUser.photo} alt="My Profile" className="w-full h-full rounded-full object-cover border-2 border-white" />
+              <div className="absolute bottom-0 right-0 bg-emerald-800 text-white rounded-full p-0.5 border border-white">
+                <Sparkles className="w-3 h-3" />
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-emerald-950 truncate max-w-[60px]">My Bio</span>
+          </div>
+
+          {/* Active singles */}
+          {onlineSingles.map((single) => (
+            <div
+              key={single.id}
+              onClick={() => navigateTo('profile-details', single.id)}
+              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group active:scale-95 transition-transform"
+            >
+              <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr from-gold-400 via-emerald-700 to-gold-500 shadow-sm group-hover:scale-105 transition-all">
+                <img src={single.photo} alt={single.name} className="w-full h-full rounded-full object-cover border-2 border-white" />
+                {single.online && (
+                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
+                )}
+              </div>
+              <span className="text-[11px] font-medium text-charcoal-800 truncate max-w-[60px]">{single.name.split(' ')[0]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* QUICK FILTER CHIPS */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+        {quickFilters.map((chip, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              chip.action();
+              navigateTo('search-results');
+            }}
+            className="text-xs bg-white border border-cream-300 text-charcoal-700 hover:border-emerald-800 hover:bg-cream-50 px-3.5 py-1.5 rounded-full font-semibold shadow-soft shrink-0 whitespace-nowrap active:scale-95 transition-all"
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
       {/* GREETING & HERO HEADER */}
-      <div className="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-cream-50 rounded-3xl p-6 sm:p-8 shadow-card border border-gold-500/30 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-cream-50 rounded-3xl p-5 sm:p-8 shadow-card border border-gold-500/30 overflow-hidden">
         {/* Glow */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2">
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="space-y-1.5">
             <span className="text-xs font-bold text-gold-300 uppercase tracking-widest bg-emerald-900/80 px-3 py-1 rounded-full border border-gold-500/30">
               Assalamu Alaikum
             </span>
@@ -51,14 +124,15 @@ export const DashboardScreen: React.FC = () => {
               {currentUser.name}
             </h1>
             <p className="text-xs sm:text-sm text-cream-200 max-w-lg">
-              Let's find someone compatible with your values, aspirations, and Deen.
+              Find compatible partners for honorable, blessed matrimonial unions.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
             <Button
               variant="gold"
               size="md"
+              className="flex-1 sm:flex-none"
               leftIcon={<Compass className="w-4 h-4" />}
               onClick={() => navigateTo('discover')}
             >
@@ -67,7 +141,7 @@ export const DashboardScreen: React.FC = () => {
             <Button
               variant="outline"
               size="md"
-              className="text-white border-white/40 hover:bg-white/10"
+              className="flex-1 sm:flex-none text-white border-white/40 hover:bg-white/10"
               leftIcon={<SlidersHorizontal className="w-4 h-4" />}
               onClick={() => navigateTo('search')}
             >

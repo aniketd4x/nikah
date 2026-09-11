@@ -5,7 +5,12 @@ import { ShieldCheck, Heart, Lock, Globe, Sparkles, CheckCircle2 } from 'lucide-
 import { ScreenType } from '../../types';
 
 export const Footer: React.FC = () => {
-  const { navigateTo } = useApp();
+  const { navigateTo, currentScreen, isLoggedIn } = useApp();
+
+  // In-app experience should feel like a native app without website footer clutter
+  if (isLoggedIn && currentScreen !== 'landing') {
+    return null;
+  }
 
   return (
     <footer className="bg-emerald-950 text-cream-100 border-t border-gold-500/20 pt-16 pb-24 md:pb-16 relative overflow-hidden">

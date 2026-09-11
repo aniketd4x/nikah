@@ -19,7 +19,8 @@ import {
   X,
   Compass,
   CheckCircle2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ArrowLeft
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -52,51 +53,83 @@ export const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const isSubScreen = [
+    'profile-details', 
+    'search-results', 
+    'edit-profile', 
+    'verification', 
+    'preferences', 
+    'privacy-safety', 
+    'subscription', 
+    'islamic-guidance', 
+    'help-support', 
+    'settings'
+  ].includes(currentScreen);
+
+  const getSubScreenTitle = () => {
+    switch (currentScreen) {
+      case 'profile-details': return 'Profile Details';
+      case 'search-results': return 'Matched Profiles';
+      case 'edit-profile': return 'Edit Profile';
+      case 'verification': return 'Verification';
+      case 'preferences': return 'Partner Preferences';
+      case 'privacy-safety': return 'Privacy & Safety';
+      case 'subscription': return 'Membership Plans';
+      case 'islamic-guidance': return 'Islamic Guidance';
+      case 'help-support': return 'Help & Support';
+      case 'settings': return 'Account Settings';
+      default: return 'Polygamy Matrimony';
+    }
+  };
+
   const navLinks = [
     { label: 'Discover', screen: 'discover' as const, icon: <Compass className="w-4 h-4" /> },
     { label: 'Matches', screen: 'matches' as const, icon: <Heart className="w-4 h-4" /> },
     { label: 'Search', screen: 'search' as const, icon: <Search className="w-4 h-4" /> },
     { label: 'Messages', screen: 'messages' as const, icon: <MessageCircle className="w-4 h-4" />, badge: unreadMessagesCount },
     { label: 'Guidance', screen: 'islamic-guidance' as const, icon: <BookOpen className="w-4 h-4" /> },
-    { label: 'Success Stories', screen: 'success-stories' as const, icon: <Sparkles className="w-4 h-4" /> }
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300 shadow-sm transition-all">
-      {/* Top Banner (Islamic Blessing & Trust) */}
-      <div className="bg-emerald-950 text-cream-100 py-1 px-4 text-center text-[11px] font-medium tracking-wide flex items-center justify-center gap-2 border-b border-gold-500/30">
-        <span className="text-gold-400 font-serif">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</span>
-        <span className="hidden sm:inline text-cream-300">•</span>
-        <span className="hidden sm:inline text-cream-200">
-          "And We created you in pairs." (Quran 78:8) — Halal, Verified & Dignified Matrimonial
-        </span>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <div onClick={() => navigateTo(isLoggedIn ? 'dashboard' : 'landing')}>
-          <Logo size="md" variant="emerald" />
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300 shadow-sm transition-all select-none">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-15 sm:h-16 flex items-center justify-between gap-3">
+        {/* Left: Back Button on Sub-screens OR Brand Logo */}
+        <div className="flex items-center gap-2">
+          {isLoggedIn && isSubScreen ? (
+            <button
+              onClick={() => navigateTo('dashboard')}
+              className="flex items-center gap-1.5 p-2 -ml-1.5 rounded-full text-emerald-950 hover:bg-cream-200 active:scale-90 transition-all font-semibold text-xs"
+              aria-label="Back"
+            >
+              <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              <span className="hidden sm:inline font-bold">{getSubScreenTitle()}</span>
+            </button>
+          ) : (
+            <div onClick={() => navigateTo(isLoggedIn ? 'dashboard' : 'landing')} className="cursor-pointer">
+              <Logo size="md" variant="emerald" />
+            </div>
+          )}
         </div>
 
-        {/* Desktop Nav Links */}
+        {/* Desktop Nav Links (App Bar navigation) */}
         {isLoggedIn && (
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = currentScreen === link.screen;
               return (
                 <button
                   key={link.label}
                   onClick={() => navigateTo(link.screen)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl text-xs font-semibold transition-all relative ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all relative ${
                     isActive
-                      ? 'bg-emerald-900 text-white shadow-sm'
-                      : 'text-charcoal-700 hover:text-emerald-900 hover:bg-cream-100'
+                      ? 'bg-emerald-900 text-gold-300 shadow-sm'
+                      : 'text-charcoal-700 hover:text-emerald-950 hover:bg-cream-100'
                   }`}
                 >
                   {link.icon}
                   <span>{link.label}</span>
                   {Boolean(link.badge && link.badge > 0) && (
-                    <span className="bg-gold-500 text-emerald-950 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shrink-0">
+                    <span className="bg-gold-500 text-emerald-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0">
                       {link.badge}
                     </span>
                   )}
@@ -107,7 +140,7 @@ export const Header: React.FC = () => {
         )}
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {isLoggedIn ? (
             <>
               {/* Upgrade VIP Badge */}
