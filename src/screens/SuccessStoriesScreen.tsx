@@ -24,7 +24,7 @@ export const SuccessStoriesScreen: React.FC = () => {
           Nikah Success Stories
         </h1>
         <p className="text-xs sm:text-sm text-charcoal-600">
-          Read real stories of Muslim couples who met through Heavenly Nikah and began their blessed journey.
+          Read real stories of Muslim couples who met through Polygamy Matrimony and began their blessed journey.
         </p>
       </div>
 
@@ -66,7 +66,7 @@ export const SuccessStoriesScreen: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-cream-200 flex items-center justify-between text-xs text-emerald-900 font-semibold">
-              <span>Verified Heavenly Nikah Couple</span>
+              <span>Verified Polygamy Matrimony Couple</span>
               <Heart className="w-4 h-4 text-rose-600 fill-rose-600" />
             </div>
           </div>

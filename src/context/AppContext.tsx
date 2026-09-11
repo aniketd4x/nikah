@@ -256,7 +256,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }));
     }
     setCurrentScreen('onboarding');
-    addToast('Account Created!', 'Welcome to Heavenly Nikah. Let\'s complete your profile.', 'success');
+    addToast('Account Created!', 'Welcome to Polygamy Matrimony. Let\'s complete your profile.', 'success');
   };
 
   const updateCurrentUser = (data: Partial<Profile>) => {

@@ -340,7 +340,59 @@ export const ProfileDetailsScreen: React.FC = () => {
           </div>
         </div>
 
-        {/* Section 5: Partner Preferences */}
+        {/* Section 5: Polygyny & Family Structure Details */}
+        {profile.polygynyInfo && (
+          <div className="bg-gradient-to-br from-emerald-950 to-emerald-900 text-white rounded-3xl p-6 border border-gold-500/30 shadow-card space-y-4 md:col-span-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="font-serif font-bold text-lg text-gold-300 flex items-center gap-2">
+                <Users className="w-5 h-5 text-gold-400" />
+                <span>Polygamy & Household Structure</span>
+              </h3>
+              <span className="bg-gold-500/20 text-gold-300 text-xs px-3 py-1 rounded-full border border-gold-500/30 font-semibold">
+                {profile.polygynyInfo.structure}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-cream-100">
+              <div className="bg-emerald-900/60 p-3.5 rounded-2xl border border-emerald-800">
+                <span className="text-gold-400 block font-semibold text-[11px] mb-1">Accommodation</span>
+                <p className="font-bold text-white">
+                  {profile.polygynyInfo.separateAccommodation ? '✓ Separate Residence Provided' : 'Co-living arranged upon mutual agreement'}
+                </p>
+                <p className="text-[10px] text-cream-300 mt-1">
+                  {profile.polygynyInfo.residenceCity || profile.city}
+                </p>
+              </div>
+
+              <div className="bg-emerald-900/60 p-3.5 rounded-2xl border border-emerald-800">
+                <span className="text-gold-400 block font-semibold text-[11px] mb-1">Financial Justice & Support</span>
+                <p className="font-bold text-white">{profile.polygynyInfo.financialSupport}</p>
+                <p className="text-[10px] text-cream-300 mt-1">Equal division of time & maintenance</p>
+              </div>
+
+              <div className="bg-emerald-900/60 p-3.5 rounded-2xl border border-emerald-800">
+                <span className="text-gold-400 block font-semibold text-[11px] mb-1">Wali & Family Involvement</span>
+                <p className="font-bold text-white">
+                  {profile.polygynyInfo.waliInvolvement ? '✓ Wali Actively Involved' : 'Wali upon mutual interest'}
+                </p>
+                {profile.polygynyInfo.waliContactName && (
+                  <p className="text-[10px] text-cream-300 mt-1">
+                    Contact: {profile.polygynyInfo.waliContactName} ({profile.polygynyInfo.waliRelationship})
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {profile.polygynyInfo.additionalNotes && (
+              <div className="bg-emerald-900/40 p-3 rounded-xl border border-emerald-800/80 text-xs text-cream-200">
+                <span className="text-gold-400 font-semibold">Additional Notes: </span>
+                <span>{profile.polygynyInfo.additionalNotes}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Section 6: Partner Preferences */}
         <div className="bg-white rounded-3xl p-6 border border-cream-300 shadow-soft space-y-3 md:col-span-2">
           <h3 className="font-serif font-bold text-lg text-emerald-950 flex items-center gap-2">
             <Heart className="w-4 h-4 text-rose-600" />
@@ -374,7 +426,7 @@ export const ProfileDetailsScreen: React.FC = () => {
           </div>
           <div>
             <h4 className="text-xs font-bold text-emerald-950">Verified & Authenticated Profile</h4>
-            <p className="text-[11px] text-charcoal-500">Reviewed by Heavenly Nikah Trust Team</p>
+            <p className="text-[11px] text-charcoal-500">Reviewed by Polygamy Matrimony Trust Team</p>
           </div>
         </div>
 
@@ -394,6 +446,40 @@ export const ProfileDetailsScreen: React.FC = () => {
             <span>Block Member</span>
           </button>
         </div>
+      </div>
+
+      {/* MOBILE STICKY BOTTOM ACTION BAR */}
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-white/95 backdrop-blur-md border-t border-cream-300 md:hidden z-30 flex items-center gap-2.5 shadow-floating">
+        <button
+          onClick={() => toggleFavorite(profile.id)}
+          className={`p-3 rounded-2xl border ${
+            isFav ? 'bg-rose-50 border-rose-300 text-rose-600' : 'bg-cream-100 border-cream-300 text-charcoal-700'
+          }`}
+          aria-label="Save"
+        >
+          <Heart className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
+        </button>
+
+        <Button
+          variant="gold"
+          size="md"
+          className="flex-1 text-xs"
+          disabled={Boolean(sentInterest)}
+          onClick={() => sendInterest(profile.id)}
+          leftIcon={<Heart className="w-4 h-4" />}
+        >
+          {sentInterest ? 'Interest Sent' : 'Send Interest'}
+        </Button>
+
+        <Button
+          variant="primary"
+          size="md"
+          className="flex-1 text-xs"
+          onClick={() => startChatWithProfile(profile.id)}
+          leftIcon={<MessageCircle className="w-4 h-4" />}
+        >
+          Direct Message
+        </Button>
       </div>
 
       {/* REPORT MODAL */}

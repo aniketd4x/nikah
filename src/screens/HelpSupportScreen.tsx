@@ -23,8 +23,8 @@ export const HelpSupportScreen: React.FC = () => {
 
   const faqs = [
     {
-      q: 'How does Heavenly Nikah ensure Shariah compliance and modesty?',
-      a: 'Heavenly Nikah adheres to Islamic principles by prioritizing serious Nikah intentions over casual dating. We support photo blurring/request mode, chaperoned/Wali communication modes, biometric selfie verification, and proactive moderation against inappropriate dialogue.'
+      q: 'How does Polygamy Matrimony ensure Shariah compliance and modesty?',
+      a: 'Polygamy Matrimony adheres to Islamic principles by prioritizing serious Nikah intentions over casual dating. We support photo blurring/request mode, chaperoned/Wali communication modes, biometric selfie verification, and proactive moderation against inappropriate dialogue.'
     },
     {
       q: 'How does the Wali (Guardian) involvement feature work?',
@@ -155,7 +155,7 @@ export const HelpSupportScreen: React.FC = () => {
 
           <div className="pt-4 border-t border-cream-200 text-center space-y-1 text-xs text-charcoal-600">
             <p className="font-semibold text-emerald-950">Email Support</p>
-            <p className="text-charcoal-500">support@heavenlynikah.com</p>
+            <p className="text-charcoal-500">support@polygamymatrimony.com</p>
           </div>
         </div>
       </div>

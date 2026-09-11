@@ -96,7 +96,7 @@ export const LandingScreen: React.FC = () => {
 
                 <div className="absolute bottom-6 left-6 right-6 text-white text-center">
                   <span className="text-xs font-serif italic text-gold-200">"And He placed between you affection and mercy"</span>
-                  <p className="text-sm font-bold mt-1">Heavenly Nikah Connections</p>
+                  <p className="text-sm font-bold mt-1">Polygamy Matrimony Connections</p>
                 </div>
               </div>
 
@@ -175,7 +175,7 @@ export const LandingScreen: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-12">
           <Badge variant="gold" size="md">Simple & Respectful Journey</Badge>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950 mt-3">
-            How Heavenly Nikah Works
+            How Polygamy Matrimony Works
           </h2>
           <p className="text-sm text-charcoal-600 mt-2">
             A purposeful, 4-step path guided by Islamic etiquette and modern compatibility matching.
@@ -267,7 +267,7 @@ export const LandingScreen: React.FC = () => {
                 Built Around Islamic Dignity & Safety
               </h2>
               <p className="text-sm text-charcoal-600 leading-relaxed">
-                We understand that matrimonial search requires utmost privacy and safety. Heavenly Nikah provides robust controls so you always remain in full charge of your journey.
+                We understand that matrimonial search requires utmost privacy and safety. Polygamy Matrimony provides robust controls so you always remain in full charge of your journey.
               </p>
 
               <div className="pt-2">
@@ -325,7 +325,7 @@ export const LandingScreen: React.FC = () => {
             Real Couples. Real Nikah.
           </h2>
           <p className="text-sm text-charcoal-600 mt-2">
-            Read inspiring stories of couples who found their life partner on Heavenly Nikah.
+            Read inspiring stories of couples who found their life partner on Polygamy Matrimony.
           </p>
         </div>
 

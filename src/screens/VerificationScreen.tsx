@@ -41,7 +41,7 @@ export const VerificationScreen: React.FC = () => {
           </div>
           <h2 className="text-2xl font-serif font-bold text-white">Verified Matrimonial Crown</h2>
           <p className="text-xs sm:text-sm text-cream-200 max-w-lg">
-            Your phone, email, and live selfie photo have been reviewed and approved by the Heavenly Nikah verification team.
+            Your phone, email, and live selfie photo have been reviewed and approved by the Polygamy Matrimony verification team.
           </p>
         </div>
 

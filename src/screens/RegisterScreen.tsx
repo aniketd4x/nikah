@@ -203,7 +203,7 @@ export const RegisterScreen: React.FC = () => {
         {/* Footer */}
         <div className="text-center pt-2 border-t border-cream-200">
           <p className="text-xs text-charcoal-500">
-            Already registered on Heavenly Nikah?{' '}
+            Already registered on Polygamy Matrimony?{' '}
             <button
               onClick={() => navigateTo('login')}
               className="font-bold text-emerald-900 hover:underline"

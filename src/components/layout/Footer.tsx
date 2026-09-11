@@ -141,9 +141,9 @@ export const Footer: React.FC = () => {
             "And among His signs is that He created for you mates from among yourselves, that you may dwell in tranquility with them, and He has put love and mercy between your hearts." — Surah Ar-Rum (30:21)
           </p>
           <div className="flex items-center gap-4 text-cream-400 text-xs">
-            <span>heavenlynikah.com</span>
+            <span>polygamymatrimony.com</span>
             <span>•</span>
-            <span>© 2026 Heavenly Nikah</span>
+            <span>© 2026 Polygamy Matrimony</span>
           </div>
         </div>
       </div>

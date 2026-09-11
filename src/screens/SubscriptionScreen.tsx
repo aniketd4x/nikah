@@ -135,7 +135,7 @@ export const SubscriptionScreen: React.FC = () => {
             100% Transparent. Zero Hidden Auto-Renewals.
           </h3>
           <p className="text-xs text-cream-200 max-w-xl leading-relaxed">
-            All subscriptions on Heavenly Nikah support manual verification officers and continuous security checks to protect Muslim families.
+            All subscriptions on Polygamy Matrimony support manual verification officers and continuous security checks to protect Muslim families.
           </p>
         </div>
 

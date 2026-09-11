@@ -125,15 +125,20 @@ export const DiscoverScreen: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/20 to-transparent" />
 
           {/* Top Badges */}
-          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="match" size="md">
+          <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10 gap-2">
+            <div className="flex flex-wrap gap-1.5 max-w-[80%]">
+              <Badge variant="match" size="sm">
                 {currentProfile.compatibilityScore}% Compatibility
               </Badge>
               {currentProfile.verified.photo && (
-                <Badge variant="verified" size="md">
+                <Badge variant="verified" size="sm">
                   100% Verified
                 </Badge>
+              )}
+              {currentProfile.polygynyInfo && (
+                <span className="bg-emerald-950/80 backdrop-blur-md text-gold-300 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-gold-500/40 shadow-sm">
+                  {currentProfile.polygynyInfo.structure}
+                </span>
               )}
             </div>
 

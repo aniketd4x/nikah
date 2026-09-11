@@ -3,14 +3,15 @@ import { SuccessStory, GuidanceArticle, NotificationItem, Conversation, Interest
 export const SUCCESS_STORIES: SuccessStory[] = [
   {
     id: 'story-1',
-    names: 'Farhan & Zoya',
+    names: 'Farhan, Zoya & Sarah',
     weddingDate: 'November 2025',
     city: 'Mumbai & Dubai',
     country: 'India / UAE',
     image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
-    shortQuote: 'From a simple respectful message to a blessed Nikah across continents.',
-    story: 'We both valued privacy and wanted our families involved from the very beginning. When Farhan viewed my profile and sent an interest with a respectful note, my father reached out to his family. Within 4 months, our families met in Mumbai, and by the grace of Allah, we tied the knot. Heavenly Nikah provided the most dignified, halal platform we could have hoped for.',
-    duration: 'Connected in 4 months'
+    shortQuote: 'Transparent communication, separate apartments in Dubai, and complete peace of mind.',
+    story: 'Farhan was transparent from day one about his marriage and seeking a second wife in accordance with Sunnah. Through Polygamy Matrimony, our Walis met, reviewed his financial capabilities, and confirmed independent accommodations. We now live in harmony with mutual respect, fulfilling our Deen.',
+    duration: 'Connected in 4 months',
+    badge: 'Polygyny Nikah'
   },
   {
     id: 'story-2',
@@ -19,9 +20,10 @@ export const SUCCESS_STORIES: SuccessStory[] = [
     city: 'London',
     country: 'United Kingdom',
     image: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
-    shortQuote: 'Finding someone with matching medical shifts and deep Islamic values felt impossible until Heavenly Nikah.',
-    story: 'Both of us were working busy NHS hospital schedules and were worried about finding someone who understood our career demands while putting Deen first. The compatibility filters on Heavenly Nikah matched our values on prayer, halal income, and family balance. Al-hamdulillah, our Nikah was held at Regent’s Park Mosque.',
-    duration: 'Connected in 3 months'
+    shortQuote: 'Finding someone with matching medical shifts and deep Islamic values felt impossible until Polygamy Matrimony.',
+    story: 'Both of us were working busy NHS hospital schedules and were worried about finding someone who understood our career demands while putting Deen first. The compatibility filters on Polygamy Matrimony matched our values on prayer, halal income, and family balance. Al-hamdulillah, our Nikah was held at Regent’s Park Mosque.',
+    duration: 'Connected in 3 months',
+    badge: 'First Marriage'
   },
   {
     id: 'story-3',
@@ -31,23 +33,45 @@ export const SUCCESS_STORIES: SuccessStory[] = [
     country: 'Canada / USA',
     image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
     shortQuote: 'The focus on Islamic compatibility questions helped us align our life goals instantly.',
-    story: 'We used the Islamic Guidance questions recommended on the platform during our chaperoned video calls with our parents. It made discussing serious matters like finance, relocation, and family expectations effortless and respectful. We are forever grateful to Heavenly Nikah!',
-    duration: 'Connected in 5 months'
+    story: 'We used the Islamic Guidance questions recommended on the platform during our chaperoned video calls with our parents. It made discussing serious matters like finance, relocation, and family expectations effortless and respectful. We are forever grateful to Polygamy Matrimony!',
+    duration: 'Connected in 5 months',
+    badge: 'First Marriage'
   },
   {
     id: 'story-4',
-    names: 'Saad & Ayesha',
+    names: 'Saad, Zainab & Ayesha',
     weddingDate: 'August 2025',
-    city: 'Hyderabad',
-    country: 'India',
+    city: 'Hyderabad & Doha',
+    country: 'India / Qatar',
     image: 'https://images.unsplash.com/photo-1529636798458-92182e662485?auto=format&fit=crop&w=800&q=80',
-    shortQuote: 'The photo privacy and verification features gave my family complete peace of mind.',
-    story: 'As a woman in tech, I wanted complete control over who could view my photos and contact me. The verified badges and Wali-assisted communication feature made my parents feel comfortable. Saad was genuine, verified, and humble.',
-    duration: 'Connected in 2 months'
+    shortQuote: 'The photo privacy, strict financial verification, and Wali mediation ensured 100% halal dignity.',
+    story: 'As an educated sister open to a co-wife arrangement, finding an honest, God-fearing brother was paramount. Polygamy Matrimony provided full transparency on Saad’s background, first wife’s consent, and separate housing. The process was respectful and dignified for both families.',
+    duration: 'Connected in 2 months',
+    badge: 'Second Marriage'
   }
 ];
 
 export const ISLAMIC_GUIDANCE_ARTICLES: GuidanceArticle[] = [
+  {
+    id: 'guide-polygyny',
+    title: 'The Islamic Fiqh of Polygyny: Justice (Adl), Rights, and Responsibilities',
+    category: 'Polygyny & Justice',
+    readTime: '7 min read',
+    summary: 'A deep Quranic and Sunnah exploration of polygyny, the paramount requirement of equal treatment (Adl), separate living arrangements, and financial capability.',
+    iconName: 'ShieldCheck',
+    content: [
+      'Polygyny is permitted in Islam under specific conditions stipulated by Allah in Surah An-Nisa (4:3): "...then marry those that please you of [other] women, two or three or four. But if you fear that you will not be just, then [marry only] one."',
+      '1. The Golden Rule of Justice (Adl): Islam demands strict equality in time allocation (overnight stays), provision of separate adequate housing, and equal financial maintenance (Nafaqah).',
+      '2. Separate Accommodations: Classical jurists agree that each wife is entitled to her own private living quarters (separate home or private self-contained apartment) to preserve modesty, dignity, and prevent domestic friction.',
+      '3. Financial Capability: A man must possess verifiable means to provide for multiple households without causing financial distress or neglect to any family.',
+      '4. Transparency and Sincerity: Deceit or secret marriages are contrary to the prophetic spirit of open Nikah announcement and family involvement.'
+    ],
+    keyTakeaways: [
+      'Justice (Adl) in time and financial provision is a non-negotiable Quranic mandate.',
+      'Each wife is entitled to separate independent accommodation by Islamic law.',
+      'Transparency and Wali involvement prevent harm and foster long-term barakah.'
+    ]
+  },
   {
     id: 'guide-1',
     title: 'The Sunnah of Istikhara: Seeking Allah\'s Guidance in Marriage',
@@ -131,25 +155,6 @@ export const ISLAMIC_GUIDANCE_ARTICLES: GuidanceArticle[] = [
       'Mahr is the exclusive property and Islamic right of the bride.',
       'Gentleness, humor, and emotional validation are core prophetic Sunnahs in marriage.'
     ]
-  },
-  {
-    id: 'guide-5',
-    title: 'Preparing Spiritually and Mentally for the Sacred Bond of Nikah',
-    category: 'Preparation',
-    readTime: '5 min read',
-    summary: 'Practical spiritual steps to prepare your heart, purify intentions, and cultivate emotional maturity for marital life.',
-    iconName: 'BookOpen',
-    content: [
-      'Marriage in Islam is referred to as "Mithaqan Ghalidha" — a solemn, weightful covenant.',
-      '1. Purify your Intention (Niyyah): Intend marriage for the sake of Allah, completing half your Deen, preserving modesty, and raising righteous offspring.',
-      '2. Build Personal Emotional Maturity: Practice anger management, active listening, and self-reflection before expecting perfection in another.',
-      '3. Learn the Fiqh of Marriage: Educate yourself on marital jurisprudence so that decisions are guided by Allah’s pleasure rather than cultural misconceptions.'
-    ],
-    keyTakeaways: [
-      'A righteous intention turns ordinary marital acts into rewarding worship.',
-      'Work on personal character (Akhlaq) before seeking a spouse.',
-      'Make abundant Dua in Tahajjud and during moments of acceptance.'
-    ]
   }
 ];
 
@@ -160,7 +165,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
     type: 'received',
     status: 'pending',
     timestamp: '2 hours ago',
-    message: 'Assalamu Alaikum, I went through your profile and was impressed by your values and career focus. I would love to connect and involve our families.'
+    message: 'Assalamu Alaikum, I went through your profile and was impressed by your values, transparent family expectations, and career focus. I would love to connect and involve our families.'
   },
   {
     id: 'int-2',
@@ -176,7 +181,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
     type: 'sent',
     status: 'accepted',
     timestamp: '3 days ago',
-    message: 'Assalamu Alaikum Hafsa, your focus on CA and Islamic principles resonated with me. Best regards.'
+    message: 'Assalamu Alaikum Hafsa, your focus on CA, financial independence, and Islamic principles resonated with me. Best regards.'
   },
   {
     id: 'int-4',
@@ -267,7 +272,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       {
         id: 'm-2',
         senderId: 'p-9',
-        text: 'Wa Alaikum Assalam wa Rahmatullah. Al-hamdulillah all is well. I read through your profile and was pleased to see your dedication to both career and regular prayers.',
+        text: 'Wa Alaikum Assalam wa Rahmatullah. Al-hamdulillah all is well. I read through your profile and was pleased to see your dedication to both career, regular prayers, and transparent family arrangements.',
         timestamp: 'Yesterday, 5:30 PM',
         isSelf: false,
         read: true
@@ -275,7 +280,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
       {
         id: 'm-3',
         senderId: 'current-user',
-        text: 'Al-hamdulillah. I would love to understand your thoughts on family dynamics, and perhaps arrange an introductory call with our parents when convenient for you.',
+        text: 'Al-hamdulillah. I would love to understand your thoughts on family dynamics, and arrange an introductory call with our parents when convenient for you.',
         timestamp: 'Today, 9:20 AM',
         isSelf: true,
         read: true,
@@ -363,7 +368,7 @@ export const SUBSCRIPTION_PLANS = [
       { text: 'Unlimited interest requests', included: true },
       { text: 'Unlimited messaging & voice notes', included: true },
       { text: 'See full list of who viewed your profile', included: true },
-      { text: 'Advanced religious & lifestyle filters', included: true },
+      { text: 'Advanced religious, polygyny & lifestyle filters', included: true },
       { text: 'Direct contact request for verified Wali/Guardians', included: true },
       { text: 'Photo privacy control (Blur & request mode)', included: true },
       { text: 'Priority profile ranking & boost', included: false },

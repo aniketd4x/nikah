@@ -159,10 +159,10 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
         </div>
       </div>
 
-      {/* Marital Status */}
+      {/* Marital Status & Polygyny */}
       <div className="space-y-2">
         <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
-          Marital Status
+          Marital Status & Polygamy
         </label>
         <select
           value={filterState.maritalStatus}
@@ -170,7 +170,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
           className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
         >
           <option value="">Any Status</option>
-          <option value="Never Married">Never Married</option>
+          <option value="Never Married">Never Married (Single)</option>
+          <option value="Married (Seeking 2nd Wife)">Married (Seeking 2nd Wife)</option>
+          <option value="Married (Seeking 3rd Wife)">Married (Seeking 3rd Wife)</option>
+          <option value="Married (Seeking 4th Wife)">Married (Seeking 4th Wife)</option>
+          <option value="Open to Polygyny (Co-Wife)">Open to Polygyny (Co-Wife)</option>
           <option value="Divorced">Divorced</option>
           <option value="Widowed">Widowed</option>
         </select>

@@ -122,7 +122,7 @@ export const PrivacySafetyScreen: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-xs font-bold text-emerald-950">Show Online Indicator</h4>
-              <p className="text-[11px] text-charcoal-500">Display green active status when browsing Heavenly Nikah.</p>
+              <p className="text-[11px] text-charcoal-500">Display green active status when browsing Polygamy Matrimony.</p>
             </div>
             <input
               type="checkbox"

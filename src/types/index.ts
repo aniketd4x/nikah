@@ -32,6 +32,22 @@ export interface VerificationStatus {
   reviewed: boolean;
 }
 
+export interface PolygynyInfo {
+  marriageType: 'First Marriage' | 'Second Marriage (Polygyny)' | 'Third/Fourth Marriage' | 'Open to Polygyny' | string;
+  accommodationOffer: 'Separate Independent Home' | 'Independent Apartment' | 'Open to Discussion' | string;
+  financialMaintenance: 'Full Independent Maintenance & Financial Justice' | 'Equal Maintenance Provided' | string;
+  currentFamilyConsent: 'First Wife Informed & Consenting' | 'Not Applicable' | 'Family Aware' | string;
+  waliInvolved: boolean;
+  structure?: string;
+  separateAccommodation?: boolean;
+  residenceCity?: string;
+  financialSupport?: string;
+  waliInvolvement?: boolean;
+  waliContactName?: string;
+  waliRelationship?: string;
+  additionalNotes?: string;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -57,8 +73,9 @@ export interface Profile {
     revertStatus?: 'Born Muslim' | 'Revert / Convert';
     islamicValues: string[];
   };
-  maritalStatus: 'Never Married' | 'Divorced' | 'Widowed' | 'Annulled';
+  maritalStatus: 'Never Married' | 'Married (Seeking 2nd Wife)' | 'Married (Seeking 3rd/4th Wife)' | 'Divorced' | 'Widowed' | 'Open to Polygyny (Co-Wife)' | string;
   hasChildren?: 'No' | 'Yes, living together' | 'Yes, living separately';
+  polygynyInfo?: PolygynyInfo;
   height: string; // e.g. "5' 6\" (168 cm)"
   motherTongue: string;
   languages: string[];
@@ -78,6 +95,7 @@ export interface Profile {
     country: string[];
     relocation: string;
     religiousCommitment: string;
+    polygynyAcceptance?: 'Open to Polygyny / Second Wife' | 'First Marriage Only' | 'Either';
   };
   compatibilityScore: number;
   matchReasons: string[];
@@ -106,6 +124,8 @@ export interface ChatMessage {
   isSelf: boolean;
   read: boolean;
   status?: 'sent' | 'delivered' | 'read';
+  isAudio?: boolean;
+  audioDuration?: string;
 }
 
 export interface Conversation {
@@ -139,12 +159,13 @@ export interface SuccessStory {
   shortQuote: string;
   story: string;
   duration: string;
+  badge?: string;
 }
 
 export interface GuidanceArticle {
   id: string;
   title: string;
-  category: 'Preparation' | 'Compatibility' | 'Family & Wali' | 'Fiqh of Nikah' | 'Istikhara';
+  category: 'Preparation' | 'Compatibility' | 'Family & Wali' | 'Fiqh of Nikah' | 'Istikhara' | 'Polygyny & Justice';
   readTime: string;
   summary: string;
   content: string[];
@@ -161,6 +182,7 @@ export interface FilterState {
   education: string;
   profession: string;
   maritalStatus: string;
+  polygynyType?: string;
   motherTongue: string;
   religiousPractice: string;
   sect: string;

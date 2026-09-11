@@ -62,17 +62,17 @@ export const Logo: React.FC<LogoProps> = ({
 
       <div className="flex flex-col tracking-tight leading-none">
         <span className={`font-serif font-bold tracking-wider uppercase ${textColor} ${sizeClasses.title}`}>
-          HEAVENLY
+          POLYGAMY
         </span>
         <div className="flex items-center gap-1.5">
           <span className={`font-sans font-semibold tracking-widest text-[11px] uppercase ${subColor}`}>
-            NIKAH
+            MATRIMONY
           </span>
           {showSubtitle && (
             <>
               <span className="w-1 h-1 rounded-full bg-gold-400 opacity-60"></span>
               <span className="text-[9px] uppercase tracking-wider text-charcoal-400 font-medium">
-                Matrimonial
+                Halal Nikah
               </span>
             </>
           )}

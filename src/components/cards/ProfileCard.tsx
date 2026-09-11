@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Profile } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../common/Badge';
@@ -15,7 +15,9 @@ import {
   MessageCircle, 
   BookOpen,
   Eye,
-  Info
+  Info,
+  Home,
+  Check
 } from 'lucide-react';
 
 interface ProfileCardProps {
@@ -41,9 +43,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     privacySettings 
   } = useApp();
 
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const isFav = favorites.includes(profile.id);
   const sentInterest = interests.find((i) => i.profileId === profile.id && i.type === 'sent');
   const isBlur = profile.blurPhotoByDefault && privacySettings.photoVisibility !== 'public';
+  const photos = profile.galleryPhotos?.length ? profile.galleryPhotos : [profile.photo];
 
   const handleCardClick = () => {
     navigateTo('profile-details', profile.id);
@@ -54,7 +58,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     return (
       <div 
         onClick={handleCardClick}
-        className="group relative bg-white rounded-3xl p-3.5 border border-cream-300 shadow-soft hover:shadow-card-hover transition-all duration-300 cursor-pointer flex items-center gap-3.5"
+        className="group relative bg-white rounded-3xl p-3.5 border border-cream-300 shadow-soft hover:shadow-card-hover transition-all duration-300 cursor-pointer flex items-center gap-3.5 active:scale-[0.99]"
       >
         <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-emerald-900/10">
           <img 
@@ -74,7 +78,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
           <p className="text-xs text-charcoal-500 truncate mt-0.5">{profile.profession}</p>
           <p className="text-[11px] text-charcoal-400 truncate flex items-center gap-1 mt-0.5">
-            <MapPin className="w-3 h-3 text-gold-600" />
+            <MapPin className="w-3 h-3 text-gold-600 shrink-0" />
             {profile.city}, {profile.country}
           </p>
         </div>
@@ -124,11 +128,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
                 >
                   {profile.name}, {profile.age}
                 </h3>
-                <p className="text-xs text-charcoal-500 flex items-center gap-1.5 mt-0.5">
-                  <MapPin className="w-3.5 h-3.5 text-gold-600" />
-                  {profile.city}, {profile.country}
+                <p className="text-xs text-charcoal-500 flex flex-wrap items-center gap-1.5 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-gold-600 shrink-0" />
+                  <span>{profile.city}, {profile.country}</span>
                   <span>•</span>
-                  <span>{profile.maritalStatus}</span>
+                  <span className="font-semibold text-emerald-800">{profile.maritalStatus}</span>
                   <span>•</span>
                   <span>{profile.height}</span>
                 </p>
@@ -136,11 +140,12 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
               <button
                 onClick={() => toggleFavorite(profile.id)}
-                className={`p-2 rounded-full border transition-all ${
+                className={`p-2.5 rounded-full border transition-all ${
                   isFav
-                    ? 'bg-rose-50 border-rose-200 text-rose-600'
+                    ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-sm'
                     : 'bg-cream-100 border-cream-300 text-charcoal-400 hover:text-rose-600'
                 }`}
+                aria-label="Save"
               >
                 <Heart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
               </button>
@@ -205,13 +210,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
         <div className="relative h-64 rounded-2xl overflow-hidden mb-4 cursor-pointer group" onClick={handleCardClick}>
           <img 
-            src={profile.photo} 
+            src={photos[activePhotoIdx] || profile.photo} 
             alt={profile.name} 
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-transparent to-black/20" />
           
-          <div className="absolute top-3 left-3 flex gap-2">
+          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             <Badge variant="match" size="sm">
               {profile.compatibilityScore}% Compatibility
             </Badge>
@@ -231,16 +236,16 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
         <div className="space-y-2 mb-4">
           <div className="flex items-center justify-between text-xs">
+            <span className="text-charcoal-500">Marital Status:</span>
+            <span className="font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md">{profile.maritalStatus}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
             <span className="text-charcoal-500">Profession:</span>
             <span className="font-semibold text-emerald-950">{profile.profession}</span>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-charcoal-500">Education:</span>
             <span className="font-semibold text-emerald-950">{profile.degree}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-charcoal-500">Salah Practice:</span>
-            <span className="font-semibold text-emerald-800">{profile.religion.prayerFrequency.split(' ')[0]}</span>
           </div>
         </div>
 
@@ -273,20 +278,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     );
   }
 
-  /* ---------------- DEFAULT GRID VARIANT ---------------- */
+  /* ---------------- DEFAULT GRID VARIANT (Optimized for Mobile Touch) ---------------- */
   return (
     <div className="group bg-white rounded-3xl border border-cream-300/90 shadow-soft hover:shadow-card-hover transition-all duration-300 overflow-hidden flex flex-col justify-between">
       {/* Top Media Area */}
-      <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-cream-200 cursor-pointer" onClick={handleCardClick}>
+      <div className="relative h-68 sm:h-76 w-full overflow-hidden bg-cream-200 cursor-pointer" onClick={handleCardClick}>
         <img
-          src={profile.photo}
+          src={photos[activePhotoIdx] || profile.photo}
           alt={profile.name}
           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/75 via-transparent to-black/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/20 to-black/20" />
 
         {/* Top Badges */}
-        <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 z-10">
+        <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 z-10 max-w-[75%]">
           <Badge variant="match" size="sm">
             {profile.compatibilityScore}% Match
           </Badge>
@@ -294,6 +299,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             <Badge variant="verified" size="sm">
               Verified
             </Badge>
+          )}
+          {profile.maritalStatus.includes('2nd') && (
+            <span className="bg-gold-500 text-emerald-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
+              Seeking 2nd Wife
+            </span>
           )}
         </div>
 
@@ -303,15 +313,30 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             e.stopPropagation();
             toggleFavorite(profile.id);
           }}
-          className={`absolute top-3.5 right-3.5 p-2 rounded-full backdrop-blur-md transition-transform duration-200 active:scale-90 z-10 ${
+          className={`absolute top-3.5 right-3.5 p-2.5 rounded-full backdrop-blur-md transition-all active:scale-75 z-10 shadow-md ${
             isFav
-              ? 'bg-rose-500 text-white shadow-md'
-              : 'bg-black/30 hover:bg-black/50 text-white'
+              ? 'bg-rose-500 text-white'
+              : 'bg-black/35 hover:bg-black/60 text-white'
           }`}
           aria-label="Save profile"
         >
           <Heart className={`w-4 h-4 ${isFav ? 'fill-current' : ''}`} />
         </button>
+
+        {/* Multi-Photo Dots */}
+        {photos.length > 1 && (
+          <div className="absolute top-14 right-3.5 flex flex-col gap-1 z-10" onClick={(e) => e.stopPropagation()}>
+            {photos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActivePhotoIdx(i)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  activePhotoIdx === i ? 'bg-gold-400 w-3' : 'bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Online Status & Bottom Overlay */}
         <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white z-10">
@@ -326,6 +351,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           <p className="text-xs text-cream-200 flex items-center gap-1 mt-0.5">
             <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
             <span className="truncate">{profile.city}, {profile.country}</span>
+            <span>•</span>
+            <span className="text-gold-300 font-semibold">{profile.maritalStatus}</span>
           </p>
         </div>
       </div>
@@ -360,22 +387,22 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons (Large Touch Targets for Mobile) */}
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-cream-200">
           <Button
             variant="outline"
-            size="sm"
+            size="md"
             onClick={handleCardClick}
-            leftIcon={<Eye className="w-3.5 h-3.5" />}
+            leftIcon={<Eye className="w-4 h-4" />}
           >
             Details
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             onClick={() => (onSendInterest ? onSendInterest() : sendInterest(profile.id))}
             disabled={Boolean(sentInterest)}
-            leftIcon={<Heart className="w-3.5 h-3.5" />}
+            leftIcon={<Heart className="w-4 h-4" />}
           >
             {sentInterest ? 'Interest Sent' : 'Connect'}
           </Button>

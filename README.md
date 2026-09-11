@@ -1,9 +1,9 @@
-# Heavenly Nikah (heavenlynikah.com)
+# Polygamy Matrimony (polygamymatrimony.com)
 
 A modern, elegant, and privacy-focused Muslim matrimonial and Nikah web application frontend prototype.
 
 ## 🌟 Overview
-Heavenly Nikah is crafted to provide a dignified, Shariah-compliant matrimonial experience combining the smooth, swipeable interactions of modern mobile apps with the thoroughness and family involvement essential to Islamic matrimony.
+Polygamy Matrimony is crafted to provide a dignified, Shariah-compliant matrimonial experience combining the smooth, swipeable interactions of modern mobile apps with the thoroughness and family involvement essential to Islamic matrimony.
 
 ## ✨ Key Features
 - **Modern Islamic Aesthetics**: Deep emerald green, warm gold accents, soft cream background, and delicate geometric accents.
