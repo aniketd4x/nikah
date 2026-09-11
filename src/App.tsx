@@ -2,7 +2,9 @@ import React from 'react';
 import { useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
+import { DesktopRail } from './components/layout/DesktopRail';
 import { Footer } from './components/layout/Footer';
+import { MobileStickyCTA } from './components/common/MobileStickyCTA';
 import { ToastContainer } from './components/common/ToastContainer';
 import { CelebrationModal } from './components/common/CelebrationModal';
 import { UpgradeModal } from './components/common/UpgradeModal';
@@ -93,22 +95,31 @@ export const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-100 text-charcoal-DEFAULT bg-islamic-pattern antialiased selection:bg-emerald-900 selection:text-gold-200">
-      {/* Header */}
-      <Header />
+    <div className="min-h-screen bg-cream-100 text-charcoal-DEFAULT bg-islamic-pattern antialiased selection:bg-emerald-900 selection:text-gold-200 flex">
+      {/* Desktop Left Rail Navigation (for logged-in app experience) */}
+      <DesktopRail />
 
-      {/* Main Screen Body */}
-      <main className="flex-1 w-full animate-in fade-in duration-300">
-        {renderScreen()}
-      </main>
+      {/* Main App Canvas */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* App Top Bar */}
+        <Header />
 
-      {/* Footer (always rendered on landing, or at bottom of main content) */}
-      <Footer />
+        {/* Main Screen Content Viewport */}
+        <main className="flex-1 w-full animate-in fade-in duration-300">
+          {renderScreen()}
+        </main>
 
-      {/* Mobile Sticky App Bottom Bar */}
-      <BottomNav />
+        {/* Footer (only on landing) */}
+        <Footer />
 
-      {/* Global Interactive Modals & Toasts */}
+        {/* Mobile App Bottom Tab Bar */}
+        <BottomNav />
+
+        {/* Mobile Sticky CTA for guests */}
+        <MobileStickyCTA />
+      </div>
+
+      {/* Global Modals & Toast notifications */}
       <CelebrationModal />
       <UpgradeModal />
       <VerificationModal />
