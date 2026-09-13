@@ -33,17 +33,17 @@ export const AdminDashboardScreen: React.FC = () => {
   const { navigateTo, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 25,
-    verifiedUsers: 24,
+    totalUsers: 0,
+    verifiedUsers: 0,
     pendingVerifications: 0,
     pendingReports: 0,
-    activeSubscriptions: 19,
-    totalStories: 4,
-    revenueMonthly: 48950,
-    matchSuccessRate: 94.2
+    activeSubscriptions: 0,
+    totalStories: 0,
+    revenueMonthly: 0,
+    matchSuccessRate: 100
   });
   
-  const [profilesList, setProfilesList] = useState<Profile[]>(ALL_PROFILES);
+  const [profilesList, setProfilesList] = useState<Profile[]>([]);
   const [verificationsList, setVerificationsList] = useState<any[]>([]);
   const [reportsList, setReportsList] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,10 +81,10 @@ export const AdminDashboardScreen: React.FC = () => {
         api.getReports(),
         api.getUsers()
       ]);
-      setStats(s);
+      if (s) setStats(s);
       if (Array.isArray(v)) setVerificationsList(v);
       if (Array.isArray(r)) setReportsList(r);
-      if (Array.isArray(users) && users.length > 0) {
+      if (Array.isArray(users)) {
         setProfilesList(users);
       }
     } catch {

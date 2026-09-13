@@ -502,10 +502,10 @@ export const api = {
       const { count: pendingR } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
 
       return {
-        totalUsers: pCount || ALL_PROFILES.length,
-        verifiedUsers: vCount || ALL_PROFILES.filter(p => p.verified.identity).length,
-        pendingVerifications: pendingV || 0,
-        pendingReports: pendingR || 0,
+        totalUsers: typeof pCount === 'number' ? pCount : ALL_PROFILES.length,
+        verifiedUsers: typeof vCount === 'number' ? vCount : ALL_PROFILES.filter(p => p.verified?.identity).length,
+        pendingVerifications: pendingV ?? 0,
+        pendingReports: pendingR ?? 0,
         activeSubscriptions: 19,
         totalStories: 4,
         revenueMonthly: 48950,
@@ -513,14 +513,14 @@ export const api = {
       };
     } catch {}
     return {
-      totalUsers: ALL_PROFILES.length,
-      verifiedUsers: ALL_PROFILES.filter(p => p.verified.identity).length,
+      totalUsers: 0,
+      verifiedUsers: 0,
       pendingVerifications: 0,
       pendingReports: 0,
-      activeSubscriptions: 19,
-      totalStories: 4,
-      revenueMonthly: 48950,
-      matchSuccessRate: 94.2
+      activeSubscriptions: 0,
+      totalStories: 0,
+      revenueMonthly: 0,
+      matchSuccessRate: 100
     };
   },
 
@@ -528,11 +528,11 @@ export const api = {
   getUsers: async () => {
     try {
       const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      if (!error && Array.isArray(data) && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         return data.map(mapSupabaseProfile);
       }
     } catch {}
-    return ALL_PROFILES;
+    return [];
   },
 
   // Admin: Create User directly in Supabase
