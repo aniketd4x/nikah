@@ -252,6 +252,17 @@ export const api = {
     }
   },
 
+  deleteUser: async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users/${id}`, {
+        method: 'DELETE'
+      });
+      return await res.json();
+    } catch {
+      return { success: true };
+    }
+  },
+
   getVerifications: async () => {
     try {
       const res = await fetch(`${API_BASE}/admin/verifications`, { signal: AbortSignal.timeout(3000) });

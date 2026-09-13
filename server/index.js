@@ -377,6 +377,30 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
+// Admin: Delete User Profile
+app.delete('/api/admin/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM profiles WHERE id = ? OR user_id = ?', [id, id]);
+    await pool.query('DELETE FROM users WHERE id = ?', [id]);
+    res.json({ success: true, message: 'User and profile removed successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Update User Account Status (active/suspended/banned)
+app.patch('/api/admin/users/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    await pool.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    res.json({ success: true, status });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 16. Admin: Toggle Verification
 app.patch('/api/admin/users/:id/verify', async (req, res) => {
   const { id } = req.params;

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
-import { SwipeCardStack } from '../components/cards/SwipeCardStack';
+import { MatrimonialProfileCard } from '../components/cards/MatrimonialProfileCard';
 import { TrustSection } from '../components/home/TrustSection';
 import { HowItWorks } from '../components/home/HowItWorks';
 import { QuranVerse } from '../components/home/QuranVerse';
@@ -14,16 +14,16 @@ import {
   EyeOff, 
   Users, 
   ArrowRight, 
-  BookOpen, 
-  CheckCircle2,
+  ChevronLeft,
   ChevronRight,
-  Flame,
-  HelpCircle
+  BookOpen, 
+  CheckCircle2
 } from 'lucide-react';
 import { triggerHaptic } from '../styles/designTokens';
 
 export const LandingScreen: React.FC = () => {
-  const { navigateTo, profiles, isLoggedIn, sendInterest, toggleFavorite, passProfile, addToast } = useApp();
+  const { navigateTo, profiles, isLoggedIn, sendInterest, toggleFavorite, favorites, addToast } = useApp();
+  const [activeProfileIndex, setActiveProfileIndex] = useState(0);
 
   const trustChips = [
     { label: '100% ID & Selfie Verified', icon: ShieldCheck },
@@ -33,9 +33,16 @@ export const LandingScreen: React.FC = () => {
     { label: 'Separate Accommodation Standards', icon: Sparkles }
   ];
 
-  const handleSuperLike = (id: string) => {
-    sendInterest(id);
-    addToast('Super Interest Sent! ★', 'Your proposal was prioritized with instant notification.', 'success');
+  const currentProfile = profiles[activeProfileIndex] || profiles[0];
+
+  const handleNextProfile = () => {
+    triggerHaptic(10);
+    setActiveProfileIndex((prev) => (prev + 1) % (profiles.length || 1));
+  };
+
+  const handlePrevProfile = () => {
+    triggerHaptic(10);
+    setActiveProfileIndex((prev) => (prev - 1 + profiles.length) % (profiles.length || 1));
   };
 
   return (
@@ -101,15 +108,42 @@ export const LandingScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Right: Interactive Swipe Card Stack */}
-            <div className="lg:col-span-5 flex justify-center items-center">
-              <SwipeCardStack
-                profiles={profiles}
-                onPass={(id) => passProfile(id)}
-                onSendInterest={(id) => sendInterest(id)}
-                onSave={(id) => toggleFavorite(id)}
-                onSuperLike={handleSuperLike}
-              />
+            {/* Right: Dignified Simple Matrimonial Profile Showcase */}
+            <div className="lg:col-span-5 flex flex-col items-center">
+              {currentProfile && (
+                <div className="w-full max-w-sm space-y-3">
+                  <MatrimonialProfileCard
+                    profile={currentProfile}
+                    onSendInterest={(id) => sendInterest(id)}
+                    onSave={(id) => toggleFavorite(id)}
+                    onViewDetails={(id) => navigateTo('profile-details', id)}
+                    isSaved={favorites.includes(currentProfile.id)}
+                  />
+
+                  {/* Clean Profile Carousel Controls */}
+                  <div className="flex items-center justify-between px-2 pt-1">
+                    <button
+                      onClick={handlePrevProfile}
+                      className="p-2 rounded-full bg-white hover:bg-cream-200 border border-cream-300 shadow-sm text-charcoal-700 transition-colors flex items-center gap-1 text-xs font-semibold"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Previous</span>
+                    </button>
+
+                    <span className="text-xs text-charcoal-500 font-semibold">
+                      {activeProfileIndex + 1} of {profiles.length} Featured
+                    </span>
+
+                    <button
+                      onClick={handleNextProfile}
+                      className="p-2 rounded-full bg-white hover:bg-cream-200 border border-cream-300 shadow-sm text-charcoal-700 transition-colors flex items-center gap-1 text-xs font-semibold"
+                    >
+                      <span>Next</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

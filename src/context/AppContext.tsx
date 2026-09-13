@@ -185,7 +185,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true); // Default to logged-in experience for instant prototype testing
+  // Default to guest (false) so users land on the public homepage by default
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return Boolean(typeof window !== 'undefined' && localStorage.getItem('nikah_token'));
+  });
   const [currentUser, setCurrentUser] = useState<Profile>(CURRENT_USER_DEFAULT);
   const [profiles, setProfiles] = useState<Profile[]>(ALL_PROFILES);
   const [favorites, setFavorites] = useState<string[]>(['p-1', 'p-9', 'p-5']);
@@ -207,17 +210,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Synchronize live profiles from Hostinger MySQL API on mount
+  // Synchronize live profiles from Hostinger MySQL API and handle separate URL paths
   useEffect(() => {
+    // Check if initial URL is /admin or /admin/login
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path.includes('admin') || hash.includes('admin')) {
+        const adminToken = localStorage.getItem('nikah_admin_token');
+        if (adminToken) {
+          setCurrentScreen('admin');
+        } else {
+          setCurrentScreen('admin-login');
+        }
+      }
+    }
+
     const loadLiveDatabase = async () => {
       try {
         const liveProfiles = await api.fetchProfiles();
         if (Array.isArray(liveProfiles) && liveProfiles.length > 0) {
           setProfiles(liveProfiles);
         }
-        const me = await api.fetchMe();
-        if (me) {
-          setCurrentUser(prev => ({ ...prev, ...me }));
+        if (localStorage.getItem('nikah_token')) {
+          const me = await api.fetchMe();
+          if (me) {
+            setCurrentUser(prev => ({ ...prev, ...me }));
+            setIsLoggedIn(true);
+          }
         }
       } catch (err) {
         console.warn('API sync fallback to cached data:', err);
@@ -226,12 +246,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadLiveDatabase();
   }, []);
 
-  // Navigation helper
+  // Navigation helper with URL synchronization
   const navigateTo = (screen: ScreenType, profileId?: string) => {
     if (profileId) {
       setSelectedProfileId(profileId);
     }
     setCurrentScreen(screen);
+
+    // Update browser URL for separate admin URL
+    if (typeof window !== 'undefined') {
+      if (screen === 'admin') {
+        window.history.pushState(null, '', '/admin');
+      } else if (screen === 'admin-login') {
+        window.history.pushState(null, '', '/admin/login');
+      } else if (window.location.pathname.includes('admin')) {
+        window.history.pushState(null, '', '/');
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

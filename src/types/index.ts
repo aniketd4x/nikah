@@ -107,6 +107,9 @@ export interface Profile {
   createdDate: string;
   smoking: 'Never' | 'Occasionally' | 'Quit';
   blurPhotoByDefault?: boolean;
+  isVip?: boolean;
+  plan?: string;
+  is_verified?: boolean;
 }
 
 export interface InterestRequest {

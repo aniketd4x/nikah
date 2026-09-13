@@ -20,7 +20,11 @@ import {
   X, 
   TrendingUp, 
   DollarSign, 
-  CheckCircle2 
+  CheckCircle2,
+  Trash2,
+  UserX,
+  UserCheck,
+  Plus
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
@@ -47,6 +51,9 @@ export const AdminDashboardScreen: React.FC = () => {
   const [genderFilter, setGenderFilter] = useState<'all' | 'female' | 'male'>('all');
   const [verifiedFilter, setVerifiedFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [deleteConfirmProfile, setDeleteConfirmProfile] = useState<Profile | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const loadData = async () => {
@@ -105,6 +112,15 @@ export const AdminDashboardScreen: React.FC = () => {
     addToast('Verification Updated', `Profile verification ${newStatus ? 'Approved' : 'Revoked'}`, 'success');
   };
 
+  const handleDeleteProfile = async (profile: Profile) => {
+    triggerHaptic(20);
+    setProfilesList(prev => prev.filter(p => p.id !== profile.id));
+    if (selectedProfile?.id === profile.id) setSelectedProfile(null);
+    setDeleteConfirmProfile(null);
+    await api.deleteUser(profile.id);
+    addToast('Profile Deleted', `${profile.name}'s profile and account were purged from the system.`, 'info');
+  };
+
   const handleApproveVerification = async (id: string, userId: string) => {
     triggerHaptic(20);
     await api.actionVerification(id, 'approve');
@@ -121,11 +137,14 @@ export const AdminDashboardScreen: React.FC = () => {
     addToast('Verified', 'Document approved & Blue Badge issued!', 'success');
   };
 
-  const handleRejectVerification = async (id: string) => {
+  const handleRejectVerificationConfirm = async () => {
+    if (!rejectModal) return;
     triggerHaptic(15);
-    await api.actionVerification(id, 'reject');
-    setVerificationsList(prev => prev.map(v => v.id === id ? { ...v, status: 'rejected' } : v));
-    addToast('Verification Rejected', 'Verification request rejected', 'info');
+    await api.actionVerification(rejectModal.id, 'reject', rejectReason);
+    setVerificationsList(prev => prev.map(v => v.id === rejectModal.id ? { ...v, status: 'rejected', notes: rejectReason || v.notes } : v));
+    setRejectModal(null);
+    setRejectReason('');
+    addToast('Verification Rejected', 'Verification request rejected with reason logged', 'info');
   };
 
   const handleResolveReport = async (id: string) => {
@@ -444,6 +463,14 @@ export const AdminDashboardScreen: React.FC = () => {
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>{verified ? 'Verified' : 'Verify'}</span>
                       </button>
+
+                      <button
+                        onClick={() => setDeleteConfirmProfile(profile)}
+                        className="p-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 border border-rose-800/60 transition-colors"
+                        title="Delete Profile & Account"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 );
@@ -495,7 +522,7 @@ export const AdminDashboardScreen: React.FC = () => {
                     {item.status === 'pending' && (
                       <>
                         <button
-                          onClick={() => handleRejectVerification(item.id)}
+                          onClick={() => setRejectModal({ id: item.id, name: item.user_name })}
                           className="px-4 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800 flex items-center gap-1.5"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -698,6 +725,86 @@ export const AdminDashboardScreen: React.FC = () => {
                 }`}
               >
                 {isProfileVerified(selectedProfile) ? 'Revoke Verification' : 'Issue Verification'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmProfile && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="p-2.5 rounded-2xl bg-rose-950/80 border border-rose-800">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-white">Delete Profile & Account</h3>
+                <p className="text-xs text-slate-400">Permanent administrative action</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 bg-slate-950 p-3.5 rounded-2xl border border-slate-800 leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-white">{deleteConfirmProfile.name}</strong> ({deleteConfirmProfile.city}) from the live Hostinger database? This will purge their messages, interests, and profile verification data.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setDeleteConfirmProfile(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteProfile(deleteConfirmProfile)}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-950/50"
+              >
+                Confirm Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Verification Modal */}
+      {rejectModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
+                <h3 className="font-bold text-base text-white">Reject Verification Request</h3>
+              </div>
+              <button onClick={() => setRejectModal(null)} className="p-1 rounded-full hover:bg-slate-800">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300">
+              Provide an administrative rejection reason for <strong className="text-white">{rejectModal.name}</strong>:
+            </p>
+
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="e.g. Wali identity document is blurred; unverified matrimonial status claim."
+              rows={3}
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500"
+            />
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                onClick={() => setRejectModal(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectVerificationConfirm}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"
+              >
+                Confirm Rejection
               </button>
             </div>
           </div>
