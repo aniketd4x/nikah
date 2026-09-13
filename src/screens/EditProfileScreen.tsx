@@ -34,12 +34,12 @@ export const EditProfileScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 pb-24 md:pb-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 pb-28 md:pb-12">
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigateTo('my-profile')}
-          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white px-4 py-2 rounded-2xl border border-cream-300 shadow-sm"
+          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-cream-300 shadow-sm active:scale-95 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Profile</span>
@@ -56,24 +56,25 @@ export const EditProfileScreen: React.FC = () => {
       </div>
 
       <div>
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <User className="w-3 h-3 text-gold-600" />
           Profile Management
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
           Edit Profile Details
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-500">
+        <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
           Keep your information up to date to find compatible suitors.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-4">
         {/* SECTION 1: Basic Information */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('basic')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <User className="w-5 h-5 text-emerald-800" />
@@ -91,7 +92,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -100,7 +101,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="number"
                     value={form.age}
                     onChange={(e) => setForm({ ...form, age: Number(e.target.value) })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -112,7 +113,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -121,7 +122,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.country}
                     onChange={(e) => setForm({ ...form, country: e.target.value })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -129,7 +130,7 @@ export const EditProfileScreen: React.FC = () => {
                   <select
                     value={form.maritalStatus}
                     onChange={(e) => setForm({ ...form, maritalStatus: e.target.value as any })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   >
                     <option value="Never Married">Never Married</option>
                     <option value="Divorced">Divorced</option>
@@ -142,11 +143,11 @@ export const EditProfileScreen: React.FC = () => {
         </div>
 
         {/* SECTION 2: About Me */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('about')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Sparkles className="w-5 h-5 text-gold-600" />
@@ -165,7 +166,7 @@ export const EditProfileScreen: React.FC = () => {
                   rows={5}
                   value={form.aboutMe}
                   onChange={(e) => setForm({ ...form, aboutMe: e.target.value })}
-                  className="w-full p-3 text-xs leading-relaxed rounded-2xl border border-cream-300 bg-cream-50"
+                  className="w-full p-3.5 text-xs leading-relaxed rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                 />
               </div>
             </div>
@@ -173,11 +174,11 @@ export const EditProfileScreen: React.FC = () => {
         </div>
 
         {/* SECTION 3: Education & Career */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('career')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Briefcase className="w-5 h-5 text-emerald-800" />
@@ -195,7 +196,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.degree}
                     onChange={(e) => setForm({ ...form, degree: e.target.value })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -204,7 +205,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.profession}
                     onChange={(e) => setForm({ ...form, profession: e.target.value })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
               </div>
@@ -213,11 +214,11 @@ export const EditProfileScreen: React.FC = () => {
         </div>
 
         {/* SECTION 4: Religion & Islamic Practice */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('religion')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Sparkles className="w-5 h-5 text-gold-600" />
@@ -235,7 +236,7 @@ export const EditProfileScreen: React.FC = () => {
                     type="text"
                     value={form.religion.sect}
                     onChange={(e) => setForm({ ...form, religion: { ...form.religion, sect: e.target.value } })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -243,7 +244,7 @@ export const EditProfileScreen: React.FC = () => {
                   <select
                     value={form.religion.prayerFrequency}
                     onChange={(e) => setForm({ ...form, religion: { ...form.religion, prayerFrequency: e.target.value as any } })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   >
                     <option value="Always (5 times daily)">Always (5 times daily)</option>
                     <option value="Usually">Usually</option>
@@ -256,11 +257,11 @@ export const EditProfileScreen: React.FC = () => {
         </div>
 
         {/* SECTION 5: Family & Lifestyle */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('family')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Users className="w-5 h-5 text-emerald-800" />
@@ -277,7 +278,7 @@ export const EditProfileScreen: React.FC = () => {
                   <select
                     value={form.familyType}
                     onChange={(e) => setForm({ ...form, familyType: e.target.value as any })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   >
                     <option value="Nuclear">Nuclear</option>
                     <option value="Joint">Joint</option>
@@ -289,7 +290,7 @@ export const EditProfileScreen: React.FC = () => {
                   <select
                     value={form.familyValues}
                     onChange={(e) => setForm({ ...form, familyValues: e.target.value as any })}
-                    className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                    className="w-full px-4 py-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                   >
                     <option value="Moderate">Moderate</option>
                     <option value="Traditional">Traditional</option>
@@ -302,11 +303,11 @@ export const EditProfileScreen: React.FC = () => {
         </div>
 
         {/* SECTION 6: Partner Preferences */}
-        <div className="bg-white rounded-3xl border border-cream-300 shadow-soft overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-md rounded-[2rem] border border-cream-300/80 shadow-soft overflow-hidden">
           <button
             type="button"
             onClick={() => toggleSection('preferences')}
-            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50"
+            className="w-full p-5 sm:p-6 text-left flex items-center justify-between font-serif font-bold text-lg text-emerald-950 hover:bg-cream-50/60 transition-colors"
           >
             <div className="flex items-center gap-2.5">
               <Heart className="w-5 h-5 text-rose-600" />
@@ -323,7 +324,7 @@ export const EditProfileScreen: React.FC = () => {
                   rows={3}
                   value={form.lookingForSummary}
                   onChange={(e) => setForm({ ...form, lookingForSummary: e.target.value })}
-                  className="w-full p-3 text-xs leading-relaxed rounded-2xl border border-cream-300 bg-cream-50"
+                  className="w-full p-3.5 text-xs leading-relaxed rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
                 />
               </div>
             </div>

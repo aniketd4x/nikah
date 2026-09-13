@@ -1,4 +1,5 @@
 import React from 'react';
+import { triggerHaptic } from '../../styles/designTokens';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'gold' | 'ghost' | 'danger';
@@ -19,31 +20,38 @@ export const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   className = '',
   disabled,
+  onClick,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-2xl transition-all duration-200 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none shadow-sm';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-2xl transition-all duration-200 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed select-none shadow-sm cursor-pointer';
 
   const sizeStyles = {
-    sm: 'text-xs px-3.5 py-1.5 gap-1.5',
-    md: 'text-sm px-4.5 py-2.5 gap-2 font-medium',
-    lg: 'text-base px-6 py-3.5 gap-2.5 font-semibold',
-    xl: 'text-lg px-8 py-4 gap-3 font-semibold shadow-md',
-    icon: 'p-2.5 rounded-full aspect-square'
+    sm: 'text-xs px-3.5 py-2 gap-1.5 min-h-[34px]',
+    md: 'text-sm px-5 py-2.5 gap-2 min-h-[42px]',
+    lg: 'text-base px-6 py-3.5 gap-2.5 min-h-[50px] font-bold',
+    xl: 'text-lg px-8 py-4 gap-3 min-h-[56px] font-bold shadow-md',
+    icon: 'p-2.5 rounded-2xl aspect-square min-w-[40px] min-h-[40px]'
   }[size];
 
   const variantStyles = {
-    primary: 'bg-emerald-900 hover:bg-emerald-800 text-cream-50 focus:ring-emerald-700 shadow-emerald-950/10 border border-emerald-800/40',
-    secondary: 'bg-cream-200 hover:bg-cream-300 text-emerald-950 focus:ring-cream-300 border border-cream-300',
-    outline: 'bg-transparent border border-emerald-800 text-emerald-900 hover:bg-emerald-50 focus:ring-emerald-700',
-    gold: 'bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-emerald-950 font-bold shadow-gold-500/20 focus:ring-gold-500 border border-gold-400/40',
-    ghost: 'bg-transparent hover:bg-emerald-50 text-charcoal-700 hover:text-emerald-900 focus:ring-emerald-200 shadow-none',
+    primary: 'bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-800 hover:from-emerald-900 hover:to-emerald-700 text-cream-50 focus:ring-emerald-700 shadow-app-card border border-emerald-700/30',
+    secondary: 'bg-white hover:bg-cream-100 text-emerald-950 focus:ring-emerald-200 border border-cream-300 shadow-sm',
+    outline: 'bg-transparent border border-emerald-900/40 text-emerald-950 hover:bg-emerald-50 focus:ring-emerald-700',
+    gold: 'bg-gradient-to-r from-gold-500 via-gold-400 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-emerald-950 font-bold shadow-gold-500/25 focus:ring-gold-500 border border-gold-400/50',
+    ghost: 'bg-transparent hover:bg-emerald-50 text-charcoal-700 hover:text-emerald-950 focus:ring-emerald-200 shadow-none',
     danger: 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 focus:ring-rose-500'
   }[variant];
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    triggerHaptic(8);
+    if (onClick) onClick(e);
+  };
 
   return (
     <button
       className={`${baseStyles} ${sizeStyles} ${variantStyles} ${fullWidth ? 'w-full' : ''} ${className}`}
       disabled={disabled || isLoading}
+      onClick={handleClick}
       {...props}
     >
       {isLoading ? (
@@ -59,3 +67,4 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+

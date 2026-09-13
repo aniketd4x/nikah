@@ -28,12 +28,12 @@ export const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 pb-24 md:pb-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 pb-28 md:pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigateTo('my-profile')}
-          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white px-4 py-2 rounded-2xl border border-cream-300 shadow-sm"
+          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-cream-300 shadow-sm active:scale-95 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Profile</span>
@@ -45,18 +45,19 @@ export const SettingsScreen: React.FC = () => {
       </div>
 
       <div>
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <Settings className="w-3 h-3 text-gold-600" />
           Account Center
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
           Account Settings
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-500">
+        <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
           Manage notifications, security, language, and subscription configurations.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-soft space-y-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-soft space-y-6">
         {/* Notifications Group */}
         <div className="space-y-4 pb-6 border-b border-cream-200">
           <h3 className="font-serif font-bold text-base text-emerald-950 flex items-center gap-2">
@@ -64,8 +65,8 @@ export const SettingsScreen: React.FC = () => {
             <span>Notification Preferences</span>
           </h3>
 
-          <div className="space-y-3">
-            <label className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-cream-100">
+          <div className="space-y-2">
+            <label className="flex items-center justify-between cursor-pointer p-3 rounded-2xl hover:bg-cream-100/60 active:bg-cream-100 transition-colors">
               <div>
                 <span className="text-xs font-bold text-charcoal-800 block">Email Notifications</span>
                 <span className="text-[11px] text-charcoal-500">Receive weekly match digests and urgent interest alerts.</span>
@@ -74,11 +75,11 @@ export const SettingsScreen: React.FC = () => {
                 type="checkbox"
                 checked={emailNotifs}
                 onChange={(e) => setEmailNotifs(e.target.checked)}
-                className="w-4 h-4 text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+                className="w-4 h-4 text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
               />
             </label>
 
-            <label className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-cream-100">
+            <label className="flex items-center justify-between cursor-pointer p-3 rounded-2xl hover:bg-cream-100/60 active:bg-cream-100 transition-colors">
               <div>
                 <span className="text-xs font-bold text-charcoal-800 block">SMS / WhatsApp Verification Alerts</span>
                 <span className="text-[11px] text-charcoal-500">Get instant SMS for mutual match connections.</span>
@@ -87,7 +88,7 @@ export const SettingsScreen: React.FC = () => {
                 type="checkbox"
                 checked={smsNotifs}
                 onChange={(e) => setSmsNotifs(e.target.checked)}
-                className="w-4 h-4 text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+                className="w-4 h-4 text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
               />
             </label>
           </div>
@@ -106,7 +107,7 @@ export const SettingsScreen: React.FC = () => {
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50"
+                className="w-full p-3 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all"
               >
                 <option value="English">English</option>
                 <option value="Arabic">العربية (Arabic)</option>
@@ -124,7 +125,7 @@ export const SettingsScreen: React.FC = () => {
             <span>Account Management</span>
           </h3>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-rose-50/50 p-4 rounded-2xl border border-rose-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-rose-50/60 p-4 rounded-2xl border border-rose-200">
             <div>
               <h4 className="text-xs font-bold text-rose-950">Temporarily Hide / Deactivate Profile</h4>
               <p className="text-[11px] text-charcoal-600">Hide your profile when engaged or taking a break from matchmaking.</p>

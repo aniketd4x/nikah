@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Flame
 } from 'lucide-react';
+import { triggerHaptic } from '../styles/designTokens';
 
 export const DashboardScreen: React.FC = () => {
   const { 
@@ -47,15 +48,21 @@ export const DashboardScreen: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-24 md:pb-12">
+    <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12 select-none">
       {/* ACTIVE SINGLES STORY BUBBLES */}
-      <div className="bg-white rounded-3xl p-3 sm:p-4 border border-cream-300 shadow-soft">
-        <div className="flex items-center justify-between mb-2 px-1">
-          <div className="flex items-center gap-1.5">
+      <div className="bg-white rounded-[2rem] p-3.5 sm:p-4.5 border border-cream-300 shadow-app-card">
+        <div className="flex items-center justify-between mb-2.5 px-1">
+          <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             <span className="text-[11px] font-bold text-emerald-950 uppercase tracking-wider">Active Verified Singles</span>
           </div>
-          <button onClick={() => navigateTo('discover')} className="text-[11px] font-bold text-gold-700 hover:text-gold-800">
+          <button 
+            onClick={() => {
+              triggerHaptic(8);
+              navigateTo('discover');
+            }} 
+            className="text-[11px] font-bold text-gold-800 hover:text-gold-900 active:scale-95 transition-transform"
+          >
             View All
           </button>
         </div>
@@ -63,8 +70,11 @@ export const DashboardScreen: React.FC = () => {
         <div className="flex items-center gap-3.5 overflow-x-auto no-scrollbar py-1 px-1">
           {/* My Story Tile */}
           <div 
-            onClick={() => navigateTo('my-profile')}
-            className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group active:scale-95 transition-transform"
+            onClick={() => {
+              triggerHaptic(8);
+              navigateTo('my-profile');
+            }}
+            className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group active:scale-95 transition-transform"
           >
             <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr from-cream-300 to-cream-400 group-hover:from-emerald-700 group-hover:to-gold-500 transition-all">
               <img src={currentUser.photo} alt="My Profile" className="w-full h-full rounded-full object-cover border-2 border-white" />
@@ -79,8 +89,11 @@ export const DashboardScreen: React.FC = () => {
           {onlineSingles.map((single) => (
             <div
               key={single.id}
-              onClick={() => navigateTo('profile-details', single.id)}
-              className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group active:scale-95 transition-transform"
+              onClick={() => {
+                triggerHaptic(8);
+                navigateTo('profile-details', single.id);
+              }}
+              className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group active:scale-95 transition-transform"
             >
               <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 bg-gradient-to-tr from-gold-400 via-emerald-700 to-gold-500 shadow-sm group-hover:scale-105 transition-all">
                 <img src={single.photo} alt={single.name} className="w-full h-full rounded-full object-cover border-2 border-white" />
@@ -88,7 +101,7 @@ export const DashboardScreen: React.FC = () => {
                   <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" />
                 )}
               </div>
-              <span className="text-[11px] font-medium text-charcoal-800 truncate max-w-[60px]">{single.name.split(' ')[0]}</span>
+              <span className="text-[11px] font-semibold text-charcoal-800 truncate max-w-[60px]">{single.name.split(' ')[0]}</span>
             </div>
           ))}
         </div>
@@ -100,10 +113,11 @@ export const DashboardScreen: React.FC = () => {
           <button
             key={idx}
             onClick={() => {
+              triggerHaptic(8);
               chip.action();
               navigateTo('search-results');
             }}
-            className="text-xs bg-white border border-cream-300 text-charcoal-700 hover:border-emerald-800 hover:bg-cream-50 px-3.5 py-1.5 rounded-full font-semibold shadow-soft shrink-0 whitespace-nowrap active:scale-95 transition-all"
+            className="text-xs bg-white border border-cream-300 text-charcoal-800 hover:border-emerald-800 hover:bg-cream-50 px-4 py-2 rounded-full font-bold shadow-sm shrink-0 whitespace-nowrap active:scale-95 transition-all cursor-pointer"
           >
             {chip.label}
           </button>
@@ -111,7 +125,7 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* GREETING & HERO HEADER */}
-      <div className="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-cream-50 rounded-3xl p-5 sm:p-8 shadow-card border border-gold-500/30 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-emerald-950 via-emerald-900 to-emerald-950 text-cream-50 rounded-[2rem] p-5 sm:p-8 shadow-app-float border border-gold-500/30 overflow-hidden">
         {/* Glow */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-gold-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -123,7 +137,7 @@ export const DashboardScreen: React.FC = () => {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-white">
               {currentUser.name}
             </h1>
-            <p className="text-xs sm:text-sm text-cream-200 max-w-lg">
+            <p className="text-xs sm:text-sm text-cream-200 max-w-lg leading-relaxed">
               Find compatible partners for honorable, blessed matrimonial unions.
             </p>
           </div>
@@ -154,7 +168,7 @@ export const DashboardScreen: React.FC = () => {
       {/* QUICK STATUS & COMPLETION ROW */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Profile Completion Card */}
-        <div className="bg-white rounded-3xl p-5 border border-cream-300 shadow-soft flex flex-col justify-between space-y-4">
+        <div className="bg-white rounded-[2rem] p-5 border border-cream-300 shadow-app-card flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-serif font-bold text-sm text-emerald-950">Profile Strength</h3>
@@ -176,7 +190,7 @@ export const DashboardScreen: React.FC = () => {
         </div>
 
         {/* Verification Status Card */}
-        <div className="bg-white rounded-3xl p-5 border border-cream-300 shadow-soft flex flex-col justify-between space-y-4">
+        <div className="bg-white rounded-[2rem] p-5 border border-cream-300 shadow-app-card flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-serif font-bold text-sm text-emerald-950">Trust & Verification</h3>
@@ -198,11 +212,11 @@ export const DashboardScreen: React.FC = () => {
         </div>
 
         {/* Plan / Upgrade Card */}
-        <div className="bg-gradient-to-br from-cream-100 to-cream-200 rounded-3xl p-5 border border-gold-400/40 shadow-soft flex flex-col justify-between space-y-4">
+        <div className="bg-gradient-to-br from-cream-100 to-cream-200 rounded-[2rem] p-5 border border-gold-400/40 shadow-app-card flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-serif font-bold text-sm text-emerald-950">Membership Status</h3>
-              <span className="text-[10px] font-bold text-gold-900 bg-gold-300 px-2 py-0.5 rounded-full uppercase">
+              <span className="text-[10px] font-bold text-gold-900 bg-gold-300 px-2.5 py-0.5 rounded-full uppercase">
                 {currentPlan}
               </span>
             </div>
@@ -224,7 +238,7 @@ export const DashboardScreen: React.FC = () => {
 
       {/* TODAY'S TOP PICK HIGHLIGHT */}
       {dailyPick && (
-        <div className="bg-gradient-to-br from-emerald-50 via-white to-gold-50/30 rounded-3xl p-6 sm:p-8 border-2 border-gold-400/40 shadow-card">
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-gold-50/30 rounded-[2rem] p-5 sm:p-8 border-2 border-gold-400/40 shadow-app-card">
           <div className="flex items-center gap-2 mb-4">
             <span className="bg-gold-500 text-emerald-950 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
               <Flame className="w-3 h-3 fill-current" />
@@ -250,8 +264,11 @@ export const DashboardScreen: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigateTo('search-results')}
-            className="text-xs font-bold text-emerald-900 hover:text-emerald-700 flex items-center gap-1"
+            onClick={() => {
+              triggerHaptic(8);
+              navigateTo('search-results');
+            }}
+            className="text-xs font-bold text-emerald-900 hover:text-emerald-700 flex items-center gap-1 active:scale-95 transition-transform"
           >
             <span>View All</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -266,7 +283,7 @@ export const DashboardScreen: React.FC = () => {
       </div>
 
       {/* ISLAMIC GUIDANCE TEASER */}
-      <div className="bg-emerald-900 text-cream-50 rounded-3xl p-6 sm:p-8 shadow-card flex flex-col md:flex-row items-center justify-between gap-6 border border-gold-500/30">
+      <div className="bg-emerald-900 text-cream-50 rounded-[2rem] p-6 sm:p-8 shadow-app-float flex flex-col md:flex-row items-center justify-between gap-6 border border-gold-500/30">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-flex items-center gap-2 bg-emerald-950 px-3 py-1 rounded-full text-gold-300 text-xs font-bold">
             <BookOpen className="w-3.5 h-3.5" />
@@ -275,7 +292,7 @@ export const DashboardScreen: React.FC = () => {
           <h3 className="text-xl font-serif font-bold text-white">
             50 Questions to Discuss Respectfully Before Nikah
           </h3>
-          <p className="text-xs text-cream-200 max-w-xl">
+          <p className="text-xs text-cream-200 max-w-xl leading-relaxed">
             A comprehensive checklist covering finances, religious growth, living arrangements, and family boundaries in the light of Sunnah.
           </p>
         </div>
@@ -292,3 +309,4 @@ export const DashboardScreen: React.FC = () => {
     </div>
   );
 };
+

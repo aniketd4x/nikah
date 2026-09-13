@@ -96,15 +96,16 @@ export const OnboardingScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 pb-28 md:pb-12">
       {/* Top Header Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-soft mb-6 space-y-4">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-soft mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-gold-600 bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-gold-700 bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+              <Sparkles className="w-3 h-3 text-gold-600" />
               Step {step} of {totalSteps}
             </span>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold text-emerald-950 mt-1">
+            <h1 className="text-xl sm:text-2xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
               {step === 1 && 'Basic Information'}
               {step === 2 && 'About Yourself'}
               {step === 3 && 'Education & Profession'}
@@ -121,7 +122,7 @@ export const OnboardingScreen: React.FC = () => {
         </div>
 
         {/* Motivational Banner */}
-        <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200/80 flex items-center gap-2.5 text-xs text-emerald-900">
+        <div className="bg-emerald-50/80 rounded-2xl p-3.5 border border-emerald-200/80 flex items-center gap-2.5 text-xs text-emerald-900 shadow-sm">
           <Sparkles className="w-4 h-4 text-gold-600 shrink-0" />
           <span>
             {step < 5 
@@ -132,7 +133,7 @@ export const OnboardingScreen: React.FC = () => {
       </div>
 
       {/* Step Contents */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-card">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-card">
         {/* STEP 1: Basic Information */}
         {step === 1 && (
           <div className="space-y-4 animate-in fade-in">

@@ -22,43 +22,50 @@ export const MatchesScreen: React.FC = () => {
   const recommendedMatches = filteredProfiles.filter((p) => p.compatibilityScore >= 92);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-24 md:pb-12">
-      {/* Header */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12">
+      {/* Native Screen Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+            <Sparkles className="w-3 h-3 text-gold-600" />
             Halal Connections
           </span>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
             Your Matches & Compatibility
           </h1>
-          <p className="text-xs sm:text-sm text-charcoal-500">
+          <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
             Profiles with high spiritual, educational, and lifestyle alignment.
           </p>
         </div>
 
-        {/* Section Filter Pills */}
-        <div className="flex items-center gap-2 bg-cream-100 p-1 rounded-2xl border border-cream-300">
+        {/* Native Segmented Filter Pill Control */}
+        <div className="flex items-center gap-1 bg-cream-200/70 p-1.5 rounded-2xl border border-cream-300/80 shadow-inner backdrop-blur-sm self-start sm:self-auto overflow-x-auto max-w-full no-scrollbar">
           <button
             onClick={() => setActiveSection('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeSection === 'all' ? 'bg-white text-emerald-950 shadow-sm font-bold' : 'text-charcoal-500'
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 ${
+              activeSection === 'all'
+                ? 'bg-emerald-950 text-gold-300 shadow-sm font-bold'
+                : 'text-charcoal-600 hover:text-emerald-950'
             }`}
           >
             All Matches
           </button>
           <button
             onClick={() => setActiveSection('mutual')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeSection === 'mutual' ? 'bg-white text-emerald-950 shadow-sm font-bold' : 'text-charcoal-500'
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 ${
+              activeSection === 'mutual'
+                ? 'bg-emerald-950 text-gold-300 shadow-sm font-bold'
+                : 'text-charcoal-600 hover:text-emerald-950'
             }`}
           >
             Mutual ({mutualMatches.length})
           </button>
           <button
             onClick={() => setActiveSection('recommended')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeSection === 'recommended' ? 'bg-white text-emerald-950 shadow-sm font-bold' : 'text-charcoal-500'
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 ${
+              activeSection === 'recommended'
+                ? 'bg-emerald-950 text-gold-300 shadow-sm font-bold'
+                : 'text-charcoal-600 hover:text-emerald-950'
             }`}
           >
             92%+ Compatible
@@ -69,8 +76,8 @@ export const MatchesScreen: React.FC = () => {
       {/* SECTION 1: Mutual Interests (Connected) */}
       {(activeSection === 'all' || activeSection === 'mutual') && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gold-100 text-gold-800 flex items-center justify-center font-bold">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gold-100/90 text-gold-800 flex items-center justify-center font-bold shadow-sm border border-gold-200">
               <Sparkles className="w-4 h-4 text-gold-600" />
             </div>
             <div>
@@ -80,8 +87,9 @@ export const MatchesScreen: React.FC = () => {
           </div>
 
           {mutualMatches.length === 0 ? (
-            <div className="bg-white rounded-3xl p-6 text-center border border-cream-300 text-xs text-charcoal-500">
-              No mutual matches yet. As you accept interests or receive approvals, they will appear here.
+            <div className="bg-white/90 backdrop-blur-md rounded-[2rem] p-8 text-center border border-cream-300/80 shadow-soft text-xs text-charcoal-500 space-y-2">
+              <Sparkles className="w-8 h-8 text-gold-400 mx-auto opacity-70" />
+              <p className="max-w-md mx-auto">No mutual matches yet. As you accept interests or receive approvals, they will appear here.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -96,9 +104,9 @@ export const MatchesScreen: React.FC = () => {
       {/* SECTION 2: Top Recommended Matches */}
       {(activeSection === 'all' || activeSection === 'recommended') && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
-              <Heart className="w-4 h-4 text-emerald-700" />
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100/90 text-emerald-800 flex items-center justify-center font-bold shadow-sm border border-emerald-200">
+              <Heart className="w-4 h-4 text-emerald-700 fill-emerald-700/20" />
             </div>
             <div>
               <h2 className="font-serif font-bold text-lg text-emerald-950">Highly Compatible Matches (92%+)</h2>
@@ -118,8 +126,8 @@ export const MatchesScreen: React.FC = () => {
       {activeSection === 'all' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-cream-200 text-charcoal-700 flex items-center justify-center font-bold">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-cream-200/90 text-charcoal-700 flex items-center justify-center font-bold shadow-sm border border-cream-300">
                 <Compass className="w-4 h-4 text-emerald-800" />
               </div>
               <div>

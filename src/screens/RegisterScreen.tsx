@@ -37,17 +37,17 @@ export const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl bg-white rounded-3xl p-6 sm:p-10 border border-cream-300 shadow-card space-y-6">
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-8 sm:py-12 pb-28 md:pb-12">
+      <div className="w-full max-w-xl bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-10 border border-cream-300/80 shadow-card space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-block" onClick={() => navigateTo('landing')}>
+          <div className="inline-block cursor-pointer" onClick={() => navigateTo('landing')}>
             <Logo size="lg" variant="emerald" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 pt-2">
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 pt-2 tracking-tight">
             Begin Your Sacred Journey
           </h2>
-          <p className="text-xs sm:text-sm text-charcoal-500">
+          <p className="text-xs sm:text-sm text-charcoal-500 max-w-sm mx-auto">
             Create your free profile and discover compatible Muslim singles worldwide.
           </p>
         </div>
@@ -61,10 +61,10 @@ export const RegisterScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setLookingFor('bride')}
-              className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
+              className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all flex items-center justify-center gap-2 active:scale-95 ${
                 lookingFor === 'bride'
-                  ? 'bg-emerald-900 text-white border-emerald-900 shadow-sm ring-2 ring-emerald-800/20'
-                  : 'bg-cream-100 text-charcoal-700 border-cream-300 hover:bg-cream-200'
+                  ? 'bg-emerald-950 text-gold-300 border-emerald-950 shadow-sm ring-2 ring-emerald-800/20'
+                  : 'bg-cream-100/90 text-charcoal-700 border-cream-300 hover:bg-cream-200'
               }`}
             >
               <Heart className="w-4 h-4 text-gold-400" />
@@ -74,10 +74,10 @@ export const RegisterScreen: React.FC = () => {
             <button
               type="button"
               onClick={() => setLookingFor('groom')}
-              className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
+              className={`py-3 px-4 rounded-2xl text-xs font-bold border transition-all flex items-center justify-center gap-2 active:scale-95 ${
                 lookingFor === 'groom'
-                  ? 'bg-emerald-900 text-white border-emerald-900 shadow-sm ring-2 ring-emerald-800/20'
-                  : 'bg-cream-100 text-charcoal-700 border-cream-300 hover:bg-cream-200'
+                  ? 'bg-emerald-950 text-gold-300 border-emerald-950 shadow-sm ring-2 ring-emerald-800/20'
+                  : 'bg-cream-100/90 text-charcoal-700 border-cream-300 hover:bg-cream-200'
               }`}
             >
               <Heart className="w-4 h-4 text-gold-400" />
@@ -99,7 +99,7 @@ export const RegisterScreen: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Ahmed Khan"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -113,7 +113,7 @@ export const RegisterScreen: React.FC = () => {
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                className="w-full px-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
               />
             </div>
           </div>
@@ -129,7 +129,7 @@ export const RegisterScreen: React.FC = () => {
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Mumbai, India or Dubai, UAE"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -144,7 +144,7 @@ export const RegisterScreen: React.FC = () => {
                   onChange={(e) => setMobile(e.target.value)}
                   placeholder="+91 98765 43210"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -161,7 +161,7 @@ export const RegisterScreen: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -176,7 +176,7 @@ export const RegisterScreen: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-cream-300 bg-cream-50 text-xs focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-cream-300 bg-cream-50/60 text-xs focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -190,7 +190,7 @@ export const RegisterScreen: React.FC = () => {
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
                 required
-                className="w-4 h-4 mt-0.5 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 shrink-0"
+                className="w-4 h-4 mt-0.5 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 shrink-0 cursor-pointer"
               />
               <span>
                 I agree to the <a href="#terms" className="text-emerald-900 font-semibold underline">Terms & Conditions</a> and <a href="#privacy" className="text-emerald-900 font-semibold underline">Privacy Policy</a>. I certify that I am registering for genuine Nikah intentions.

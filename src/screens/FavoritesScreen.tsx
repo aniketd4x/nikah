@@ -19,22 +19,23 @@ export const FavoritesScreen: React.FC = () => {
   }[activeTab];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-24 md:pb-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 pb-28 md:pb-12">
       {/* Header */}
       <div>
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <Heart className="w-3 h-3 text-gold-600 fill-gold-600/30" />
           Saved Shortlist
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
           Your Favorite Profiles
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-500">
+        <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
           Easily revisit and connect with profiles you have bookmarked for family review.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-cream-300">
+      {/* Modern Native App Segmented Tabs */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar bg-cream-200/70 p-1.5 rounded-2xl border border-cream-300/80 shadow-inner backdrop-blur-sm self-start">
         {[
           { id: 'all', label: 'All Saved', count: favoriteProfiles.length },
           { id: 'recent', label: 'Recently Added', count: recentFavorites.length },
@@ -45,16 +46,16 @@ export const FavoritesScreen: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 text-xs font-bold border-b-2 transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all duration-200 active:scale-95 ${
                 isActive
-                  ? 'border-emerald-900 text-emerald-950 bg-white rounded-t-2xl shadow-sm'
-                  : 'border-transparent text-charcoal-500 hover:text-emerald-900'
+                  ? 'bg-emerald-950 text-gold-300 shadow-sm ring-1 ring-gold-400/20'
+                  : 'text-charcoal-600 hover:text-emerald-950 hover:bg-white/50'
               }`}
             >
               <span>{tab.label}</span>
               <span
-                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                  isActive ? 'bg-emerald-900 text-white' : 'bg-cream-200 text-charcoal-700'
+                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                  isActive ? 'bg-gold-500 text-emerald-950' : 'bg-cream-300 text-charcoal-700'
                 }`}
               >
                 {tab.count}

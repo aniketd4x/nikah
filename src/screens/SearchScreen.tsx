@@ -23,23 +23,24 @@ export const SearchScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-24 md:pb-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-3 py-1 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <Sparkles className="w-3 h-3 text-gold-600" />
           Islamic Compatibility Search
         </span>
-        <h1 className="text-3xl font-serif font-bold text-emerald-950">
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950 tracking-tight">
           Find Your Ideal Partner
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-600">
+        <p className="text-xs sm:text-sm text-charcoal-600 max-w-md mx-auto">
           Filter by religious practice, education, profession, location, and family lifestyle.
         </p>
       </div>
 
       {/* Main Search Bar */}
       <div className="max-w-3xl mx-auto">
-        <form onSubmit={handleSearch} className="relative flex items-center shadow-card rounded-3xl bg-white p-2 border border-cream-300">
+        <form onSubmit={handleSearch} className="relative flex items-center shadow-card hover:shadow-card-hover rounded-[2rem] bg-white/95 backdrop-blur-md p-2 border border-cream-300 transition-all duration-300">
           <div className="pl-4 text-emerald-800">
             <Search className="w-5 h-5" />
           </div>
@@ -71,7 +72,7 @@ export const SearchScreen: React.FC = () => {
                 chip.action();
                 navigateTo('search-results');
               }}
-              className="text-xs bg-white hover:bg-emerald-50 text-charcoal-700 hover:text-emerald-900 px-3 py-1.5 rounded-full border border-cream-300 shadow-sm transition-all"
+              className="text-xs bg-white/90 hover:bg-emerald-50 text-charcoal-700 hover:text-emerald-950 px-3.5 py-1.5 rounded-full border border-cream-300 shadow-sm active:scale-95 transition-all"
             >
               {chip.label}
             </button>
@@ -80,7 +81,7 @@ export const SearchScreen: React.FC = () => {
       </div>
 
       {/* Search Grid / Filter Sections */}
-      <div className="max-w-4xl mx-auto bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-card">
+      <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-card">
         <FilterPanel onApply={() => navigateTo('search-results')} />
         <div className="pt-6 border-t border-cream-200 text-center">
           <Button

@@ -45,9 +45,9 @@ export const SearchResultsScreen: React.FC = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-24 md:pb-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 pb-28 md:pb-12">
       {/* Top Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white rounded-3xl p-5 sm:p-6 border border-cream-300 shadow-soft">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/95 backdrop-blur-md rounded-[2rem] p-4 sm:p-6 border border-cream-300/80 shadow-soft">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-serif font-bold text-emerald-950">
@@ -70,28 +70,28 @@ export const SearchResultsScreen: React.FC = () => {
             value={filterState.keyword || ''}
             onChange={(e) => setFilterState((p) => ({ ...p, keyword: e.target.value }))}
             placeholder="Type keyword, city, profession..."
-            className="w-full bg-cream-50 border border-cream-300 rounded-2xl pl-10 pr-4 py-2 text-xs text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+            className="w-full bg-cream-50/80 border border-cream-300 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 shadow-inner"
           />
         </div>
 
         {/* Action Controls & Sort */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Mobile Filter Trigger */}
           <button
             onClick={() => setIsFilterSheetOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-cream-100 text-charcoal-800 text-xs font-semibold border border-cream-300 hover:bg-cream-200"
+            className="lg:hidden flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-cream-100/90 text-charcoal-800 text-xs font-semibold border border-cream-300 hover:bg-cream-200 active:scale-95 transition-all shadow-sm"
           >
             <SlidersHorizontal className="w-4 h-4 text-emerald-800" />
             <span>Filters ({appliedFiltersCount})</span>
           </button>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-1.5 text-xs bg-cream-50 px-3 py-1.5 rounded-2xl border border-cream-300">
+          <div className="flex items-center gap-1.5 text-xs bg-cream-100/80 px-3 py-2 rounded-2xl border border-cream-300/80 shadow-sm">
             <ArrowUpDown className="w-3.5 h-3.5 text-charcoal-500" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="bg-transparent font-semibold text-charcoal-800 focus:outline-none cursor-pointer"
+              className="bg-transparent font-semibold text-charcoal-800 focus:outline-none cursor-pointer text-xs"
             >
               <option value="best_match">Sort: Best Match</option>
               <option value="compatibility">Sort: Most Compatible</option>
@@ -101,11 +101,11 @@ export const SearchResultsScreen: React.FC = () => {
           </div>
 
           {/* View Mode Toggle (Grid vs Horizontal) */}
-          <div className="hidden sm:flex items-center bg-cream-100 p-1 rounded-2xl border border-cream-300">
+          <div className="hidden sm:flex items-center bg-cream-200/70 p-1 rounded-2xl border border-cream-300/80">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-xl transition-all ${
-                viewMode === 'grid' ? 'bg-white text-emerald-950 shadow-sm' : 'text-charcoal-400'
+              className={`p-2 rounded-xl transition-all active:scale-95 ${
+                viewMode === 'grid' ? 'bg-white text-emerald-950 shadow-sm' : 'text-charcoal-400 hover:text-emerald-900'
               }`}
               aria-label="Grid view"
             >
@@ -113,8 +113,8 @@ export const SearchResultsScreen: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('horizontal')}
-              className={`p-1.5 rounded-xl transition-all ${
-                viewMode === 'horizontal' ? 'bg-white text-emerald-950 shadow-sm' : 'text-charcoal-400'
+              className={`p-2 rounded-xl transition-all active:scale-95 ${
+                viewMode === 'horizontal' ? 'bg-white text-emerald-950 shadow-sm' : 'text-charcoal-400 hover:text-emerald-900'
               }`}
               aria-label="List view"
             >
@@ -125,17 +125,17 @@ export const SearchResultsScreen: React.FC = () => {
       </div>
 
       {/* Main Grid & Desktop Filter Sidebar Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Desktop Left Filter Sidebar */}
-        <div className="hidden lg:block lg:col-span-4 bg-white rounded-3xl p-6 border border-cream-300 shadow-soft sticky top-24">
+        <div className="hidden lg:block lg:col-span-4 bg-white/95 backdrop-blur-md rounded-[2rem] p-6 border border-cream-300/80 shadow-soft sticky top-24">
           <FilterPanel />
         </div>
 
         {/* Results Area */}
         <div className="lg:col-span-8 space-y-6">
           {sortedProfiles.length === 0 ? (
-            <div className="bg-white rounded-3xl p-12 text-center border border-cream-300 shadow-soft space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto">
+            <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-12 text-center border border-cream-300/80 shadow-soft space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto border border-emerald-200">
                 <Search className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-serif font-bold text-emerald-950">No Profiles Match These Exact Filters</h3>

@@ -24,31 +24,32 @@ export const SuccessStoriesScreen: React.FC = () => {
     : stories.filter((s) => s.country.toLowerCase().includes(selectedCountry.toLowerCase()));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-10 pb-24 md:pb-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-8 sm:space-y-10 pb-28 md:pb-12">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <Sparkles className="w-3.5 h-3.5 text-gold-600" />
           Al-hamdulillah
         </span>
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950">
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950 tracking-tight">
           Nikah Success Stories
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-600">
+        <p className="text-xs sm:text-sm text-charcoal-600 max-w-md mx-auto">
           Read real stories of Muslim couples who met through Polygamy Matrimony and began their blessed journey.
         </p>
       </div>
 
       {/* Stories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {filteredStories.map((story) => (
           <div
             key={story.id}
-            className="bg-white rounded-[2rem] p-6 sm:p-8 border border-cream-300 shadow-soft hover:shadow-card transition-all flex flex-col justify-between space-y-6"
+            className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-soft hover:shadow-card transition-all flex flex-col justify-between space-y-6"
           >
             <div className="space-y-4">
-              <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-cream-200">
+              <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-cream-200 shadow-sm">
                 <img src={story.image} alt={story.names} className="w-full h-full object-cover" />
-                <div className="absolute top-3 right-3 bg-emerald-950/80 text-gold-300 text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-gold-500/30">
+                <div className="absolute top-3 right-3 bg-emerald-950/85 text-gold-300 text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-gold-500/30 shadow-sm">
                   Married {story.weddingDate}
                 </div>
               </div>
@@ -66,7 +67,7 @@ export const SuccessStoriesScreen: React.FC = () => {
                 </p>
               </div>
 
-              <blockquote className="text-xs sm:text-sm font-serif italic text-emerald-900 bg-cream-50 p-3.5 rounded-2xl border border-cream-200">
+              <blockquote className="text-xs sm:text-sm font-serif italic text-emerald-900 bg-cream-50/70 p-3.5 rounded-2xl border border-cream-200">
                 "{story.shortQuote}"
               </blockquote>
 
@@ -84,9 +85,9 @@ export const SuccessStoriesScreen: React.FC = () => {
       </div>
 
       {/* CTA Box */}
-      <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-cream-50 rounded-3xl p-8 text-center space-y-4 max-w-3xl mx-auto border border-gold-500/30 shadow-card">
-        <h3 className="font-serif font-bold text-2xl text-white">Your Story Could Be Next, Insha'Allah</h3>
-        <p className="text-xs text-cream-200 max-w-md mx-auto leading-relaxed">
+      <div className="bg-gradient-to-br from-emerald-900 to-emerald-950 text-cream-50 rounded-[2rem] p-8 text-center space-y-4 max-w-3xl mx-auto border border-gold-500/30 shadow-card">
+        <h3 className="font-serif font-bold text-2xl sm:text-3xl text-white">Your Story Could Be Next, Insha'Allah</h3>
+        <p className="text-xs sm:text-sm text-cream-200 max-w-md mx-auto leading-relaxed">
           Create your profile today and connect with thousands of verified practicing singles ready for Nikah.
         </p>
         <Button variant="gold" size="lg" onClick={() => navigateTo('register')}>

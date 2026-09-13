@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { SlidersHorizontal, RotateCcw, Check, Sparkles } from 'lucide-react';
+import { triggerHaptic } from '../../styles/designTokens';
 
 interface FilterPanelProps {
   isMobile?: boolean;
@@ -24,72 +25,77 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
     });
   };
 
+  const handleReset = () => {
+    triggerHaptic(10);
+    resetFilters();
+  };
+
   return (
     <div className="space-y-6 text-charcoal-800">
       {/* Header with Reset */}
-      <div className="flex items-center justify-between pb-3 border-b border-cream-300">
+      <div className="flex items-center justify-between pb-3.5 border-b border-cream-200">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-emerald-800" />
           <h3 className="font-serif font-bold text-base text-emerald-950">Refine Matches</h3>
           {appliedFiltersCount > 0 && (
-            <span className="bg-emerald-900 text-gold-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-emerald-900 text-gold-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
               {appliedFiltersCount} Active
             </span>
           )}
         </div>
         <button
-          onClick={resetFilters}
-          className="text-xs text-charcoal-500 hover:text-emerald-900 flex items-center gap-1 font-medium transition-colors"
+          onClick={handleReset}
+          className="text-xs text-charcoal-500 hover:text-emerald-950 flex items-center gap-1.5 font-semibold transition-colors active:scale-95"
         >
-          <RotateCcw className="w-3 h-3" />
-          Reset All
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Reset All</span>
         </button>
       </div>
 
       {/* Looking For (Gender - Locked to Opposite Gender for Islamic Compliance) */}
       <div className="space-y-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 block">
           Looking For
         </label>
-        <div className="p-2.5 rounded-2xl bg-cream-100 border border-cream-300 flex items-center justify-between">
+        <div className="p-3 rounded-2xl bg-cream-50 border border-cream-300 flex items-center justify-between shadow-sm">
           <span className="text-xs font-bold text-emerald-950">
             {currentUser.gender === 'female' ? '🤵 Groom (Brother)' : '🧕 Bride (Muslimah)'}
           </span>
-          <span className="text-[10px] font-bold text-gold-700 bg-gold-100 px-2 py-0.5 rounded-full border border-gold-300">
+          <span className="text-[10px] font-bold text-gold-800 bg-gold-100 px-2.5 py-0.5 rounded-full border border-gold-300 shadow-sm">
             Halal Verified
           </span>
         </div>
       </div>
 
       {/* Age Range Slider */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <div className="flex justify-between items-center text-xs">
-          <span className="font-bold uppercase tracking-wider text-charcoal-600">Age Range</span>
-          <span className="font-bold text-emerald-900 bg-cream-200 px-2 py-0.5 rounded-lg">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500">Age Range</span>
+          <span className="font-bold text-emerald-950 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-xl">
             {filterState.ageRange[0]} - {filterState.ageRange[1]} yrs
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 bg-white p-3 rounded-2xl border border-cream-200 shadow-sm">
           <div>
-            <span className="text-[10px] text-charcoal-500 block mb-1">Min Age</span>
+            <span className="text-[10px] text-charcoal-500 font-semibold block mb-1">Min Age</span>
             <input
               type="range"
               min="18"
               max="50"
               value={filterState.ageRange[0]}
               onChange={(e) => handleAgeChange(0, parseInt(e.target.value))}
-              className="w-full accent-emerald-900"
+              className="w-full accent-emerald-900 cursor-pointer"
             />
           </div>
           <div>
-            <span className="text-[10px] text-charcoal-500 block mb-1">Max Age</span>
+            <span className="text-[10px] text-charcoal-500 font-semibold block mb-1">Max Age</span>
             <input
               type="range"
               min="18"
               max="50"
               value={filterState.ageRange[1]}
               onChange={(e) => handleAgeChange(1, parseInt(e.target.value))}
-              className="w-full accent-emerald-900"
+              className="w-full accent-emerald-900 cursor-pointer"
             />
           </div>
         </div>
@@ -97,14 +103,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
 
       {/* Location (Country & City) */}
       <div className="space-y-3">
-        <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 block">
           Location
         </label>
         <div>
           <select
             value={filterState.country}
             onChange={(e) => setFilterState((prev) => ({ ...prev, country: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">All Countries</option>
             <option value="India">India</option>
@@ -121,7 +127,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
           <select
             value={filterState.city}
             onChange={(e) => setFilterState((prev) => ({ ...prev, city: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">All Cities</option>
             <option value="Mumbai">Mumbai</option>
@@ -146,13 +152,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
 
       {/* Marital Status & Polygyny */}
       <div className="space-y-2">
-        <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 block">
           Marital Status & Polygamy
         </label>
         <select
           value={filterState.maritalStatus}
           onChange={(e) => setFilterState((prev) => ({ ...prev, maritalStatus: e.target.value }))}
-          className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+          className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
         >
           <option value="">Any Status</option>
           <option value="Never Married">Never Married (Single)</option>
@@ -167,14 +173,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
 
       {/* Religious Practice & Sect */}
       <div className="space-y-3">
-        <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 block">
           Religious Commitment
         </label>
         <div>
           <select
             value={filterState.religiousPractice}
             onChange={(e) => setFilterState((prev) => ({ ...prev, religiousPractice: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">Any Prayer Frequency</option>
             <option value="Always">Always (5 times daily)</option>
@@ -187,7 +193,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
           <select
             value={filterState.sect}
             onChange={(e) => setFilterState((prev) => ({ ...prev, sect: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">Any Islamic Sect / School</option>
             <option value="Sunni">Sunni</option>
@@ -199,14 +205,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
 
       {/* Education & Profession */}
       <div className="space-y-3">
-        <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
+        <label className="text-[11px] font-bold uppercase tracking-wider text-charcoal-500 block">
           Education & Career
         </label>
         <div>
           <select
             value={filterState.education}
             onChange={(e) => setFilterState((prev) => ({ ...prev, education: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">Any Education</option>
             <option value="Doctorate">Doctorate (PhD / MD)</option>
@@ -219,7 +225,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
           <select
             value={filterState.profession}
             onChange={(e) => setFilterState((prev) => ({ ...prev, profession: e.target.value }))}
-            className="w-full text-xs p-2.5 rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full text-xs p-3 rounded-2xl border border-cream-300 bg-white font-medium text-charcoal-800 focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
           >
             <option value="">Any Profession</option>
             <option value="Software">Software / Tech</option>
@@ -233,14 +239,14 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
       </div>
 
       {/* Trust & Verified Toggles */}
-      <div className="space-y-2.5 pt-3 border-t border-cream-300">
-        <label className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-cream-100">
-          <span className="text-xs font-semibold text-charcoal-700">Verified Profiles Only</span>
+      <div className="space-y-2.5 pt-3.5 border-t border-cream-200">
+        <label className="flex items-center justify-between cursor-pointer p-3 rounded-2xl hover:bg-cream-50 bg-white border border-cream-200 shadow-sm transition-colors">
+          <span className="text-xs font-bold text-emerald-950">Verified Profiles Only</span>
           <input
             type="checkbox"
             checked={filterState.verifiedOnly}
             onChange={(e) => setFilterState((prev) => ({ ...prev, verifiedOnly: e.target.checked }))}
-            className="w-4 h-4 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+            className="w-4 h-4 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
           />
         </label>
       </div>
@@ -256,3 +262,4 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
     </div>
   );
 };
+

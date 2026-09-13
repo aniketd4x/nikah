@@ -18,12 +18,12 @@ export const PrivacySafetyScreen: React.FC = () => {
   const { privacySettings, updatePrivacySettings, navigateTo, blockedProfileIds } = useApp();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 pb-24 md:pb-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12">
       {/* Header */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigateTo('my-profile')}
-          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white px-4 py-2 rounded-2xl border border-cream-300 shadow-sm"
+          className="flex items-center gap-2 text-xs font-bold text-emerald-950 hover:text-emerald-700 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-cream-300 shadow-sm active:scale-95 transition-all"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Profile</span>
@@ -35,23 +35,24 @@ export const PrivacySafetyScreen: React.FC = () => {
       </div>
 
       <div>
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <ShieldCheck className="w-3.5 h-3.5 text-gold-600" />
           Safety First
         </span>
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
           Privacy & Safety Controls
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-500">
+        <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
           Your privacy and modesty are sacred. Configure your visibility, photo access, and guardian mode.
         </p>
       </div>
 
       {/* Main Privacy Toggles Box */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-soft space-y-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-soft space-y-6">
         {/* Photo Privacy */}
         <div className="space-y-3 pb-6 border-b border-cream-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold shadow-sm">
               <EyeOff className="w-4 h-4" />
             </div>
             <div>
@@ -70,10 +71,10 @@ export const PrivacySafetyScreen: React.FC = () => {
                 key={opt.id}
                 type="button"
                 onClick={() => updatePrivacySettings({ photoVisibility: opt.id as any })}
-                className={`p-4 rounded-2xl border text-left transition-all ${
+                className={`p-4 rounded-2xl border text-left transition-all active:scale-95 ${
                   privacySettings.photoVisibility === opt.id
-                    ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold shadow-sm'
-                    : 'border-cream-300 hover:bg-cream-50 text-charcoal-700'
+                    ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold shadow-sm ring-1 ring-emerald-800/20'
+                    : 'border-cream-300 hover:bg-cream-50/80 text-charcoal-700'
                 }`}
               >
                 <span className="text-xs font-bold block mb-1">{opt.label}</span>
@@ -86,7 +87,7 @@ export const PrivacySafetyScreen: React.FC = () => {
         {/* Phone Visibility */}
         <div className="space-y-3 pb-6 border-b border-cream-200">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold shadow-sm">
               <Phone className="w-4 h-4" />
             </div>
             <div>
@@ -104,10 +105,10 @@ export const PrivacySafetyScreen: React.FC = () => {
                 key={opt.id}
                 type="button"
                 onClick={() => updatePrivacySettings({ phoneVisibility: opt.id as any })}
-                className={`p-4 rounded-2xl border text-left transition-all ${
+                className={`p-4 rounded-2xl border text-left transition-all active:scale-95 ${
                   privacySettings.phoneVisibility === opt.id
-                    ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold shadow-sm'
-                    : 'border-cream-300 hover:bg-cream-50 text-charcoal-700'
+                    ? 'border-emerald-800 bg-emerald-50 text-emerald-950 font-bold shadow-sm ring-1 ring-emerald-800/20'
+                    : 'border-cream-300 hover:bg-cream-50/80 text-charcoal-700'
                 }`}
               >
                 <span className="text-xs font-bold block mb-1">{opt.label}</span>
@@ -118,8 +119,8 @@ export const PrivacySafetyScreen: React.FC = () => {
         </div>
 
         {/* Toggles (Online status, direct message, search index) */}
-        <div className="space-y-4 pb-6 border-b border-cream-200">
-          <div className="flex items-center justify-between">
+        <div className="space-y-3 pb-6 border-b border-cream-200">
+          <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-cream-100/50 transition-colors">
             <div>
               <h4 className="text-xs font-bold text-emerald-950">Show Online Indicator</h4>
               <p className="text-[11px] text-charcoal-500">Display green active status when browsing Polygamy Matrimony.</p>
@@ -128,11 +129,11 @@ export const PrivacySafetyScreen: React.FC = () => {
               type="checkbox"
               checked={privacySettings.showOnlineStatus}
               onChange={(e) => updatePrivacySettings({ showOnlineStatus: e.target.checked })}
-              className="w-5 h-5 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+              className="w-4 h-4 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-cream-100/50 transition-colors">
             <div>
               <h4 className="text-xs font-bold text-emerald-950">Display Profile in Public Search</h4>
               <p className="text-[11px] text-charcoal-500">Allow other verified users to discover you via filters.</p>
@@ -141,11 +142,11 @@ export const PrivacySafetyScreen: React.FC = () => {
               type="checkbox"
               checked={privacySettings.showProfileInSearch}
               onChange={(e) => updatePrivacySettings({ showProfileInSearch: e.target.checked })}
-              className="w-5 h-5 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+              className="w-4 h-4 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
             />
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-cream-100/50 transition-colors">
             <div>
               <h4 className="text-xs font-bold text-emerald-950">Wali / Guardian Supervision Mode</h4>
               <p className="text-[11px] text-charcoal-500">Automatically include guardian in all connection threads and requests.</p>
@@ -154,7 +155,7 @@ export const PrivacySafetyScreen: React.FC = () => {
               type="checkbox"
               checked={privacySettings.guardianSupervisionMode}
               onChange={(e) => updatePrivacySettings({ guardianSupervisionMode: e.target.checked })}
-              className="w-5 h-5 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800"
+              className="w-4 h-4 rounded text-emerald-800 focus:ring-emerald-700 accent-emerald-800 cursor-pointer"
             />
           </div>
         </div>

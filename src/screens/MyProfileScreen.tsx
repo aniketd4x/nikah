@@ -32,14 +32,14 @@ export const MyProfileScreen: React.FC = () => {
   } = useApp();
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-8 pb-24 md:pb-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12">
       {/* PROFILE HEADER CARD */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-card">
+      <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-card">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
           {/* Avatar with Verified Ring */}
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-4 border-emerald-800 shadow-md shrink-0">
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-4 border-emerald-900 shadow-md shrink-0">
             <img src={currentUser.photo} alt={currentUser.name} className="w-full h-full object-cover" />
-            <span className="absolute bottom-2 right-2 bg-emerald-500 text-white p-1 rounded-full border-2 border-white">
+            <span className="absolute bottom-2 right-2 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-sm">
               <ShieldCheck className="w-4 h-4" />
             </span>
           </div>
@@ -103,7 +103,7 @@ export const MyProfileScreen: React.FC = () => {
       </div>
 
       {/* DASHBOARD SHORTCUT CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {[
           {
             title: 'Edit Full Profile',
@@ -150,7 +150,7 @@ export const MyProfileScreen: React.FC = () => {
         ].map((item, idx) => (
           <div
             key={idx}
-            className="bg-white rounded-3xl p-6 border border-cream-300 shadow-soft hover:shadow-card transition-all flex flex-col justify-between space-y-4"
+            className="bg-white/95 backdrop-blur-md rounded-[2rem] p-5 sm:p-6 border border-cream-300/80 shadow-soft hover:shadow-card active:scale-[0.99] transition-all flex flex-col justify-between space-y-4"
           >
             <div>
               <div className="w-10 h-10 rounded-2xl bg-cream-100 flex items-center justify-center mb-3 border border-cream-200">

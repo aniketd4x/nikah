@@ -19,6 +19,7 @@ import {
   Info,
   Users
 } from 'lucide-react';
+import { triggerHaptic } from '../styles/designTokens';
 
 export const MessagingScreen: React.FC = () => {
   const { 
@@ -47,6 +48,7 @@ export const MessagingScreen: React.FC = () => {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeConversation && inputMessage.trim()) {
+      triggerHaptic(12);
       sendMessage(activeConversation.id, inputMessage);
       setInputMessage('');
     }
@@ -60,14 +62,15 @@ export const MessagingScreen: React.FC = () => {
 
   const handleSendIcebreaker = (prompt: string) => {
     if (activeConversation) {
+      triggerHaptic(10);
       sendMessage(activeConversation.id, prompt);
       setShowIcebreakers(false);
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-20 md:pb-6">
-      <div className="bg-white rounded-3xl border border-cream-300 shadow-card overflow-hidden h-[78vh] min-h-[550px] flex">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-6 pb-24 md:pb-6 select-none">
+      <div className="bg-white rounded-[2rem] border border-cream-300 shadow-app-card overflow-hidden h-[82vh] min-h-[560px] flex">
         {/* LEFT: Conversation List (hidden on mobile when chat is open) */}
         <div
           className={`w-full md:w-80 lg:w-96 border-r border-cream-300 flex flex-col bg-cream-50/50 ${
@@ -75,9 +78,9 @@ export const MessagingScreen: React.FC = () => {
           }`}
         >
           {/* List Header */}
-          <div className="p-4 border-b border-cream-200 bg-white">
+          <div className="p-4 sm:p-5 border-b border-cream-200 bg-white">
             <h2 className="font-serif font-bold text-lg text-emerald-950">Messages & Chats</h2>
-            <p className="text-[11px] text-charcoal-500">Respectful matrimonial conversations</p>
+            <p className="text-[11px] text-charcoal-500 mt-0.5">Respectful matrimonial conversations</p>
           </div>
 
           {/* Conversations */}
@@ -85,7 +88,7 @@ export const MessagingScreen: React.FC = () => {
             {conversations.length === 0 ? (
               <div className="p-6 text-center text-charcoal-500 space-y-2 mt-8">
                 <Users className="w-8 h-8 text-cream-400 mx-auto" />
-                <p className="text-xs font-semibold text-charcoal-700">No Active Chats Yet</p>
+                <p className="text-xs font-bold text-charcoal-700">No Active Chats Yet</p>
                 <p className="text-[11px] text-charcoal-500 leading-relaxed">
                   Chats appear here when an interest request is accepted by both parties.
                 </p>
@@ -99,12 +102,15 @@ export const MessagingScreen: React.FC = () => {
                 return (
                   <div
                     key={conv.id}
-                    onClick={() => setActiveConversationId(conv.id)}
-                    className={`p-3.5 flex items-start gap-3 cursor-pointer transition-colors ${
+                    onClick={() => {
+                      triggerHaptic(8);
+                      setActiveConversationId(conv.id);
+                    }}
+                    className={`p-3.5 sm:p-4 flex items-start gap-3 cursor-pointer transition-all active:scale-[0.99] ${
                       isActive ? 'bg-emerald-50/90 border-l-4 border-emerald-800' : 'hover:bg-cream-100'
                     }`}
                   >
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border border-cream-300">
+                    <div className="relative w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-cream-300 shadow-sm">
                       <img src={convPartner.photo} alt={convPartner.name} className="w-full h-full object-cover" />
                       {convPartner.online && (
                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
@@ -139,19 +145,25 @@ export const MessagingScreen: React.FC = () => {
             }`}
           >
             {/* Chat Header */}
-            <div className="p-3.5 sm:p-4 border-b border-cream-300 flex items-center justify-between bg-cream-50/70">
+            <div className="p-3.5 sm:p-4 border-b border-cream-300 flex items-center justify-between bg-cream-50/80 backdrop-blur-sm">
               <div className="flex items-center gap-3">
                 {/* Back button for mobile */}
                 <button
-                  onClick={() => setActiveConversationId(null)}
-                  className="md:hidden p-1.5 rounded-xl text-charcoal-600 hover:bg-cream-200"
+                  onClick={() => {
+                    triggerHaptic(6);
+                    setActiveConversationId(null);
+                  }}
+                  className="md:hidden p-2 rounded-2xl text-charcoal-700 hover:bg-cream-200 active:scale-90 transition-all"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
 
                 <div
-                  className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-emerald-800 cursor-pointer"
-                  onClick={() => navigateTo('profile-details', partner.id)}
+                  className="relative w-10 h-10 rounded-2xl overflow-hidden shrink-0 border border-emerald-800 cursor-pointer shadow-sm active:scale-95 transition-transform"
+                  onClick={() => {
+                    triggerHaptic(6);
+                    navigateTo('profile-details', partner.id);
+                  }}
                 >
                   <img src={partner.photo} alt={partner.name} className="w-full h-full object-cover" />
                   {partner.online && (
@@ -159,7 +171,13 @@ export const MessagingScreen: React.FC = () => {
                   )}
                 </div>
 
-                <div onClick={() => navigateTo('profile-details', partner.id)} className="cursor-pointer">
+                <div 
+                  onClick={() => {
+                    triggerHaptic(6);
+                    navigateTo('profile-details', partner.id);
+                  }} 
+                  className="cursor-pointer"
+                >
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-serif font-bold text-sm sm:text-base text-emerald-950">{partner.name}</h3>
                     {partner.verified.photo && <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />}
@@ -176,14 +194,20 @@ export const MessagingScreen: React.FC = () => {
                   variant="outline"
                   size="sm"
                   leftIcon={<Users className="w-3.5 h-3.5" />}
-                  onClick={() => addToast('Wali Introduction Mode', 'Your guardian / Wali details have been shared with this family.', 'info')}
+                  onClick={() => {
+                    triggerHaptic(8);
+                    addToast('Wali Introduction Mode', 'Your guardian / Wali details have been shared with this family.', 'info');
+                  }}
                   className="hidden sm:inline-flex text-[11px]"
                 >
                   Involve Wali
                 </Button>
                 <button
-                  onClick={() => navigateTo('profile-details', partner.id)}
-                  className="p-2 text-charcoal-500 hover:bg-cream-200 rounded-xl"
+                  onClick={() => {
+                    triggerHaptic(6);
+                    navigateTo('profile-details', partner.id);
+                  }}
+                  className="p-2.5 text-charcoal-500 hover:bg-cream-200 rounded-2xl active:scale-90 transition-all"
                   title="View Profile Details"
                 >
                   <Info className="w-4 h-4" />
@@ -192,8 +216,8 @@ export const MessagingScreen: React.FC = () => {
             </div>
 
             {/* Respectful Etiquette Notice Banner */}
-            <div className="bg-emerald-950 text-cream-100 py-1.5 px-4 text-[11px] text-center flex items-center justify-center gap-2 border-b border-gold-500/20">
-              <Lock className="w-3 h-3 text-gold-400" />
+            <div className="bg-emerald-950 text-cream-100 py-2 px-4 text-[11px] text-center flex items-center justify-center gap-2 border-b border-gold-500/20">
+              <Lock className="w-3.5 h-3.5 text-gold-400" />
               <span>
                 Keep conversations respectful and purposeful toward Nikah. Avoid sharing personal sensitive details too early.
               </span>
@@ -205,7 +229,7 @@ export const MessagingScreen: React.FC = () => {
                 if (msg.senderId === 'system') {
                   return (
                     <div key={msg.id} className="flex justify-center my-2">
-                      <div className="bg-cream-200 text-charcoal-600 text-[11px] py-1.5 px-4 rounded-full max-w-md text-center border border-cream-300">
+                      <div className="bg-cream-200/90 text-charcoal-700 text-[11px] font-medium py-1.5 px-4 rounded-full max-w-md text-center border border-cream-300 shadow-sm">
                         {msg.text}
                       </div>
                     </div>
@@ -218,15 +242,15 @@ export const MessagingScreen: React.FC = () => {
                     className={`flex flex-col ${msg.isSelf ? 'items-end' : 'items-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] sm:max-w-[70%] p-3.5 rounded-3xl text-xs sm:text-sm leading-relaxed shadow-soft ${
+                      className={`max-w-[85%] sm:max-w-[70%] p-3.5 rounded-[1.5rem] text-xs sm:text-sm leading-relaxed shadow-app-card ${
                         msg.isSelf
-                          ? 'bg-emerald-900 text-white rounded-br-none'
-                          : 'bg-white text-charcoal-900 border border-cream-300 rounded-bl-none'
+                          ? 'bg-gradient-to-r from-emerald-950 to-emerald-900 text-white rounded-br-xs'
+                          : 'bg-white text-charcoal-900 border border-cream-300 rounded-bl-xs'
                       }`}
                     >
                       <p>{msg.text}</p>
                     </div>
-                    <div className="flex items-center gap-1 mt-1 px-1 text-[10px] text-charcoal-400">
+                    <div className="flex items-center gap-1 mt-1 px-1.5 text-[10px] text-charcoal-400">
                       <span>{msg.timestamp}</span>
                       {msg.isSelf && <CheckCheck className="w-3 h-3 text-emerald-700" />}
                     </div>
@@ -238,20 +262,20 @@ export const MessagingScreen: React.FC = () => {
 
             {/* Icebreaker Suggestions Drawer */}
             {showIcebreakers && (
-              <div className="p-3 bg-gold-50 border-t border-gold-200 animate-in slide-in-from-bottom duration-200 space-y-2">
+              <div className="p-3.5 bg-gold-50 border-t border-gold-200 animate-in slide-in-from-bottom duration-200 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-emerald-950">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-gold-600" />
                     Respectful Islamic Conversation Starters
                   </span>
-                  <button onClick={() => setShowIcebreakers(false)} className="text-charcoal-400 text-xs">Close</button>
+                  <button onClick={() => setShowIcebreakers(false)} className="text-charcoal-500 font-bold text-xs hover:text-charcoal-800">Close</button>
                 </div>
-                <div className="grid grid-cols-1 gap-1.5">
+                <div className="grid grid-cols-1 gap-2">
                   {icebreakerPrompts.map((p, i) => (
                     <button
                       key={i}
                       onClick={() => handleSendIcebreaker(p)}
-                      className="text-left text-xs bg-white hover:bg-cream-100 p-2.5 rounded-xl border border-cream-300 text-charcoal-800 transition-colors"
+                      className="text-left text-xs bg-white hover:bg-cream-100 p-3 rounded-2xl border border-cream-300 text-charcoal-800 active:scale-[0.99] transition-all font-medium shadow-sm"
                     >
                       {p}
                     </button>
@@ -264,8 +288,11 @@ export const MessagingScreen: React.FC = () => {
             <form onSubmit={handleSend} className="p-3 sm:p-4 border-t border-cream-300 bg-white flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowIcebreakers(!showIcebreakers)}
-                className="p-2 text-gold-600 hover:bg-gold-50 rounded-xl border border-gold-200"
+                onClick={() => {
+                  triggerHaptic(6);
+                  setShowIcebreakers(!showIcebreakers);
+                }}
+                className="p-2.5 text-gold-600 hover:bg-gold-50 rounded-2xl border border-gold-200 active:scale-90 transition-all cursor-pointer"
                 title="Islamic Icebreakers"
               >
                 <Sparkles className="w-4 h-4" />
@@ -273,8 +300,11 @@ export const MessagingScreen: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => addToast('File Attachment', 'Attach bio-data or Wali verification documents (Demo).', 'info')}
-                className="p-2 text-charcoal-400 hover:text-charcoal-700 hover:bg-cream-100 rounded-xl"
+                onClick={() => {
+                  triggerHaptic(6);
+                  addToast('File Attachment', 'Attach bio-data or Wali verification documents (Demo).', 'info');
+                }}
+                className="p-2.5 text-charcoal-400 hover:text-charcoal-700 hover:bg-cream-100 rounded-2xl active:scale-90 transition-all cursor-pointer"
                 title="Attach Document"
               >
                 <Paperclip className="w-4 h-4" />
@@ -285,7 +315,7 @@ export const MessagingScreen: React.FC = () => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 placeholder="Type a respectful message..."
-                className="flex-1 px-4 py-2.5 rounded-2xl bg-cream-50 border border-cream-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+                className="flex-1 px-4 py-2.5 rounded-2xl bg-cream-50 border border-cream-300 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-emerald-700 focus:outline-none shadow-sm"
               />
 
               <Button
@@ -335,3 +365,4 @@ export const MessagingScreen: React.FC = () => {
     </div>
   );
 };
+

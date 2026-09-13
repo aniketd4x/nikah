@@ -54,21 +54,22 @@ export const HelpSupportScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-10 pb-24 md:pb-12">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8 pb-28 md:pb-12">
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+          <HelpCircle className="w-3.5 h-3.5 text-gold-600" />
           We Are Here For You
         </span>
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950">
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold text-emerald-950 tracking-tight">
           Help & Matrimonial Support
         </h1>
-        <p className="text-xs sm:text-sm text-charcoal-600">
+        <p className="text-xs sm:text-sm text-charcoal-600 max-w-md mx-auto">
           Get answers to common questions regarding verification, Wali features, and account safety.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* FAQS (Left Column) */}
         <div className="lg:col-span-7 space-y-4">
           <h2 className="font-serif font-bold text-xl text-emerald-950 flex items-center gap-2">
@@ -82,11 +83,11 @@ export const HelpSupportScreen: React.FC = () => {
               return (
                 <div
                   key={i}
-                  className="bg-white rounded-2xl border border-cream-300 shadow-soft overflow-hidden transition-all"
+                  className="bg-white/95 backdrop-blur-md rounded-2xl border border-cream-300/80 shadow-soft overflow-hidden transition-all"
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : i)}
-                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-emerald-950 hover:bg-cream-50"
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-emerald-950 hover:bg-cream-50/60 transition-colors"
                   >
                     <span>{faq.q}</span>
                     {isOpen ? <ChevronUp className="w-4 h-4 text-emerald-800 shrink-0" /> : <ChevronDown className="w-4 h-4 text-charcoal-400 shrink-0" />}
@@ -104,12 +105,12 @@ export const HelpSupportScreen: React.FC = () => {
         </div>
 
         {/* CONTACT SUPPORT (Right Column) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-cream-300 shadow-card space-y-5">
+        <div className="lg:col-span-5 bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-card space-y-5">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gold-600 bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gold-700 bg-gold-50/90 px-2.5 py-0.5 rounded-full border border-gold-200">
               Direct Assistance
             </span>
-            <h3 className="font-serif font-bold text-xl text-emerald-950 mt-1">
+            <h3 className="font-serif font-bold text-xl text-emerald-950 mt-1.5">
               Contact Concierge Team
             </h3>
             <p className="text-xs text-charcoal-500 mt-1">
@@ -126,7 +127,7 @@ export const HelpSupportScreen: React.FC = () => {
                 onChange={(e) => setTicketSubject(e.target.value)}
                 placeholder="e.g. Verification Assistance or Wali Mode"
                 required
-                className="w-full p-2.5 text-xs rounded-2xl border border-cream-300 bg-cream-50 focus:ring-2 focus:ring-emerald-700"
+                className="w-full p-3 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
               />
             </div>
 
@@ -138,7 +139,7 @@ export const HelpSupportScreen: React.FC = () => {
                 onChange={(e) => setTicketMessage(e.target.value)}
                 placeholder="Describe your inquiry..."
                 required
-                className="w-full p-3 text-xs rounded-2xl border border-cream-300 bg-cream-50 leading-relaxed focus:ring-2 focus:ring-emerald-700"
+                className="w-full p-3.5 text-xs rounded-2xl border border-cream-300 bg-cream-50/60 focus:bg-white leading-relaxed focus:ring-2 focus:ring-emerald-700/20 focus:border-emerald-700 focus:outline-none transition-all shadow-inner"
               />
             </div>
 

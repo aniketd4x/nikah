@@ -23,6 +23,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useScrollVisibility } from '../../hooks/useScrollVisibility';
+import { triggerHaptic } from '../../styles/designTokens';
 
 export const Header: React.FC = () => {
   const {
@@ -101,23 +102,32 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300 shadow-sm transition-transform duration-300 ease-in-out select-none ${
+    <header className={`sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-cream-300/80 shadow-sm transition-transform duration-300 ease-in-out select-none ${
       isNavVisible ? 'translate-y-0' : '-translate-y-full pointer-events-none'
     }`}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-15 sm:h-16 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
         {/* Left: Back Button on Sub-screens OR Brand Logo */}
         <div className="flex items-center gap-2">
           {isLoggedIn && isSubScreen ? (
             <button
-              onClick={() => navigateTo('dashboard')}
-              className="flex items-center gap-1.5 p-2 -ml-1.5 rounded-full text-emerald-950 hover:bg-cream-200 active:scale-90 transition-all font-semibold text-xs"
+              onClick={() => {
+                triggerHaptic(8);
+                navigateTo('dashboard');
+              }}
+              className="flex items-center gap-2 p-2 -ml-1.5 rounded-2xl text-emerald-950 hover:bg-cream-200 active:scale-90 transition-all font-bold text-sm"
               aria-label="Back"
             >
               <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-              <span className="hidden sm:inline font-bold">{getSubScreenTitle()}</span>
+              <span className="font-serif font-bold text-base text-emerald-950">{getSubScreenTitle()}</span>
             </button>
           ) : (
-            <div onClick={() => navigateTo(isLoggedIn ? 'dashboard' : 'landing')} className="cursor-pointer">
+            <div 
+              onClick={() => {
+                triggerHaptic(8);
+                navigateTo(isLoggedIn ? 'dashboard' : 'landing');
+              }} 
+              className="cursor-pointer active:scale-95 transition-transform"
+            >
               <Logo size="md" variant="emerald" />
             </div>
           )}
@@ -125,23 +135,26 @@ export const Header: React.FC = () => {
 
         {/* Desktop Nav Links (App Bar navigation) */}
         {isLoggedIn && (
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1.5 bg-cream-100/70 p-1 rounded-full border border-cream-300/60">
             {navLinks.map((link) => {
               const isActive = currentScreen === link.screen;
               return (
                 <button
                   key={link.label}
-                  onClick={() => navigateTo(link.screen)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all relative ${
+                  onClick={() => {
+                    triggerHaptic(8);
+                    navigateTo(link.screen);
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all relative active:scale-95 ${
                     isActive
                       ? 'bg-emerald-900 text-gold-300 shadow-sm'
-                      : 'text-charcoal-700 hover:text-emerald-950 hover:bg-cream-100'
+                      : 'text-charcoal-700 hover:text-emerald-950 hover:bg-white/80'
                   }`}
                 >
                   {link.icon}
                   <span>{link.label}</span>
                   {Boolean(link.badge && link.badge > 0) && (
-                    <span className="bg-gold-500 text-emerald-950 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0">
+                    <span className="bg-gold-500 text-emerald-950 text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 shadow-sm">
                       {link.badge}
                     </span>
                   )}
@@ -152,13 +165,16 @@ export const Header: React.FC = () => {
         )}
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-3">
           {isLoggedIn ? (
             <>
               {/* Upgrade VIP Badge */}
               <button
-                onClick={() => setIsUpgradeModalOpen(true)}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-gold-50 to-gold-100 text-gold-900 border border-gold-400/60 text-xs font-bold shadow-sm hover:scale-105 transition-transform"
+                onClick={() => {
+                  triggerHaptic(8);
+                  setIsUpgradeModalOpen(true);
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-gold-50 to-gold-100 text-gold-900 border border-gold-400/60 text-xs font-bold shadow-sm hover:scale-105 active:scale-95 transition-all"
               >
                 <Crown className="w-3.5 h-3.5 text-gold-600" />
                 <span>{currentPlan}</span>
@@ -166,10 +182,13 @@ export const Header: React.FC = () => {
 
               {/* Notifications Button */}
               <button
-                onClick={() => navigateTo('notifications')}
-                className={`relative p-2.5 rounded-2xl border transition-all ${
+                onClick={() => {
+                  triggerHaptic(8);
+                  navigateTo('notifications');
+                }}
+                className={`relative p-2.5 rounded-2xl border transition-all active:scale-90 ${
                   currentScreen === 'notifications'
-                    ? 'bg-emerald-900 text-white border-emerald-900'
+                    ? 'bg-emerald-900 text-white border-emerald-900 shadow-sm'
                     : 'bg-cream-100 text-charcoal-700 hover:text-emerald-900 hover:bg-cream-200 border-cream-300'
                 }`}
                 aria-label="Notifications"
@@ -185,8 +204,11 @@ export const Header: React.FC = () => {
               {/* Profile Avatar & Dropdown */}
               <div className="relative" ref={profileMenuRef}>
                 <button
-                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-2xl hover:bg-cream-100 border border-transparent hover:border-cream-300 transition-all"
+                  onClick={() => {
+                    triggerHaptic(6);
+                    setIsProfileMenuOpen(!isProfileMenuOpen);
+                  }}
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-2xl hover:bg-cream-100 border border-transparent hover:border-cream-300 transition-all active:scale-95"
                 >
                   <div className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-emerald-700 shadow-sm">
                     <img
@@ -204,7 +226,7 @@ export const Header: React.FC = () => {
 
                 {/* Dropdown Menu */}
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-3xl shadow-floating border border-cream-300/80 py-2 z-50 animate-in fade-in zoom-in-95">
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-[1.75rem] shadow-app-float border border-cream-300 py-2 z-50 animate-in fade-in zoom-in-95">
                     {/* User Summary */}
                     <div className="px-4 py-3 border-b border-cream-200">
                       <p className="text-xs font-bold text-emerald-950">{currentUser.name}</p>
@@ -230,7 +252,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('my-profile');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <User className="w-4 h-4 text-emerald-800" />
                         <span>My Profile Dashboard</span>
@@ -241,7 +263,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('edit-profile');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <SlidersHorizontal className="w-4 h-4 text-emerald-800" />
                         <span>Edit Profile & Photos</span>
@@ -252,7 +274,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           setIsVerificationModalOpen(true);
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center justify-between"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center justify-between transition-colors"
                       >
                         <div className="flex items-center gap-2.5">
                           <ShieldCheck className="w-4 h-4 text-emerald-700" />
@@ -266,7 +288,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('preferences');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <Heart className="w-4 h-4 text-emerald-800" />
                         <span>Partner Preferences</span>
@@ -277,7 +299,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('privacy-safety');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <ShieldCheck className="w-4 h-4 text-emerald-800" />
                         <span>Privacy & Safety</span>
@@ -288,7 +310,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('settings');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <Settings className="w-4 h-4 text-emerald-800" />
                         <span>Account Settings</span>
@@ -299,7 +321,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           navigateTo('subscription');
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-medium text-charcoal-700 hover:bg-cream-100 flex items-center gap-2.5 transition-colors"
                       >
                         <Crown className="w-4 h-4 text-gold-600" />
                         <span>Subscription Plans</span>
@@ -312,7 +334,7 @@ export const Header: React.FC = () => {
                           setIsProfileMenuOpen(false);
                           logout();
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5"
+                        className="w-full px-4 py-2.5 text-left text-xs font-semibold text-rose-700 hover:bg-rose-50 flex items-center gap-2.5 transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>
@@ -344,8 +366,11 @@ export const Header: React.FC = () => {
 
           {/* Mobile menu trigger */}
           <button
-            onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
-            className="lg:hidden p-2 rounded-2xl bg-cream-100 text-charcoal-700 hover:bg-cream-200 border border-cream-300"
+            onClick={() => {
+              triggerHaptic(6);
+              setIsMobileNavOpen(!isMobileNavOpen);
+            }}
+            className="lg:hidden p-2.5 rounded-2xl bg-cream-100 text-charcoal-700 hover:bg-cream-200 border border-cream-300 active:scale-90 transition-all"
             aria-label="Toggle navigation"
           >
             {isMobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -355,7 +380,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Nav Dropdown Sheet */}
       {isMobileNavOpen && (
-        <div className="lg:hidden border-t border-cream-300 bg-white px-4 py-4 space-y-2 shadow-lg animate-in slide-in-from-top duration-200">
+        <div className="lg:hidden border-t border-cream-300 bg-white/95 backdrop-blur-xl px-4 py-4 space-y-2 shadow-app-sheet animate-in slide-in-from-top duration-200">
           {isLoggedIn ? (
             <>
               <div className="grid grid-cols-2 gap-2 mb-3">
@@ -363,12 +388,13 @@ export const Header: React.FC = () => {
                   <button
                     key={link.label}
                     onClick={() => {
+                      triggerHaptic(8);
                       setIsMobileNavOpen(false);
                       navigateTo(link.screen);
                     }}
-                    className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-semibold text-left border ${
+                    className={`flex items-center gap-2 p-3 rounded-2xl text-xs font-bold text-left border active:scale-95 transition-all ${
                       currentScreen === link.screen
-                        ? 'bg-emerald-900 text-white border-emerald-900'
+                        ? 'bg-emerald-900 text-gold-300 border-emerald-900 shadow-sm'
                         : 'bg-cream-50 text-charcoal-700 border-cream-300'
                     }`}
                   >
@@ -384,7 +410,7 @@ export const Header: React.FC = () => {
                     setIsMobileNavOpen(false);
                     navigateTo('my-profile');
                   }}
-                  className="w-full text-left px-3 py-2 text-xs font-medium text-charcoal-700 flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-xs font-semibold text-charcoal-700 flex items-center gap-2 rounded-xl hover:bg-cream-100"
                 >
                   <User className="w-4 h-4 text-emerald-800" />
                   <span>My Profile & Completion</span>
@@ -394,7 +420,7 @@ export const Header: React.FC = () => {
                     setIsMobileNavOpen(false);
                     setIsUpgradeModalOpen(true);
                   }}
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-gold-700 flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-gold-700 flex items-center gap-2 rounded-xl hover:bg-cream-100"
                 >
                   <Crown className="w-4 h-4 text-gold-600" />
                   <span>Upgrade Membership ({currentPlan})</span>
@@ -404,7 +430,7 @@ export const Header: React.FC = () => {
                     setIsMobileNavOpen(false);
                     logout();
                   }}
-                  className="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 flex items-center gap-2 rounded-xl hover:bg-rose-50"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
@@ -422,13 +448,13 @@ export const Header: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <button
                   onClick={() => { setIsMobileNavOpen(false); navigateTo('islamic-guidance'); }}
-                  className="p-2.5 rounded-xl bg-cream-100 text-xs font-medium text-center text-charcoal-700"
+                  className="p-2.5 rounded-2xl bg-cream-100 text-xs font-bold text-center text-charcoal-700 hover:bg-cream-200 active:scale-95 transition-all"
                 >
                   Islamic Guidance
                 </button>
                 <button
                   onClick={() => { setIsMobileNavOpen(false); navigateTo('success-stories'); }}
-                  className="p-2.5 rounded-xl bg-cream-100 text-xs font-medium text-center text-charcoal-700"
+                  className="p-2.5 rounded-2xl bg-cream-100 text-xs font-bold text-center text-charcoal-700 hover:bg-cream-200 active:scale-95 transition-all"
                 >
                   Success Stories
                 </button>
@@ -440,3 +466,4 @@ export const Header: React.FC = () => {
     </header>
   );
 };
+

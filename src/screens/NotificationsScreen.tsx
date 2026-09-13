@@ -18,17 +18,18 @@ export const NotificationsScreen: React.FC = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 pb-24 md:pb-12">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 pb-28 md:pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xs font-bold text-gold-600 uppercase tracking-widest bg-gold-50 px-2.5 py-0.5 rounded-full border border-gold-200">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gold-700 uppercase tracking-widest bg-gold-50/90 px-3 py-1 rounded-full border border-gold-200 shadow-sm">
+            <Bell className="w-3.5 h-3.5 text-gold-600" />
             Activity Center
           </span>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-emerald-950 mt-1.5 tracking-tight">
             Notifications
           </h1>
-          <p className="text-xs sm:text-sm text-charcoal-500">
+          <p className="text-xs sm:text-sm text-charcoal-500 mt-0.5">
             Keep track of profile views, received interests, and verification updates.
           </p>
         </div>
@@ -46,7 +47,7 @@ export const NotificationsScreen: React.FC = () => {
       </div>
 
       {/* Category Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar border-b border-cream-300">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 no-scrollbar bg-cream-200/70 p-1.5 rounded-2xl border border-cream-300/80 shadow-inner backdrop-blur-sm self-start">
         {[
           { id: 'all', label: 'All Activity' },
           { id: 'unread', label: `Unread (${unreadNotificationsCount})` },
@@ -57,10 +58,10 @@ export const NotificationsScreen: React.FC = () => {
           <button
             key={item.id}
             onClick={() => setFilter(item.id as any)}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 ${
               filter === item.id
-                ? 'bg-emerald-900 text-white shadow-sm'
-                : 'bg-white text-charcoal-600 border border-cream-300 hover:bg-cream-100'
+                ? 'bg-emerald-950 text-gold-300 shadow-sm ring-1 ring-gold-400/20'
+                : 'text-charcoal-600 hover:text-emerald-950 hover:bg-white/50'
             }`}
           >
             {item.label}

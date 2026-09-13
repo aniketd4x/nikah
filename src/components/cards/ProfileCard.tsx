@@ -19,6 +19,7 @@ import {
   Home,
   Check
 } from 'lucide-react';
+import { triggerHaptic } from '../../styles/designTokens';
 
 interface ProfileCardProps {
   profile: Profile;
@@ -50,6 +51,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const photos = profile.galleryPhotos?.length ? profile.galleryPhotos : [profile.photo];
 
   const handleCardClick = () => {
+    triggerHaptic(8);
     navigateTo('profile-details', profile.id);
   };
 
@@ -58,7 +60,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     return (
       <div 
         onClick={handleCardClick}
-        className="group relative bg-white rounded-3xl p-3.5 border border-cream-300 shadow-soft hover:shadow-card-hover transition-all duration-300 cursor-pointer flex items-center gap-3.5 active:scale-[0.99]"
+        className="group relative bg-white rounded-[1.75rem] p-3.5 border border-cream-300 shadow-app-card hover:shadow-card-hover transition-all duration-300 cursor-pointer flex items-center gap-3.5 active:scale-[0.98]"
       >
         <div className="relative w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-emerald-900/10">
           <img 
@@ -84,8 +86,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
 
         <div className="text-right shrink-0">
-          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 font-bold text-[11px] px-2 py-0.5 rounded-full border border-emerald-200">
-            <Sparkles className="w-2.5 h-2.5 text-gold-600" />
+          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-900 font-bold text-[11px] px-2.5 py-1 rounded-full border border-emerald-200">
+            <Sparkles className="w-3 h-3 text-gold-600" />
             {profile.compatibilityScore}%
           </span>
         </div>
@@ -96,7 +98,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   /* ---------------- HORIZONTAL VARIANT ---------------- */
   if (variant === 'horizontal') {
     return (
-      <div className="bg-white rounded-3xl p-5 border border-cream-300 shadow-soft hover:shadow-card transition-all duration-300 flex flex-col md:flex-row gap-5">
+      <div className="bg-white rounded-[2rem] p-5 border border-cream-300 shadow-app-card hover:shadow-card transition-all duration-300 flex flex-col md:flex-row gap-5">
         <div 
           onClick={handleCardClick}
           className="relative w-full md:w-56 h-60 md:h-auto rounded-2xl overflow-hidden shrink-0 cursor-pointer group"
@@ -139,8 +141,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
               </div>
 
               <button
-                onClick={() => toggleFavorite(profile.id)}
-                className={`p-2.5 rounded-full border transition-all ${
+                onClick={() => {
+                  triggerHaptic(10);
+                  toggleFavorite(profile.id);
+                }}
+                className={`p-2.5 rounded-full border transition-all active:scale-75 ${
                   isFav
                     ? 'bg-rose-50 border-rose-200 text-rose-600 shadow-sm'
                     : 'bg-cream-100 border-cream-300 text-charcoal-400 hover:text-rose-600'
@@ -203,8 +208,8 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   /* ---------------- FEATURED VARIANT ---------------- */
   if (variant === 'featured') {
     return (
-      <div className="relative bg-gradient-to-b from-white to-cream-50 rounded-3xl p-5 border-2 border-gold-400/40 shadow-card hover:shadow-card-hover transition-all duration-300">
-        <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-[10px] uppercase px-3 py-1 rounded-full shadow-sm">
+      <div className="relative bg-gradient-to-b from-white to-cream-50 rounded-[2rem] p-5 border-2 border-gold-400/40 shadow-app-card hover:shadow-card-hover transition-all duration-300">
+        <div className="absolute -top-3 right-6 bg-gradient-to-r from-gold-500 to-gold-600 text-emerald-950 font-bold text-[10px] uppercase px-3.5 py-1 rounded-full shadow-sm">
           Featured Match
         </div>
 
@@ -214,7 +219,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             alt={profile.name} 
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-transparent to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-transparent to-black/20" />
           
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             <Badge variant="match" size="sm">
@@ -250,7 +255,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         </div>
 
         {/* Why this match highlight */}
-        <div className="bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-200/60 mb-4">
+        <div className="bg-emerald-50/70 p-3 rounded-2xl border border-emerald-200/60 mb-4">
           <p className="text-[11px] font-bold text-emerald-950 mb-1 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-gold-600" />
             Why this match?
@@ -280,7 +285,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   /* ---------------- DEFAULT GRID VARIANT (Optimized for Mobile Touch) ---------------- */
   return (
-    <div className="group bg-white rounded-3xl border border-cream-300/90 shadow-soft hover:shadow-card-hover transition-all duration-300 overflow-hidden flex flex-col justify-between">
+    <div className="group bg-white rounded-[2rem] border border-cream-300/90 shadow-app-card hover:shadow-card-hover transition-all duration-300 overflow-hidden flex flex-col justify-between active:scale-[0.99]">
       {/* Top Media Area */}
       <div className="relative h-68 sm:h-76 w-full overflow-hidden bg-cream-200 cursor-pointer" onClick={handleCardClick}>
         <img
@@ -288,7 +293,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
           alt={profile.name}
           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isBlur ? 'blur-md' : ''}`}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/85 via-emerald-950/20 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/25 to-black/20" />
 
         {/* Top Badges */}
         <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5 z-10 max-w-[75%]">
@@ -301,7 +306,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </Badge>
           )}
           {profile.maritalStatus.includes('2nd') && (
-            <span className="bg-gold-500 text-emerald-950 text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
+            <span className="bg-gold-500 text-emerald-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-sm">
               Seeking 2nd Wife
             </span>
           )}
@@ -311,12 +316,13 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            triggerHaptic(12);
             toggleFavorite(profile.id);
           }}
           className={`absolute top-3.5 right-3.5 p-2.5 rounded-full backdrop-blur-md transition-all active:scale-75 z-10 shadow-md ${
             isFav
               ? 'bg-rose-500 text-white'
-              : 'bg-black/35 hover:bg-black/60 text-white'
+              : 'bg-black/40 hover:bg-black/60 text-white'
           }`}
           aria-label="Save profile"
         >
@@ -411,3 +417,4 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
     </div>
   );
 };
+
