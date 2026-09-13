@@ -35,7 +35,10 @@ import {
   KeyRound,
   Lock,
   Mail,
-  User
+  User,
+  Phone,
+  GraduationCap,
+  Globe
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
@@ -86,6 +89,8 @@ export const AdminDashboardScreen: React.FC = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [editProfileData, setEditProfileData] = useState<Profile | null>(null);
+  const [showEditUserPassword, setShowEditUserPassword] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // New user form state
@@ -270,14 +275,62 @@ export const AdminDashboardScreen: React.FC = () => {
     }
   };
 
+  const handleToggleActive = async (profileId: string, currentActive: boolean) => {
+    triggerHaptic(15);
+    const newActive = !currentActive;
+    const newStatus = newActive ? 'active' : 'suspended';
+    setProfilesList(prev => prev.map(p => {
+      if (p.id === profileId) {
+        return {
+          ...p,
+          isActive: newActive,
+          status: newStatus,
+          account_status: newActive ? 'active' : 'deactivated'
+        };
+      }
+      return p;
+    }));
+    if (selectedProfile?.id === profileId) {
+      setSelectedProfile(prev => prev ? {
+        ...prev,
+        isActive: newActive,
+        status: newStatus,
+        account_status: newActive ? 'active' : 'deactivated'
+      } : null);
+    }
+    if (editProfileData?.id === profileId) {
+      setEditProfileData(prev => prev ? {
+        ...prev,
+        isActive: newActive,
+        status: newStatus,
+        account_status: newActive ? 'active' : 'deactivated'
+      } : null);
+    }
+    await api.updateUserStatus(profileId, newStatus);
+    addToast(
+      newActive ? 'Profile Activated' : 'Profile Deactivated',
+      `Profile ${newActive ? 'is now Active and visible in matchmaking' : 'is now Deactivated / Suspended'}.`,
+      newActive ? 'success' : 'info'
+    );
+  };
+
   const handleSaveEditProfile = async () => {
     if (!editProfileData) return;
-    triggerHaptic(15);
-    await api.updateProfile(editProfileData.id, editProfileData);
-    setProfilesList(prev => prev.map(p => p.id === editProfileData.id ? { ...p, ...editProfileData } : p));
-    if (selectedProfile?.id === editProfileData.id) setSelectedProfile({ ...selectedProfile, ...editProfileData });
-    setEditProfileData(null);
-    addToast('Changes Saved', 'User profile details updated.', 'success');
+    try {
+      setIsSavingProfile(true);
+      triggerHaptic(15);
+      await api.updateProfile(editProfileData.id, editProfileData);
+      setProfilesList(prev => prev.map(p => p.id === editProfileData.id ? { ...p, ...editProfileData } : p));
+      if (selectedProfile?.id === editProfileData.id) {
+        setSelectedProfile({ ...selectedProfile, ...editProfileData });
+      }
+      addToast('Profile Updated', `All details & credentials for ${editProfileData.name} saved successfully!`, 'success');
+      setEditProfileData(null);
+    } catch {
+      addToast('Error', 'Failed to update profile details', 'error');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleApproveVerification = async (id: string, userId: string) => {
@@ -584,17 +637,6 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Change Admin ID & Password Button */}
-            <button
-              onClick={openSecurityModal}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80 hover:bg-emerald-50/40 hover:border-emerald-200 transition-all shadow-xs flex items-center gap-1.5 text-xs font-semibold"
-              title="Change Admin ID & Password"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="hidden lg:inline">Change ID / Password</span>
-              <span className="inline lg:hidden">ID & Pass</span>
-            </button>
-
             <button
               onClick={() => { triggerHaptic(10); loadData(); }}
               className="p-2 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5 text-xs font-semibold"
@@ -895,6 +937,17 @@ export const AdminDashboardScreen: React.FC = () => {
                                   }`}>
                                     {profile.gender}
                                   </span>
+                                  {profile.isActive !== false ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                      Active
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                      Deactivated
+                                    </span>
+                                  )}
                                   {verified ? (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                       <ShieldCheck className="w-3 h-3" />
@@ -923,15 +976,21 @@ export const AdminDashboardScreen: React.FC = () => {
                                 <Heart className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                                 <span className="truncate">{profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}</span>
                               </div>
+                              {profile.email && (
+                                <div className="flex items-center gap-1.5 text-slate-500 pt-0.5 text-[11px]">
+                                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <span className="truncate text-slate-600">{profile.email}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           {/* Action Buttons Row */}
-                          <div className="flex items-center gap-2 pt-3 border-t border-slate-100 justify-between">
-                            <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-2 pt-3 border-t border-slate-100 justify-between flex-wrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <button
                                 onClick={() => setSelectedProfile(profile)}
-                                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200/70 flex items-center gap-1 active:scale-95 transition-all"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200/70 flex items-center gap-1 active:scale-95 transition-all"
                                 title="Inspect Profile"
                               >
                                 <Eye className="w-3.5 h-3.5 text-slate-500" />
@@ -940,18 +999,31 @@ export const AdminDashboardScreen: React.FC = () => {
 
                               <button
                                 onClick={() => setEditProfileData({ ...profile })}
-                                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200/80 flex items-center gap-1 active:scale-95 transition-all"
-                                title="Edit Profile"
+                                className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200/80 flex items-center gap-1 active:scale-95 transition-all"
+                                title="Edit All Details & Password"
                               >
                                 <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
-                                <span>Edit</span>
+                                <span>Edit All</span>
                               </button>
                             </div>
 
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => handleToggleActive(profile.id, profile.isActive !== false)}
+                                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 active:scale-95 transition-all ${
+                                  profile.isActive !== false
+                                    ? 'bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200'
+                                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                                }`}
+                                title={profile.isActive !== false ? 'Deactivate Profile' : 'Activate Profile'}
+                              >
+                                {profile.isActive !== false ? <UserX className="w-3.5 h-3.5 text-rose-500" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                <span>{profile.isActive !== false ? 'Deactivate' : 'Activate'}</span>
+                              </button>
+
                               <button
                                 onClick={() => handleToggleVerify(profile.id, verified)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 active:scale-95 transition-all ${
+                                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 active:scale-95 transition-all ${
                                   verified
                                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
                                     : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
@@ -964,7 +1036,7 @@ export const AdminDashboardScreen: React.FC = () => {
                               <button
                                 onClick={() => setDeleteConfirmProfile(profile)}
                                 className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 active:scale-95 transition-colors"
-                                title="Delete Profile & Account Permanently from MySQL"
+                                title="Delete Profile & Account Permanently from Database"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -988,7 +1060,7 @@ export const AdminDashboardScreen: React.FC = () => {
                           <th className="py-3.5 px-3">Gender</th>
                           <th className="py-3.5 px-3">Career & City</th>
                           <th className="py-3.5 px-3">Matrimonial Status</th>
-                          <th className="py-3.5 px-3">Verification</th>
+                          <th className="py-3.5 px-3">Status & Verification</th>
                           <th className="py-3.5 px-4 text-right">Actions</th>
                         </tr>
                       </thead>
@@ -1020,7 +1092,7 @@ export const AdminDashboardScreen: React.FC = () => {
                                     </div>
                                     <div>
                                       <div className="font-bold text-slate-900 text-sm">{profile.name}</div>
-                                      <div className="text-[11px] text-slate-500">{profile.age} yrs</div>
+                                      <div className="text-[11px] text-slate-500">{profile.age} yrs • {profile.email || `${profile.id}@nikah.com`}</div>
                                     </div>
                                   </div>
                                 </td>
@@ -1048,18 +1120,35 @@ export const AdminDashboardScreen: React.FC = () => {
                                   <div className="text-[11px] text-amber-700 font-semibold">{profile.polygynyPreference || 'Polygyny Open'}</div>
                                 </td>
 
-                                {/* Verification Status */}
+                                {/* Status & Verification */}
                                 <td className="py-3 px-3">
-                                  {verified ? (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                                      <ShieldCheck className="w-3 h-3" />
-                                      Verified
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                      Unverified
-                                    </span>
-                                  )}
+                                  <div className="space-y-1">
+                                    <div>
+                                      {profile.isActive !== false ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                          Active
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                          Deactivated
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div>
+                                      {verified ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                          <ShieldCheck className="w-2.5 h-2.5" />
+                                          Verified
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                          Unverified
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
                                 </td>
 
                                 {/* Action Buttons */}
@@ -1077,10 +1166,23 @@ export const AdminDashboardScreen: React.FC = () => {
                                     <button
                                       onClick={() => setEditProfileData({ ...profile })}
                                       className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-1 transition-colors"
-                                      title="Edit Profile"
+                                      title="Edit All Details & Password"
                                     >
                                       <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
                                       <span>Edit</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleToggleActive(profile.id, profile.isActive !== false)}
+                                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                        profile.isActive !== false
+                                          ? 'bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200'
+                                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                                      }`}
+                                      title={profile.isActive !== false ? 'Deactivate Profile' : 'Activate Profile'}
+                                    >
+                                      {profile.isActive !== false ? <UserX className="w-3.5 h-3.5 text-rose-500" /> : <UserCheck className="w-3.5 h-3.5" />}
+                                      <span>{profile.isActive !== false ? 'Deactivate' : 'Activate'}</span>
                                     </button>
 
                                     <button
@@ -1098,7 +1200,7 @@ export const AdminDashboardScreen: React.FC = () => {
                                     <button
                                       onClick={() => setDeleteConfirmProfile(profile)}
                                       className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors"
-                                      title="Delete Profile & Account Permanently from MySQL"
+                                      title="Delete Profile & Account Permanently from Database"
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -1589,81 +1691,534 @@ export const AdminDashboardScreen: React.FC = () => {
         </div>
       )}
 
-      {/* ================= MODAL 2: EDIT PROFILE ================= */}
+      {/* ================= MODAL 2: EDIT PROFILE (FULL CONTROL) ================= */}
       {editProfileData && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2.5 text-emerald-700">
-                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-2xl rounded-3xl p-5 sm:p-7 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3 text-emerald-700">
+                <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-100">
                   <Edit3 className="w-5 h-5 text-emerald-700" />
                 </div>
-                <h3 className="font-bold text-base text-slate-900">Edit Profile Details</h3>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-slate-900">Edit Member Profile & Full Account Control</h3>
+                  <p className="text-xs text-slate-500 font-medium">User ID: <span className="font-mono text-slate-700">{editProfileData.id}</span></p>
+                </div>
               </div>
               <button 
                 onClick={() => setEditProfileData(null)} 
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3.5 text-xs">
-              <div>
-                <label className="block text-slate-700 mb-1 font-semibold">Name</label>
-                <input
-                  type="text"
-                  value={editProfileData.name}
-                  onChange={e => setEditProfileData({ ...editProfileData, name: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
-                />
+            <div className="space-y-6 text-xs">
+              {/* SECTION 1: ACCOUNT STATUS & CREDENTIALS */}
+              <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-200/60">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Account Status & Security Control</h4>
+                </div>
+
+                {/* Activation Status Control */}
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1.5">Profile Account Status</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setEditProfileData({ ...editProfileData, isActive: true, status: 'active', account_status: 'active' })}
+                      className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all text-left ${
+                        editProfileData.isActive !== false
+                          ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${editProfileData.isActive !== false ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        <UserCheck className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-xs">Active Profile</div>
+                        <div className="text-[10px] text-slate-500">Visible in search & matches</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditProfileData({ ...editProfileData, isActive: false, status: 'suspended', account_status: 'deactivated' })}
+                      className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all text-left ${
+                        editProfileData.isActive === false
+                          ? 'bg-rose-50/90 border-rose-300 text-rose-950 ring-2 ring-rose-500/20 shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className={`p-1.5 rounded-lg ${editProfileData.isActive === false ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                        <UserX className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-xs">Deactivated / Suspended</div>
+                        <div className="text-[10px] text-slate-500">Hidden from matrimonial app</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Email & Password & Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      Member Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={editProfileData.email || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, email: e.target.value })}
+                      placeholder="user@example.com"
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-slate-400" />
+                        Set / Reset Member Password
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowEditUserPassword(!showEditUserPassword)}
+                        className="text-[10px] font-bold text-emerald-700 hover:underline"
+                      >
+                        {showEditUserPassword ? 'Hide' : 'Show'}
+                      </button>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showEditUserPassword ? 'text' : 'password'}
+                        value={editProfileData.password || ''}
+                        onChange={e => setEditProfileData({ ...editProfileData, password: e.target.value })}
+                        placeholder="Enter new password (optional)"
+                        className="w-full bg-white border border-slate-200 rounded-xl p-2.5 pr-8 text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowEditUserPassword(!showEditUserPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        {showEditUserPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">Leave empty to keep existing password</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      Contact / Wali Phone
+                    </label>
+                    <input
+                      type="text"
+                      value={editProfileData.phone || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, phone: e.target.value })}
+                      placeholder="+91 98220 11223"
+                      className="w-full bg-white border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
+                    />
+                  </div>
+
+                  {/* Verification & VIP Toggles */}
+                  <div className="flex items-center gap-4 pt-4 sm:pt-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editProfileData.is_verified ?? editProfileData.verified?.reviewed)}
+                        onChange={e => setEditProfileData({
+                          ...editProfileData,
+                          is_verified: e.target.checked,
+                          verified: {
+                            ...(editProfileData.verified || { mobile: true, email: true, photo: true, identity: true, reviewed: true }),
+                            identity: e.target.checked,
+                            reviewed: e.target.checked
+                          }
+                        })}
+                        className="rounded accent-emerald-600 w-4 h-4"
+                      />
+                      <span className="font-semibold text-slate-800 flex items-center gap-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        Verified Member
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editProfileData.is_vip)}
+                        onChange={e => setEditProfileData({ ...editProfileData, is_vip: e.target.checked })}
+                        className="rounded accent-amber-600 w-4 h-4"
+                      />
+                      <span className="font-semibold text-slate-800 flex items-center gap-1">
+                        <Crown className="w-3.5 h-3.5 text-amber-600" />
+                        VIP Elite
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* SECTION 2: PERSONAL PARTICULARS */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <User className="w-4 h-4 text-emerald-700" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Personal Particulars</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-slate-700 font-semibold mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      value={editProfileData.name}
+                      onChange={e => setEditProfileData({ ...editProfileData, name: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Age (Years)</label>
+                    <input
+                      type="number"
+                      value={editProfileData.age}
+                      onChange={e => setEditProfileData({ ...editProfileData, age: Number(e.target.value) || editProfileData.age })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Gender</label>
+                    <select
+                      value={editProfileData.gender}
+                      onChange={e => setEditProfileData({ ...editProfileData, gender: e.target.value as 'female' | 'male' })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Height</label>
+                    <input
+                      type="text"
+                      value={editProfileData.height || "5' 5\" (165 cm)"}
+                      onChange={e => setEditProfileData({ ...editProfileData, height: e.target.value })}
+                      placeholder="e.g. 5' 6&quot; (168 cm)"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Mother Tongue</label>
+                    <input
+                      type="text"
+                      value={editProfileData.motherTongue || 'Urdu'}
+                      onChange={e => setEditProfileData({ ...editProfileData, motherTongue: e.target.value })}
+                      placeholder="Urdu, Hindi, English..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 3: LOCATION & CAREER */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Briefcase className="w-4 h-4 text-emerald-700" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Location & Career</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">City</label>
+                    <input
+                      type="text"
+                      value={editProfileData.city}
+                      onChange={e => setEditProfileData({ ...editProfileData, city: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">State / Province</label>
+                    <input
+                      type="text"
+                      value={editProfileData.state || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, state: e.target.value })}
+                      placeholder="State or Region"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Country</label>
+                    <input
+                      type="text"
+                      value={editProfileData.country || 'India'}
+                      onChange={e => setEditProfileData({ ...editProfileData, country: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Profession / Occupation</label>
+                    <input
+                      type="text"
+                      value={editProfileData.profession}
+                      onChange={e => setEditProfileData({ ...editProfileData, profession: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Company / Organization</label>
+                    <input
+                      type="text"
+                      value={editProfileData.company || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, company: e.target.value })}
+                      placeholder="Company / Employer name"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Education Level</label>
+                    <input
+                      type="text"
+                      value={editProfileData.education || 'Graduate'}
+                      onChange={e => setEditProfileData({ ...editProfileData, education: e.target.value })}
+                      placeholder="Bachelors, Masters, etc."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Degree Title</label>
+                    <input
+                      type="text"
+                      value={editProfileData.degree || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, degree: e.target.value })}
+                      placeholder="B.Tech, MBA, MBBS..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">University</label>
+                    <input
+                      type="text"
+                      value={editProfileData.university || ''}
+                      onChange={e => setEditProfileData({ ...editProfileData, university: e.target.value })}
+                      placeholder="University / Institute"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 4: MARITAL STATUS & POLYGYNY PREFERENCES */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Heart className="w-4 h-4 text-amber-600" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Marital & Polygyny Particulars</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Marital Status</label>
+                    <select
+                      value={editProfileData.maritalStatus}
+                      onChange={e => setEditProfileData({ ...editProfileData, maritalStatus: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="Never Married">Never Married</option>
+                      <option value="Married (Seeking 2nd Wife)">Married (Seeking 2nd Wife)</option>
+                      <option value="Married (Seeking 3rd/4th Wife)">Married (Seeking 3rd/4th Wife)</option>
+                      <option value="Divorced">Divorced</option>
+                      <option value="Widowed">Widowed</option>
+                      <option value="Open to Polygyny (Co-Wife)">Open to Polygyny (Co-Wife)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Polygyny Preference</label>
+                    <select
+                      value={editProfileData.polygynyPreference || 'Open to Discussion'}
+                      onChange={e => setEditProfileData({ ...editProfileData, polygynyPreference: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="Open to Polygyny / Second Wife">Open to Polygyny / Second Wife</option>
+                      <option value="First Marriage Only">First Marriage Only</option>
+                      <option value="Open to Discussion">Open to Discussion</option>
+                      <option value="Seeking Second Wife">Seeking Second Wife</option>
+                      <option value="Seeking 3rd/4th Wife">Seeking 3rd/4th Wife</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Has Children</label>
+                    <select
+                      value={editProfileData.hasChildren || 'No'}
+                      onChange={e => setEditProfileData({ ...editProfileData, hasChildren: e.target.value as any })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="No">No</option>
+                      <option value="Yes, living together">Yes, living together</option>
+                      <option value="Yes, living separately">Yes, living separately</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 5: RELIGIOUS COMMITMENT & ISLAMIC VALUES */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <Sparkles className="w-4 h-4 text-emerald-700" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Islamic Practice & Sharia Details</h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Sect / School of Thought</label>
+                    <input
+                      type="text"
+                      value={editProfileData.religion?.sect || 'Sunni (Hanafi)'}
+                      onChange={e => setEditProfileData({
+                        ...editProfileData,
+                        religion: {
+                          ...(editProfileData.religion || {} as any),
+                          sect: e.target.value
+                        }
+                      })}
+                      placeholder="e.g. Sunni (Hanafi), Salafi..."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Prayer Frequency</label>
+                    <select
+                      value={editProfileData.religion?.prayerFrequency || 'Always (5 times daily)'}
+                      onChange={e => setEditProfileData({
+                        ...editProfileData,
+                        religion: {
+                          ...(editProfileData.religion || {} as any),
+                          prayerFrequency: e.target.value as any
+                        }
+                      })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="Always (5 times daily)">Always (5 times daily)</option>
+                      <option value="Usually">Usually</option>
+                      <option value="Sometimes">Sometimes</option>
+                      <option value="Only Jummah">Only Jummah</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1">Halal Diet</label>
+                    <select
+                      value={editProfileData.religion?.halalDiet || 'Strictly Halal'}
+                      onChange={e => setEditProfileData({
+                        ...editProfileData,
+                        religion: {
+                          ...(editProfileData.religion || {} as any),
+                          halalDiet: e.target.value as any
+                        }
+                      })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    >
+                      <option value="Strictly Halal">Strictly Halal</option>
+                      <option value="Halal Only">Halal Only</option>
+                      <option value="Vegetarian / Halal">Vegetarian / Halal</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* SECTION 6: BIO, LOOKING FOR & PHOTOS */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3.5">
+                <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
+                  <User className="w-4 h-4 text-emerald-700" />
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 uppercase tracking-wider">Profile Media & Biography</h4>
+                </div>
+
                 <div>
-                  <label className="block text-slate-700 mb-1 font-semibold">City</label>
-                  <input
-                    type="text"
-                    value={editProfileData.city}
-                    onChange={e => setEditProfileData({ ...editProfileData, city: e.target.value })}
+                  <label className="block text-slate-700 font-semibold mb-1">Profile Photo URL</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={editProfileData.photo}
+                      onChange={e => setEditProfileData({ ...editProfileData, photo: e.target.value })}
+                      placeholder="https://..."
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
+                    />
+                    {editProfileData.photo && (
+                      <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 shrink-0">
+                        <img src={editProfileData.photo} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 font-semibold mb-1">About Profile (About Me)</label>
+                  <textarea
+                    rows={3}
+                    value={editProfileData.aboutMe || ''}
+                    onChange={e => setEditProfileData({ ...editProfileData, aboutMe: e.target.value })}
+                    placeholder="Describe personal background, Islamic commitment, aspirations..."
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-slate-700 mb-1 font-semibold">Profession</label>
-                  <input
-                    type="text"
-                    value={editProfileData.profession}
-                    onChange={e => setEditProfileData({ ...editProfileData, profession: e.target.value })}
+                  <label className="block text-slate-700 font-semibold mb-1">Partner Preferences & Requirements</label>
+                  <textarea
+                    rows={2}
+                    value={editProfileData.lookingForSummary || ''}
+                    onChange={e => setEditProfileData({ ...editProfileData, lookingForSummary: e.target.value })}
+                    placeholder="Preferred age, religious qualities, relocation..."
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 mb-1 font-semibold">About Profile</label>
-                <textarea
-                  rows={3}
-                  value={editProfileData.aboutMe || ''}
-                  onChange={e => setEditProfileData({ ...editProfileData, aboutMe: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditProfileData(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
+                  disabled={isSavingProfile}
                   onClick={handleSaveEditProfile}
-                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-sm active:scale-98 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-bold shadow-sm active:scale-98 transition-all flex items-center gap-2"
                 >
-                  Update in Database
+                  {isSavingProfile ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Saving All Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Save All Changes to Database</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -1676,7 +2231,20 @@ export const AdminDashboardScreen: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-base text-slate-900">Full Profile Inspector</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-base text-slate-900">Full Profile Inspector</h3>
+                {selectedProfile.isActive !== false ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                    Deactivated
+                  </span>
+                )}
+              </div>
               <button 
                 onClick={() => setSelectedProfile(null)} 
                 className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
@@ -1687,10 +2255,13 @@ export const AdminDashboardScreen: React.FC = () => {
 
             <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
               <img src={selectedProfile.photo} alt={selectedProfile.name} className="w-16 h-16 rounded-2xl object-cover border border-slate-200" />
-              <div>
-                <h4 className="font-bold text-base text-slate-900">{selectedProfile.name}, {selectedProfile.age}</h4>
-                <p className="text-xs text-slate-500">{selectedProfile.profession} • {selectedProfile.city}</p>
-                <p className="text-xs text-amber-700 font-semibold">{selectedProfile.maritalStatus}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-base text-slate-900 truncate">{selectedProfile.name}, {selectedProfile.age}</h4>
+                <p className="text-xs text-slate-500 truncate">{selectedProfile.profession} • {selectedProfile.city}, {selectedProfile.country}</p>
+                <p className="text-xs text-amber-700 font-semibold truncate">{selectedProfile.maritalStatus} • {selectedProfile.polygynyPreference || 'Polygyny Open'}</p>
+                {selectedProfile.email && (
+                  <p className="text-[11px] text-slate-600 font-mono truncate pt-0.5">{selectedProfile.email}</p>
+                )}
               </div>
             </div>
 
@@ -1703,27 +2274,56 @@ export const AdminDashboardScreen: React.FC = () => {
                 <p className="font-bold text-slate-900">Sharia & Wali Particulars:</p>
                 <p className="text-slate-600">Sect: <strong className="text-slate-900">{selectedProfile.religion?.sect || 'Sunni (Hanafi)'}</strong></p>
                 <p className="text-slate-600">Prayer: <strong className="text-slate-900">{selectedProfile.religion?.prayerFrequency || 'Always (5 times daily)'}</strong></p>
-                <p className="text-slate-600">Wali: <strong className="text-slate-900">Family Wali on File</strong></p>
+                <p className="text-slate-600">Halal Diet: <strong className="text-slate-900">{selectedProfile.religion?.halalDiet || 'Strictly Halal'}</strong></p>
+                <p className="text-slate-600">Contact / Phone: <strong className="text-slate-900">{selectedProfile.phone || 'On file'}</strong></p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
-                onClick={() => setSelectedProfile(null)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => handleToggleVerify(selectedProfile.id, isProfileVerified(selectedProfile))}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  isProfileVerified(selectedProfile) 
-                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200' 
-                    : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
-                }`}
-              >
-                {isProfileVerified(selectedProfile) ? 'Revoke Verification' : 'Issue Verification'}
-              </button>
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-100 flex-wrap">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const profileToEdit = { ...selectedProfile };
+                    setSelectedProfile(null);
+                    setEditProfileData(profileToEdit);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-200 flex items-center gap-1.5 transition-colors"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Edit All Details</span>
+                </button>
+
+                <button
+                  onClick={() => handleToggleActive(selectedProfile.id, selectedProfile.isActive !== false)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                    selectedProfile.isActive !== false
+                      ? 'bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-200'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs'
+                  }`}
+                >
+                  {selectedProfile.isActive !== false ? <UserX className="w-3.5 h-3.5 text-rose-500" /> : <UserCheck className="w-3.5 h-3.5" />}
+                  <span>{selectedProfile.isActive !== false ? 'Deactivate' : 'Activate'}</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedProfile(null)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => handleToggleVerify(selectedProfile.id, isProfileVerified(selectedProfile))}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    isProfileVerified(selectedProfile) 
+                      ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200' 
+                      : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
+                  }`}
+                >
+                  {isProfileVerified(selectedProfile) ? 'Revoke Verification' : 'Issue Verification'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

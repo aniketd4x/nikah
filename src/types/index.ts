@@ -114,6 +114,10 @@ export interface Profile {
   polygynyPreference?: string;
   account_status?: string;
   email?: string;
+  password?: string;
+  phone?: string;
+  isActive?: boolean;
+  status?: 'active' | 'suspended' | 'deactivated' | string;
 }
 
 export interface InterestRequest {

@@ -75,7 +75,13 @@ function mapSupabaseProfile(p: any): Profile {
     is_verified: Boolean(p.is_verified),
     is_vip: Boolean(p.is_vip),
     plan: p.plan || 'Premium',
-    polygynyPreference: p.polygyny_preference || 'Open to Discussion'
+    polygynyPreference: p.polygyny_preference || 'Open to Discussion',
+    account_status: p.account_status || (p.status === 'suspended' ? 'deactivated' : 'active'),
+    status: p.status || (p.account_status === 'deactivated' ? 'suspended' : 'active'),
+    isActive: p.isActive !== undefined ? Boolean(p.isActive) : (p.status !== 'suspended' && p.account_status !== 'deactivated'),
+    email: p.email || (p.user_email) || `${p.id}@polygamymatrimony.com`,
+    phone: p.phone || p.wali_phone || '',
+    password: p.password || p.password_hash || ''
   };
 }
 
@@ -263,19 +269,61 @@ export const api = {
   updateProfile: async (id: string, data: Partial<Profile>) => {
     try {
       const updates: any = {};
-      if (data.name) updates.name = data.name;
-      if (data.age) updates.age = data.age;
-      if (data.city) updates.city = data.city;
-      if (data.profession) updates.profession = data.profession;
-      if (data.aboutMe) updates.about_me = data.aboutMe;
-      if (data.maritalStatus) updates.marital_status = data.maritalStatus;
-      if (data.photo) updates.photo = data.photo;
-      if (data.religion) updates.religion = data.religion;
+      if (data.name !== undefined) updates.name = data.name;
+      if (data.age !== undefined) updates.age = Number(data.age);
+      if (data.gender !== undefined) updates.gender = data.gender;
+      if (data.city !== undefined) updates.city = data.city;
+      if (data.state !== undefined) updates.state = data.state;
+      if (data.country !== undefined) updates.country = data.country;
+      if (data.profession !== undefined) updates.profession = data.profession;
+      if (data.company !== undefined) updates.company = data.company;
+      if (data.education !== undefined) updates.education = data.education;
+      if (data.degree !== undefined) updates.degree = data.degree;
+      if (data.university !== undefined) updates.university = data.university;
+      if (data.aboutMe !== undefined) updates.about_me = data.aboutMe;
+      if (data.lookingForSummary !== undefined) updates.looking_for_summary = data.lookingForSummary;
+      if (data.maritalStatus !== undefined) updates.marital_status = data.maritalStatus;
+      if (data.polygynyPreference !== undefined) updates.polygyny_preference = data.polygynyPreference;
+      if (data.hasChildren !== undefined) updates.has_children = data.hasChildren;
+      if (data.height !== undefined) updates.height = data.height;
+      if (data.motherTongue !== undefined) updates.mother_tongue = data.motherTongue;
+      if (data.photo !== undefined) updates.photo = data.photo;
+      if (data.galleryPhotos !== undefined) updates.gallery_photos = data.galleryPhotos;
+      if (data.religion !== undefined) updates.religion = data.religion;
       if (data.is_verified !== undefined) updates.is_verified = Boolean(data.is_verified);
+      if (data.is_vip !== undefined) updates.is_vip = Boolean(data.is_vip);
+      if (data.phone !== undefined) updates.wali_phone = data.phone;
+      updates.updated_at = new Date().toISOString();
 
       await supabase.from('profiles').update(updates).eq('id', id);
+
+      // Sync status & credentials to users table
+      const userUpdates: any = {};
+      if (data.isActive !== undefined) {
+        userUpdates.status = data.isActive ? 'active' : 'suspended';
+      } else if (data.status !== undefined) {
+        userUpdates.status = (data.status === 'suspended' || data.status === 'deactivated') ? 'suspended' : 'active';
+      }
+      if (data.email) userUpdates.email = data.email.trim();
+      if (data.phone) userUpdates.phone = data.phone.trim();
+      if (data.password && data.password.trim().length > 0) userUpdates.password_hash = data.password.trim();
+
+      if (Object.keys(userUpdates).length > 0) {
+        const { error: userErr } = await supabase.from('users').update(userUpdates).eq('id', id);
+        if (userErr) {
+          await supabase.from('users').upsert([{
+            id,
+            email: data.email || `${id}@polygamymatrimony.com`,
+            status: userUpdates.status || 'active',
+            ...userUpdates
+          }]);
+        }
+      }
+
       return { success: true };
-    } catch {}
+    } catch (err) {
+      console.warn('updateProfile error:', err);
+    }
     return { success: true };
   },
 
@@ -659,9 +707,26 @@ export const api = {
   // Admin: Users List
   getUsers: async () => {
     try {
-      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      if (!error && Array.isArray(data)) {
-        return data.map(mapSupabaseProfile);
+      const [profilesRes, usersRes] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('users').select('*')
+      ]);
+
+      const userMap = new Map((usersRes.data || []).map(u => [u.id, u]));
+
+      if (!profilesRes.error && Array.isArray(profilesRes.data)) {
+        return profilesRes.data.map(p => {
+          const u = userMap.get(p.id) || userMap.get(p.user_id);
+          const combined = {
+            ...p,
+            email: u?.email || p.email,
+            phone: u?.phone || p.wali_phone || p.phone,
+            password: u?.password_hash || '',
+            status: u?.status || p.status || 'active',
+            isActive: u ? u.status !== 'suspended' : (p.status !== 'suspended' && p.account_status !== 'deactivated')
+          };
+          return mapSupabaseProfile(combined);
+        });
       }
     } catch {}
     return [];
@@ -712,7 +777,10 @@ export const api = {
 
   updateUserStatus: async (id: string, status: 'active' | 'suspended') => {
     try {
-      await supabase.from('users').update({ status }).eq('id', id);
+      const { error: userErr } = await supabase.from('users').update({ status }).eq('id', id);
+      if (userErr) {
+        await supabase.from('users').upsert([{ id, status }]);
+      }
       return { success: true };
     } catch {
       return { success: true };
