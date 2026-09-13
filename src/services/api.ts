@@ -1,6 +1,4 @@
 import { Profile, SuccessStory, GuidanceArticle, InterestRequest } from '../types';
-import { ALL_PROFILES } from '../data/allProfiles';
-import { SUCCESS_STORIES, ISLAMIC_GUIDANCE_ARTICLES } from '../data/matrimonyData';
 import { supabase } from './supabase';
 
 const API_BASE = '/api';
@@ -119,7 +117,7 @@ export const api = {
     return {
       success: true,
       token: 'supabase_session_active',
-      user: ALL_PROFILES.find(p => p.id === 'current-user') || ALL_PROFILES[0]
+      user: null
     };
   },
 
@@ -193,7 +191,7 @@ export const api = {
         return mapSupabaseProfile(data[0]);
       }
     } catch {}
-    return ALL_PROFILES.find(p => p.id === userId) || null;
+    return null;
   },
 
   // Profiles: Fetch all profiles from Supabase with live search/filters
@@ -216,13 +214,13 @@ export const api = {
 
       const { data, error } = await query.order('is_vip', { ascending: false }).order('created_at', { ascending: false });
 
-      if (!error && Array.isArray(data) && data.length > 0) {
+      if (!error && Array.isArray(data)) {
         return data.map(mapSupabaseProfile);
       }
     } catch (err) {
       console.warn('Supabase fetchProfiles error:', err);
     }
-    return ALL_PROFILES;
+    return [];
   },
 
   // Profiles: Fetch single profile
@@ -231,7 +229,7 @@ export const api = {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
       if (!error && data) return mapSupabaseProfile(data);
     } catch {}
-    return ALL_PROFILES.find(p => p.id === id) || null;
+    return null;
   },
 
   // Profiles: Create Profile
@@ -449,18 +447,42 @@ export const api = {
   fetchStories: async (): Promise<SuccessStory[]> => {
     try {
       const { data, error } = await supabase.from('success_stories').select('*').order('created_at', { ascending: false });
-      if (!error && Array.isArray(data) && data.length > 0) return data;
+      if (!error && Array.isArray(data)) {
+        return data.map((s: any) => ({
+          id: s.id,
+          names: s.couple_names || s.names || 'Blessed Couple',
+          city: s.city || 'Mumbai',
+          country: s.country || 'India',
+          weddingDate: s.nikah_date || s.weddingDate || '2025',
+          duration: s.duration || '6 Months to Nikah',
+          shortQuote: s.title || s.shortQuote || 'Found a pious spouse',
+          story: s.story || s.content || '',
+          image: s.photo_url || s.image || 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+          badge: 'Verified Nikah'
+        }));
+      }
     } catch {}
-    return SUCCESS_STORIES;
+    return [];
   },
 
   // Islamic Guidance Articles
   fetchGuidance: async (): Promise<GuidanceArticle[]> => {
     try {
       const { data, error } = await supabase.from('guidance_articles').select('*').order('created_at', { ascending: false });
-      if (!error && Array.isArray(data) && data.length > 0) return data;
+      if (!error && Array.isArray(data)) {
+        return data.map((g: any) => ({
+          id: g.id,
+          title: g.title,
+          category: g.category || 'Sunnah Principles',
+          summary: g.summary || '',
+          content: Array.isArray(g.content) ? g.content : (typeof g.content === 'string' ? g.content.split('\n\n') : []),
+          readTime: `${g.read_time_minutes || 5} min read`,
+          iconName: 'BookOpen',
+          keyTakeaways: ['Seek Allah’s guidance through Istikhara prayer.', 'Prioritize piety, character, and honest communication.']
+        }));
+      }
     } catch {}
-    return ISLAMIC_GUIDANCE_ARTICLES;
+    return [];
   },
 
   // Admin Auth: Login
@@ -502,8 +524,8 @@ export const api = {
       const { count: pendingR } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
 
       return {
-        totalUsers: typeof pCount === 'number' ? pCount : ALL_PROFILES.length,
-        verifiedUsers: typeof vCount === 'number' ? vCount : ALL_PROFILES.filter(p => p.verified?.identity).length,
+        totalUsers: typeof pCount === 'number' ? pCount : 0,
+        verifiedUsers: typeof vCount === 'number' ? vCount : 0,
         pendingVerifications: pendingV ?? 0,
         pendingReports: pendingR ?? 0,
         activeSubscriptions: 19,

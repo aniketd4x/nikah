@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { api, AdminStats } from '../../services/api';
-import { ALL_PROFILES } from '../../data/allProfiles';
 import { Profile } from '../../types';
 import { 
   ShieldCheck, 

@@ -10,7 +10,6 @@ import {
   ToastMessage,
   ChatMessage
 } from '../types';
-import { ALL_PROFILES } from '../data/allProfiles';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 
@@ -184,7 +183,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return Boolean(typeof window !== 'undefined' && localStorage.getItem('nikah_token'));
   });
   const [currentUser, setCurrentUser] = useState<Profile>(CURRENT_USER_DEFAULT);
-  const [profiles, setProfiles] = useState<Profile[]>(ALL_PROFILES);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
   
   // Live local state initialized cleanly (no hardcoded demo rows)
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -214,7 +213,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Synchronize live profiles from Hostinger MySQL API and handle separate URL paths
+  // Synchronize live profiles from Supabase Cloud API and handle separate URL paths
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
@@ -232,7 +231,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const loadLiveDatabase = async () => {
       try {
         const liveProfiles = await api.fetchProfiles();
-        if (Array.isArray(liveProfiles) && liveProfiles.length > 0) {
+        if (Array.isArray(liveProfiles)) {
           setProfiles(liveProfiles);
         }
         const savedUserId = localStorage.getItem('nikah_user_id') || 'current-user';
