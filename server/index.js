@@ -225,7 +225,59 @@ app.get('/api/profiles/:id', async (req, res) => {
   }
 });
 
-// 7. Profiles: Update Profile
+// 7. Profiles: Create Profile (POST)
+app.post('/api/profiles', async (req, res) => {
+  const body = req.body;
+  const profileId = body.id || `u-${Date.now()}`;
+  const userId = body.userId || body.user_id || profileId;
+  const name = body.name || 'New Member';
+  const age = Number(body.age) || 25;
+  const gender = body.gender || 'male';
+  const city = body.city || 'Mumbai';
+  const country = body.country || 'India';
+  const profession = body.profession || 'Professional';
+  const marital_status = body.maritalStatus || body.marital_status || 'Never Married';
+  const polygyny_preference = body.polygynyPreference || body.polygyny_preference || 'Open to Discussion';
+  const about_me = body.aboutMe || body.about_me || `Assalamu Alaikum, my name is ${name}.`;
+  const looking_for_summary = body.lookingForSummary || body.looking_for_summary || 'A practicing partner with good Islamic values.';
+  const defaultPhoto = gender === 'female'
+    ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
+    : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+  const photo = body.photo || defaultPhoto;
+  const religion = body.religion ? (typeof body.religion === 'string' ? body.religion : JSON.stringify(body.religion)) : JSON.stringify({ sect: 'Sunni (Hanafi)', prayerFrequency: 'Always (5 times daily)' });
+
+  try {
+    await pool.query(`
+      INSERT INTO profiles (
+        id, user_id, name, age, gender, city, country, photo, gallery_photos,
+        profession, religion, marital_status, polygyny_preference, about_me, looking_for_summary
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        name = VALUES(name),
+        age = VALUES(age),
+        gender = VALUES(gender),
+        city = VALUES(city),
+        country = VALUES(country),
+        photo = VALUES(photo),
+        profession = VALUES(profession),
+        religion = VALUES(religion),
+        marital_status = VALUES(marital_status),
+        polygyny_preference = VALUES(polygyny_preference),
+        about_me = VALUES(about_me),
+        looking_for_summary = VALUES(looking_for_summary)
+    `, [
+      profileId, userId, name, age, gender, city, country, photo,
+      JSON.stringify([photo]), profession, religion, marital_status,
+      polygyny_preference, about_me, looking_for_summary
+    ]);
+
+    res.status(201).json({ success: true, id: profileId, message: 'Profile saved to MySQL database' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 7b. Profiles: Update Profile (PUT with Auto-Insert Upsert)
 app.put('/api/profiles/:id', async (req, res) => {
   const { id } = req.params;
   const body = req.body;
@@ -246,7 +298,7 @@ app.put('/api/profiles/:id', async (req, res) => {
   const religion = body.religion ? (typeof body.religion === 'string' ? body.religion : JSON.stringify(body.religion)) : null;
 
   try {
-    await pool.query(`
+    const [updateResult] = await pool.query(`
       UPDATE profiles SET
         name = COALESCE(?, name),
         profession = COALESCE(?, profession),
@@ -270,7 +322,29 @@ app.put('/api/profiles/:id', async (req, res) => {
       id, id
     ]);
 
-    res.json({ success: true, message: 'Profile updated in MySQL database' });
+    if (updateResult.affectedRows === 0) {
+      // If row did not exist yet, insert it directly
+      const defaultPhoto = body.gender === 'female'
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
+        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+      const actualPhoto = photo || defaultPhoto;
+
+      await pool.query(`
+        INSERT INTO profiles (
+          id, user_id, name, age, gender, city, country, photo, gallery_photos,
+          profession, religion, marital_status, polygyny_preference, about_me, looking_for_summary
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
+        id, id, name || 'Member', Number(body.age) || 25, body.gender || 'male',
+        city || 'Mumbai', country || 'India', actualPhoto,
+        JSON.stringify([actualPhoto]), profession || 'Professional',
+        religion || JSON.stringify({ sect: 'Sunni (Hanafi)', prayerFrequency: 'Always (5 times daily)' }),
+        marital_status || 'Never Married', polygyny_preference || 'Open to Discussion',
+        about_me || 'Assalamu Alaikum.', 'Practicing partner with good Islamic character.'
+      ]);
+    }
+
+    res.json({ success: true, message: 'Profile saved/updated in MySQL database' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -332,6 +332,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (res?.token) {
         localStorage.setItem('nikah_token', res.token);
       }
+      localStorage.setItem('nikah_user_id', newUserId);
       setCurrentScreen('onboarding');
       addToast('Profile Created!', 'Al-hamdulillah! Your new profile has been saved to the database.', 'success');
     } catch (err) {
@@ -342,13 +343,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateCurrentUser = async (data: Partial<Profile>) => {
+    const targetId = data.id || currentUser.id || (typeof window !== 'undefined' ? localStorage.getItem('nikah_user_id') : null) || 'current-user';
+    const updatedData = { ...data, id: targetId };
+
     setCurrentUser((prev) => {
-      const updated = { ...prev, ...data };
-      setProfiles(pList => pList.map(p => p.id === updated.id ? { ...p, ...data } : p));
+      const updated = { ...prev, ...updatedData };
+      setProfiles(pList => pList.map(p => (p.id === updated.id || p.id === targetId) ? { ...p, ...updatedData } : p));
       return updated;
     });
+
     try {
-      await api.updateProfile(currentUser.id, data);
+      await api.updateProfile(targetId, updatedData);
     } catch (err) {
       console.warn('Profile update API error:', err);
     }
