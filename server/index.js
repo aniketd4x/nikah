@@ -397,6 +397,122 @@ app.patch('/api/interests/:id', async (req, res) => {
   }
 });
 
+// 10b. Interests: Delete / Cancel
+app.delete('/api/interests/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM interest_requests WHERE id = ?', [id]);
+    res.json({ success: true, message: 'Interest removed from MySQL' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 10c. Verifications: User Submit
+app.post('/api/verifications', async (req, res) => {
+  const { userId, documentType, documentUrl, notes, waliName, waliPhone } = req.body;
+  try {
+    const id = `ver-${Date.now()}`;
+    await pool.query(`
+      INSERT INTO verifications (id, user_id, document_type, document_url, status, notes)
+      VALUES (?, ?, ?, ?, 'pending', ?)
+    `, [id, userId || 'current-user', documentType || 'Government ID', documentUrl || 'https://uploaded-doc.pdf', notes || 'Verification submitted']);
+
+    if (waliName || waliPhone) {
+      await pool.query(`
+        UPDATE profiles SET wali_name = COALESCE(?, wali_name), wali_phone = COALESCE(?, wali_phone)
+        WHERE id = ? OR user_id = ?
+      `, [waliName, waliPhone, userId, userId]);
+    }
+    res.json({ success: true, id, message: 'Verification submitted to live database' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 10d. Reports: User Submit Safety Report
+app.post('/api/reports', async (req, res) => {
+  const { reporterId, reportedUserId, reason, details } = req.body;
+  try {
+    const id = `rep-${Date.now()}`;
+    await pool.query(`
+      INSERT INTO reports (id, reporter_id, reported_user_id, reason, details, status)
+      VALUES (?, ?, ?, ?, ?, 'pending')
+    `, [id, reporterId || 'current-user', reportedUserId, reason || 'Safety Concern', details || 'Report details']);
+    res.json({ success: true, id, message: 'Report registered in live database' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 10e. Conversations: List for user
+app.get('/api/conversations', async (req, res) => {
+  const userId = req.query.userId || 'current-user';
+  try {
+    const [rows] = await pool.query(`
+      SELECT c.*,
+             p1.name as user1_name, p1.photo as user1_photo,
+             p2.name as user2_name, p2.photo as user2_photo
+      FROM conversations c
+      LEFT JOIN profiles p1 ON c.participant_one = p1.id OR c.participant_one = p1.user_id
+      LEFT JOIN profiles p2 ON c.participant_two = p2.id OR c.participant_two = p2.user_id
+      WHERE c.participant_one = ? OR c.participant_two = ?
+      ORDER BY c.last_message_at DESC
+    `, [userId, userId]);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 10f. Messages: List & Send
+app.get('/api/messages', async (req, res) => {
+  const { conversationId, userId } = req.query;
+  try {
+    let query = 'SELECT * FROM messages WHERE 1=1';
+    const params = [];
+    if (conversationId) {
+      query += ' AND conversation_id = ?';
+      params.push(conversationId);
+    }
+    if (userId) {
+      query += ' AND (sender_id = ? OR receiver_id = ?)';
+      params.push(userId, userId);
+    }
+    query += ' ORDER BY created_at ASC';
+    const [rows] = await pool.query(query, params);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/messages', async (req, res) => {
+  const { conversationId, senderId, receiverId, messageText } = req.body;
+  try {
+    const msgId = `msg-${Date.now()}`;
+    let convId = conversationId;
+    if (!convId && senderId && receiverId) {
+      convId = `conv-${Date.now()}`;
+      await pool.query(`
+        INSERT INTO conversations (id, participant_one, participant_two, last_message)
+        VALUES (?, ?, ?, ?)
+      `, [convId, senderId, receiverId, messageText]);
+    } else if (convId) {
+      await pool.query(`
+        UPDATE conversations SET last_message = ?, last_message_at = CURRENT_TIMESTAMP WHERE id = ?
+      `, [messageText, convId]);
+    }
+    await pool.query(`
+      INSERT INTO messages (id, conversation_id, sender_id, receiver_id, message_text)
+      VALUES (?, ?, ?, ?, ?)
+    `, [msgId, convId, senderId, receiverId, messageText]);
+    res.json({ success: true, id: msgId, conversationId: convId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 11. Success Stories
 app.get('/api/stories', async (req, res) => {
   try {
@@ -480,6 +596,46 @@ app.get('/api/admin/users', async (req, res) => {
       return p;
     });
     res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: Create User Profile
+app.post('/api/admin/users', async (req, res) => {
+  const { name, email, password, gender, age, city, profession, maritalStatus, polygynyPreference, isVerified, photo } = req.body;
+  try {
+    const userId = `u-${Date.now()}`;
+    const passwordHash = hashPassword(password || 'Nikah@2026!');
+    const userEmail = email || `user_${Date.now()}@polygamymatrimony.com`;
+
+    await pool.query(
+      'INSERT INTO users (id, email, password_hash, role, status, plan) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, userEmail, passwordHash, 'user', 'active', 'Premium']
+    );
+
+    const defaultPhoto = gender === 'female'
+      ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
+      : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+    const finalPhoto = photo || defaultPhoto;
+
+    await pool.query(`
+      INSERT INTO profiles (
+        id, user_id, name, age, gender, city, country, photo, gallery_photos,
+        profession, religion, marital_status, polygyny_preference, about_me, looking_for_summary, is_verified
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      userId, userId, name || 'New Member', Number(age) || 27, gender || 'female',
+      city || 'Mumbai', 'India', finalPhoto, JSON.stringify([finalPhoto]),
+      profession || 'Professional',
+      JSON.stringify({ sect: 'Sunni (Hanafi)', prayerFrequency: 'Always (5 times daily)', halalDiet: 'Strictly Halal' }),
+      maritalStatus || 'Never Married', polygynyPreference || 'Open to Discussion',
+      `Assalamu Alaikum, my name is ${name || 'New Member'}.`,
+      'A practicing Muslim partner with good Islamic character.',
+      isVerified ? 1 : 0
+    ]);
+
+    res.status(201).json({ success: true, id: userId, message: 'User created in MySQL database' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

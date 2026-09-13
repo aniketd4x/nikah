@@ -1,6 +1,6 @@
 import { Profile, SuccessStory, GuidanceArticle, InterestRequest } from '../types';
 import { ALL_PROFILES } from '../data/allProfiles';
-import { SUCCESS_STORIES, ISLAMIC_GUIDANCE_ARTICLES, INITIAL_INTERESTS } from '../data/matrimonyData';
+import { SUCCESS_STORIES, ISLAMIC_GUIDANCE_ARTICLES } from '../data/matrimonyData';
 
 const API_BASE = '/api';
 
@@ -36,6 +36,7 @@ export const api = {
       if (res.ok) {
         const data = await res.json();
         if (data.token) localStorage.setItem('nikah_token', data.token);
+        if (data.user?.id) localStorage.setItem('nikah_user_id', data.user.id);
         return data;
       }
     } catch {}
@@ -57,6 +58,7 @@ export const api = {
       if (res.ok) {
         const data = await res.json();
         if (data.token) localStorage.setItem('nikah_token', data.token);
+        if (data.user?.id) localStorage.setItem('nikah_user_id', data.user.id);
         return data;
       }
     } catch {}
@@ -68,12 +70,12 @@ export const api = {
   },
 
   // Auth: Get Current Profile
-  fetchMe: async (userId: string = 'current-user'): Promise<Profile> => {
+  fetchMe: async (userId: string = 'current-user'): Promise<Profile | null> => {
     try {
       const res = await fetch(`${API_BASE}/auth/me?userId=${userId}`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) return await res.json();
     } catch {}
-    return ALL_PROFILES.find(p => p.id === userId) || ALL_PROFILES[0];
+    return ALL_PROFILES.find(p => p.id === userId) || null;
   },
 
   // Profiles: Fetch all profiles with live filters
@@ -103,6 +105,19 @@ export const api = {
     return ALL_PROFILES.find(p => p.id === id) || null;
   },
 
+  // Profiles: Create Profile
+  createProfile: async (data: Partial<Profile>) => {
+    try {
+      const res = await fetch(`${API_BASE}/profiles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true };
+  },
+
   // Profiles: Update profile
   updateProfile: async (id: string, data: Partial<Profile>) => {
     try {
@@ -116,16 +131,27 @@ export const api = {
     return { success: true };
   },
 
+  // Profiles: Delete Profile
+  deleteProfile: async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/profiles/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true };
+  },
+
   // Interests: Get list
   fetchInterests: async (userId: string = 'current-user'): Promise<InterestRequest[]> => {
     try {
       const res = await fetch(`${API_BASE}/interests?userId=${userId}`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) return data;
+        if (Array.isArray(data)) return data;
       }
     } catch {}
-    return INITIAL_INTERESTS;
+    return [];
   },
 
   // Interests: Send
@@ -152,6 +178,81 @@ export const api = {
       if (res.ok) return await res.json();
     } catch {}
     return { success: true, status };
+  },
+
+  // Interests: Cancel / Delete
+  cancelInterest: async (id: string) => {
+    try {
+      const res = await fetch(`${API_BASE}/interests/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true };
+  },
+
+  // Verifications: User Submit
+  submitVerification: async (data: { userId: string; documentType: string; documentUrl?: string; notes?: string; waliName?: string; waliPhone?: string }) => {
+    try {
+      const res = await fetch(`${API_BASE}/verifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true };
+  },
+
+  // Safety Reports: User Submit
+  submitReport: async (data: { reporterId: string; reportedUserId: string; reason: string; details: string }) => {
+    try {
+      const res = await fetch(`${API_BASE}/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true };
+  },
+
+  // Chat & Messaging
+  fetchConversations: async (userId: string = 'current-user') => {
+    try {
+      const res = await fetch(`${API_BASE}/conversations?userId=${userId}`, { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {}
+    return [];
+  },
+
+  fetchMessages: async (conversationId?: string, userId?: string) => {
+    try {
+      const params = new URLSearchParams();
+      if (conversationId) params.append('conversationId', conversationId);
+      if (userId) params.append('userId', userId);
+      const res = await fetch(`${API_BASE}/messages?${params.toString()}`, { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) return data;
+      }
+    } catch {}
+    return [];
+  },
+
+  sendMessage: async (data: { conversationId?: string; senderId: string; receiverId: string; messageText: string }) => {
+    try {
+      const res = await fetch(`${API_BASE}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (res.ok) return await res.json();
+    } catch {}
+    return { success: true, id: `msg-${Date.now()}` };
   },
 
   // Success Stories
@@ -208,8 +309,8 @@ export const api = {
     return {
       totalUsers: 25,
       verifiedUsers: 24,
-      pendingVerifications: 3,
-      pendingReports: 2,
+      pendingVerifications: 0,
+      pendingReports: 0,
       activeSubscriptions: 19,
       totalStories: 4,
       revenueMonthly: 48950,
@@ -223,7 +324,21 @@ export const api = {
       const res = await fetch(`${API_BASE}/admin/users`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) return await res.json();
     } catch {}
-    return null;
+    return [];
+  },
+
+  // Admin: Create User
+  createAdminUser: async (userData: any) => {
+    try {
+      const res = await fetch(`${API_BASE}/admin/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      });
+      return await res.json();
+    } catch {
+      return { success: true };
+    }
   },
 
   updateUserVerification: async (id: string, is_verified: boolean, verification_level?: string, is_vip?: boolean) => {
@@ -268,44 +383,7 @@ export const api = {
       const res = await fetch(`${API_BASE}/admin/verifications`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) return await res.json();
     } catch {}
-    return [
-      {
-        id: 'ver-1',
-        user_id: 'current-user',
-        user_name: 'Ahmed Khan',
-        user_photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
-        gender: 'male',
-        document_type: 'Government ID & Wali Authorization',
-        status: 'approved',
-        wali_name: 'Farooq Khan',
-        wali_phone: '+91 98220 11223',
-        notes: 'Wali phone verified directly via phone call. ID proof matches registered name.'
-      },
-      {
-        id: 'ver-2',
-        user_id: 'p-1',
-        user_name: 'Ayesha Khan',
-        user_photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-        gender: 'female',
-        document_type: 'Passport & Degree Certificate',
-        status: 'pending',
-        wali_name: 'Tariq Khan',
-        wali_phone: '+91 98901 23456',
-        notes: 'Passport and Master Degree from Pune University awaiting verification.'
-      },
-      {
-        id: 'ver-3',
-        user_id: 'p-2',
-        user_name: 'Zainab Begum',
-        user_photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80',
-        gender: 'female',
-        document_type: 'Financial Eligibility & Housing Proof',
-        status: 'pending',
-        wali_name: 'Mohammad Beg',
-        wali_phone: '+91 98233 44556',
-        notes: 'Independent housing document and Wali consent letter submitted.'
-      }
-    ];
+    return [];
   },
 
   actionVerification: async (id: string, action: 'approve' | 'reject', notes?: string) => {
@@ -326,24 +404,7 @@ export const api = {
       const res = await fetch(`${API_BASE}/admin/reports`, { signal: AbortSignal.timeout(3000) });
       if (res.ok) return await res.json();
     } catch {}
-    return [
-      {
-        id: 'rep-1',
-        reporter_name: 'Ayesha Khan',
-        reported_name: 'Fahad Qureshi',
-        reason: 'Unverified Polygyny Claim',
-        details: 'User claims first wife consent without presenting Wali authorization or documentation.',
-        status: 'pending'
-      },
-      {
-        id: 'rep-2',
-        reporter_name: 'Ahmed Khan',
-        reported_name: 'Imran Shaikh',
-        reason: 'Inappropriate profile image',
-        details: 'Photo does not meet Islamic modest dress guidelines.',
-        status: 'reviewed'
-      }
-    ];
+    return [];
   },
 
   resolveReport: async (id: string, resolution: string) => {

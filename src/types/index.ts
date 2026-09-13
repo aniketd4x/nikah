@@ -108,8 +108,12 @@ export interface Profile {
   smoking: 'Never' | 'Occasionally' | 'Quit';
   blurPhotoByDefault?: boolean;
   isVip?: boolean;
+  is_vip?: boolean | number;
   plan?: string;
-  is_verified?: boolean;
+  is_verified?: boolean | number;
+  polygynyPreference?: string;
+  account_status?: string;
+  email?: string;
 }
 
 export interface InterestRequest {

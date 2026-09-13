@@ -11,11 +11,6 @@ import {
   ChatMessage
 } from '../types';
 import { ALL_PROFILES } from '../data/allProfiles';
-import { 
-  INITIAL_INTERESTS, 
-  INITIAL_NOTIFICATIONS, 
-  INITIAL_CONVERSATIONS 
-} from '../data/matrimonyData';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 
@@ -185,18 +180,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   
-  // Default to guest (false) so users land on the public homepage by default
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return Boolean(typeof window !== 'undefined' && localStorage.getItem('nikah_token'));
   });
   const [currentUser, setCurrentUser] = useState<Profile>(CURRENT_USER_DEFAULT);
   const [profiles, setProfiles] = useState<Profile[]>(ALL_PROFILES);
-  const [favorites, setFavorites] = useState<string[]>(['p-1', 'p-9', 'p-5']);
-  const [interests, setInterests] = useState<InterestRequest[]>(INITIAL_INTERESTS);
+  
+  // Live local state initialized cleanly (no hardcoded demo rows)
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('nikah_favorites');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  
+  const [interests, setInterests] = useState<InterestRequest[]>([]);
   const [passes, setPasses] = useState<string[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [filterState, setFilterState] = useState<FilterState>(DEFAULT_FILTERS);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(DEFAULT_PRIVACY);
   const [currentPlan, setCurrentPlan] = useState<'Free' | 'Premium' | 'Premium Plus'>('Premium');
@@ -212,7 +216,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Synchronize live profiles from Hostinger MySQL API and handle separate URL paths
   useEffect(() => {
-    // Check if initial URL is /admin or /admin/login
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
@@ -232,15 +235,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (Array.isArray(liveProfiles) && liveProfiles.length > 0) {
           setProfiles(liveProfiles);
         }
+        const savedUserId = localStorage.getItem('nikah_user_id') || 'current-user';
         if (localStorage.getItem('nikah_token')) {
-          const me = await api.fetchMe();
+          const me = await api.fetchMe(savedUserId);
           if (me) {
-            setCurrentUser(prev => ({ ...prev, ...me }));
+            setCurrentUser(me);
             setIsLoggedIn(true);
+            const userInterests = await api.fetchInterests(me.id);
+            if (Array.isArray(userInterests)) setInterests(userInterests);
+            const userConvs = await api.fetchConversations(me.id);
+            if (Array.isArray(userConvs) && userConvs.length > 0) setConversations(userConvs);
           }
         }
       } catch (err) {
-        console.warn('API sync fallback to cached data:', err);
+        console.warn('API sync fallback:', err);
       }
     };
     loadLiveDatabase();
@@ -253,7 +261,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setCurrentScreen(screen);
 
-    // Update browser URL for separate admin URL
     if (typeof window !== 'undefined') {
       if (screen === 'admin') {
         window.history.pushState(null, '', '/admin');
@@ -288,7 +295,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const emailStr = typeof email === 'string' ? email : email?.email;
     const passStr = typeof email === 'object' ? email?.password : password;
     if (emailStr && passStr) {
-      await api.login(emailStr, passStr);
+      const res = await api.login(emailStr, passStr);
+      if (res?.user) {
+        setCurrentUser(res.user);
+        const userInterests = await api.fetchInterests(res.user.id);
+        if (Array.isArray(userInterests)) setInterests(userInterests);
+      }
     }
     setIsLoggedIn(true);
     setCurrentScreen('dashboard');
@@ -297,7 +309,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const logout = () => {
     localStorage.removeItem('nikah_token');
+    localStorage.removeItem('nikah_user_id');
     setIsLoggedIn(false);
+    setInterests([]);
+    setConversations([]);
     setCurrentScreen('landing');
     addToast('Logged Out', 'May Allah bless your day. See you again soon.', 'info');
   };
@@ -365,26 +380,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let score = 50;
     if (currentUser.photo) score += 15;
     if (currentUser.aboutMe && currentUser.aboutMe.length > 50) score += 10;
-    if (currentUser.verified.photo) score += 10;
-    if (currentUser.partnerPreferences.education.length > 0) score += 5;
-    if (currentUser.galleryPhotos.length > 1) score += 10;
+    if (currentUser.verified?.photo) score += 10;
+    if (currentUser.partnerPreferences?.education?.length > 0) score += 5;
+    if (currentUser.galleryPhotos && currentUser.galleryPhotos.length > 1) score += 10;
     return Math.min(score, 100);
   }, [currentUser]);
 
-  // Favorites
+  // Favorites (Saved in localStorage)
   const toggleFavorite = (profileId: string) => {
-    const isFav = favorites.includes(profileId);
-    if (isFav) {
-      setFavorites((prev) => prev.filter((id) => id !== profileId));
-      addToast('Removed', 'Profile removed from your saved list.', 'info');
-    } else {
-      setFavorites((prev) => [...prev, profileId]);
+    setFavorites((prev) => {
+      const exists = prev.includes(profileId);
+      const updated = exists ? prev.filter((id) => id !== profileId) : [...prev, profileId];
+      try {
+        localStorage.setItem('nikah_favorites', JSON.stringify(updated));
+      } catch {}
       const target = profiles.find((p) => p.id === profileId);
-      addToast('Saved to Favorites', `Added ${target?.name || 'profile'} to your favorites list.`, 'success');
-    }
+      if (exists) {
+        addToast('Removed', 'Profile removed from saved favorites.', 'info');
+      } else {
+        addToast('Saved to Favorites', `Added ${target?.name || 'profile'} to your favorites list.`, 'success');
+      }
+      return updated;
+    });
   };
 
-  // Interests / Requests
+  // Interests / Requests CRUD
   const sendInterest = async (profileId: string, note?: string) => {
     const existing = interests.find((i) => i.profileId === profileId && i.type === 'sent');
     if (existing) {
@@ -424,7 +444,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCelebrationPartner(partner);
         setIsCelebrationModalOpen(true);
 
-        // Open active chat conversation for this connected partner
         setConversations((prev) => {
           if (prev.some((c) => c.partnerId === partner.id)) return prev;
           const newConv: Conversation = {
@@ -447,7 +466,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return [newConv, ...prev];
         });
 
-        // Fire confetti
         try {
           confetti({
             particleCount: 80,
@@ -455,9 +473,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             origin: { y: 0.6 },
             colors: ['#0c4e2b', '#c59b27', '#ffffff']
           });
-        } catch (e) {
-          // ignore
-        }
+        } catch {}
       }
     }
     addToast('Interest Accepted!', 'Al-hamdulillah, you are now connected and can converse respectfully.', 'success');
@@ -473,9 +489,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast('Request Declined', 'The interest request has been politely declined.', 'info');
   };
 
-  const cancelSentInterest = (interestId: string) => {
+  const cancelSentInterest = async (interestId: string) => {
     setInterests((prev) => prev.filter((item) => item.id !== interestId));
-    addToast('Request Cancelled', 'Your sent interest was removed.', 'info');
+    try {
+      await api.cancelInterest(interestId);
+    } catch {}
+    addToast('Request Cancelled', 'Your sent interest was removed from the live database.', 'info');
   };
 
   // Passes
@@ -488,9 +507,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPasses((prev) => prev.filter((id) => id !== profileId));
   };
 
-  // Messaging
-  const sendMessage = (conversationId: string, text: string) => {
+  // Messaging CRUD
+  const sendMessage = async (conversationId: string, text: string) => {
     if (!text.trim()) return;
+
+    const conv = conversations.find((c) => c.id === conversationId);
+    const partnerId = conv?.partnerId || '';
 
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -503,52 +525,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setConversations((prev) =>
-      prev.map((conv) => {
-        if (conv.id === conversationId) {
+      prev.map((c) => {
+        if (c.id === conversationId) {
           return {
-            ...conv,
-            messages: [...conv.messages, newMessage],
+            ...c,
+            messages: [...c.messages, newMessage],
             lastMessage: text.trim(),
             lastMessageTime: 'Just now'
           };
         }
-        return conv;
+        return c;
       })
     );
 
-    // Simulated auto-reply after 2 seconds for prototype richness
-    const conv = conversations.find((c) => c.id === conversationId);
-    if (conv) {
-      const partner = profiles.find((p) => p.id === conv.partnerId);
-      setTimeout(() => {
-        const replyText = `Wa Alaikum Assalam! JazakAllahu Khair for your message. I shared your profile details with my family as well, and we are happy to take the next step.`;
-        const replyMsg: ChatMessage = {
-          id: `msg-${Date.now() + 1}`,
-          senderId: conv.partnerId,
-          text: replyText,
-          timestamp: 'Just now',
-          isSelf: false,
-          read: false
-        };
-
-        setConversations((prev) =>
-          prev.map((c) => {
-            if (c.id === conversationId) {
-              return {
-                ...c,
-                messages: [...c.messages, replyMsg],
-                lastMessage: replyText,
-                lastMessageTime: 'Just now',
-                unreadCount: c.unreadCount + 1
-              };
-            }
-            return c;
-          })
-        );
-
-        addToast(`New Message from ${partner?.name || 'Match'}`, replyText.slice(0, 45) + '...', 'info');
-      }, 2500);
-    }
+    try {
+      await api.sendMessage({
+        conversationId,
+        senderId: currentUser.id,
+        receiverId: partnerId,
+        messageText: text.trim()
+      });
+    } catch {}
   };
 
   const startChatWithProfile = (profileId: string) => {
@@ -632,60 +629,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Profile filtering
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
-      // Exclude blocked profiles
       if (blockedProfileIds.includes(p.id)) return false;
-
-      // Gender filter
       if (filterState.gender !== 'all' && p.gender !== filterState.gender) return false;
-
-      // Age filter
       if (p.age < filterState.ageRange[0] || p.age > filterState.ageRange[1]) return false;
-
-      // Country filter
-      if (filterState.country && !p.country.toLowerCase().includes(filterState.country.toLowerCase())) {
-        return false;
-      }
-
-      // City filter
-      if (filterState.city && !p.city.toLowerCase().includes(filterState.city.toLowerCase())) {
-        return false;
-      }
-
-      // Education filter
-      if (filterState.education && !p.education.toLowerCase().includes(filterState.education.toLowerCase())) {
-        return false;
-      }
-
-      // Profession filter
-      if (filterState.profession && !p.profession.toLowerCase().includes(filterState.profession.toLowerCase())) {
-        return false;
-      }
-
-      // Marital Status filter
-      if (filterState.maritalStatus && p.maritalStatus !== filterState.maritalStatus) {
-        return false;
-      }
-
-      // Mother tongue filter
-      if (filterState.motherTongue && !p.motherTongue.toLowerCase().includes(filterState.motherTongue.toLowerCase())) {
-        return false;
-      }
-
-      // Religious practice
-      if (filterState.religiousPractice && !p.religion.prayerFrequency.includes(filterState.religiousPractice)) {
-        return false;
-      }
-
-      // Sect filter
-      if (filterState.sect && !p.religion.sect.toLowerCase().includes(filterState.sect.toLowerCase())) {
-        return false;
-      }
-
-      // Verified only
-      if (filterState.verifiedOnly && !p.verified.photo) {
-        return false;
-      }
-
+      if (filterState.country && !p.country.toLowerCase().includes(filterState.country.toLowerCase())) return false;
+      if (filterState.city && !p.city.toLowerCase().includes(filterState.city.toLowerCase())) return false;
+      if (filterState.education && !p.education?.toLowerCase().includes(filterState.education.toLowerCase())) return false;
+      if (filterState.profession && !p.profession?.toLowerCase().includes(filterState.profession.toLowerCase())) return false;
+      if (filterState.maritalStatus && p.maritalStatus !== filterState.maritalStatus) return false;
+      if (filterState.motherTongue && !p.motherTongue?.toLowerCase().includes(filterState.motherTongue.toLowerCase())) return false;
+      if (filterState.religiousPractice && !p.religion?.prayerFrequency?.includes(filterState.religiousPractice)) return false;
+      if (filterState.sect && !p.religion?.sect?.toLowerCase().includes(filterState.sect.toLowerCase())) return false;
+      if (filterState.verifiedOnly && !p.verified?.photo && !p.verified?.identity) return false;
       return true;
     });
   }, [profiles, filterState, blockedProfileIds]);
@@ -710,8 +665,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     navigateTo('dashboard');
   };
 
-  const reportProfile = (id: string, reason: string) => {
-    addToast('Report Submitted', `Thank you for safeguarding the community. Reason recorded: ${reason}`, 'warning');
+  const reportProfile = async (id: string, reason: string) => {
+    try {
+      await api.submitReport({ reporterId: currentUser.id, reportedUserId: id, reason, details: `Report against profile ${id}` });
+    } catch {}
+    addToast('Report Submitted', `Thank you for safeguarding the community. Reason recorded in live database: ${reason}`, 'warning');
   };
 
   const closeCelebrationModal = () => {

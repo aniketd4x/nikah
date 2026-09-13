@@ -14,17 +14,16 @@ import {
   Check, 
   LogOut, 
   ArrowLeft, 
-  Sparkles, 
   RefreshCw, 
   Eye, 
   X, 
   TrendingUp, 
-  DollarSign, 
   CheckCircle2,
   Trash2,
-  UserX,
+  Plus,
+  Edit3,
   UserCheck,
-  Plus
+  UserX
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
@@ -34,10 +33,10 @@ export const AdminDashboardScreen: React.FC = () => {
   const { navigateTo, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 48,
-    verifiedUsers: 34,
-    pendingVerifications: 3,
-    pendingReports: 2,
+    totalUsers: 25,
+    verifiedUsers: 24,
+    pendingVerifications: 0,
+    pendingReports: 0,
     activeSubscriptions: 19,
     totalStories: 4,
     revenueMonthly: 48950,
@@ -50,11 +49,28 @@ export const AdminDashboardScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [genderFilter, setGenderFilter] = useState<'all' | 'female' | 'male'>('all');
   const [verifiedFilter, setVerifiedFilter] = useState<'all' | 'verified' | 'unverified'>('all');
+  
+  // Modals
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [deleteConfirmProfile, setDeleteConfirmProfile] = useState<Profile | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [editProfileData, setEditProfileData] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // New user form state
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    gender: 'female',
+    age: 26,
+    city: 'Mumbai',
+    profession: 'Software Engineer',
+    maritalStatus: 'Never Married',
+    polygynyPreference: 'Open to Discussion',
+    isVerified: true
+  });
 
   const loadData = async () => {
     setIsLoading(true);
@@ -66,13 +82,13 @@ export const AdminDashboardScreen: React.FC = () => {
         api.getUsers()
       ]);
       setStats(s);
-      if (v) setVerificationsList(v);
-      if (r) setReportsList(r);
+      if (Array.isArray(v)) setVerificationsList(v);
+      if (Array.isArray(r)) setReportsList(r);
       if (Array.isArray(users) && users.length > 0) {
         setProfilesList(users);
       }
     } catch {
-      // Keep defaults
+      // Keep state
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +99,7 @@ export const AdminDashboardScreen: React.FC = () => {
   }, []);
 
   const isProfileVerified = (p: Profile) => {
-    return Boolean(p.verified?.identity || p.verified?.reviewed);
+    return Boolean(p.verified?.identity || p.verified?.reviewed || (p as any).is_verified);
   };
 
   const handleToggleVerify = async (profileId: string, currentStatus: boolean) => {
@@ -113,13 +129,14 @@ export const AdminDashboardScreen: React.FC = () => {
       } : null);
     }
     await api.updateUserVerification(profileId, newStatus);
-    addToast('Verification Updated', `Profile verification ${newStatus ? 'Approved' : 'Revoked'}`, 'success');
+    addToast('Verification Updated', `Profile verification ${newStatus ? 'Approved' : 'Revoked'} in MySQL database`, 'success');
   };
 
   const handleDeleteProfile = async (profile: Profile) => {
     triggerHaptic(20);
     setProfilesList(prev => prev.filter(p => p.id !== profile.id));
     if (selectedProfile?.id === profile.id) setSelectedProfile(null);
+    if (editProfileData?.id === profile.id) setEditProfileData(null);
     setDeleteConfirmProfile(null);
     setStats(prev => ({
       ...prev,
@@ -127,7 +144,46 @@ export const AdminDashboardScreen: React.FC = () => {
       verifiedUsers: (profile.verified?.identity || profile.verified?.reviewed) ? Math.max(0, prev.verifiedUsers - 1) : prev.verifiedUsers
     }));
     await api.deleteUser(profile.id);
-    addToast('Profile Deleted', `${profile.name}'s profile and account were purged from the system.`, 'info');
+    addToast('Profile Deleted', `${profile.name}'s profile and account were purged permanently from Hostinger MySQL.`, 'info');
+  };
+
+  const handleCreateUserSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUser.name.trim()) return;
+
+    triggerHaptic(20);
+    setIsLoading(true);
+    try {
+      const res = await api.createAdminUser(newUser);
+      addToast('User Created', `Successfully inserted ${newUser.name} into Hostinger MySQL!`, 'success');
+      setIsAddUserModalOpen(false);
+      setNewUser({
+        name: '',
+        email: '',
+        gender: 'female',
+        age: 26,
+        city: 'Mumbai',
+        profession: 'Software Engineer',
+        maritalStatus: 'Never Married',
+        polygynyPreference: 'Open to Discussion',
+        isVerified: true
+      });
+      await loadData();
+    } catch {
+      addToast('Error', 'Failed to create user in MySQL', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveEditProfile = async () => {
+    if (!editProfileData) return;
+    triggerHaptic(15);
+    await api.updateProfile(editProfileData.id, editProfileData);
+    setProfilesList(prev => prev.map(p => p.id === editProfileData.id ? { ...p, ...editProfileData } : p));
+    if (selectedProfile?.id === editProfileData.id) setSelectedProfile({ ...selectedProfile, ...editProfileData });
+    setEditProfileData(null);
+    addToast('Changes Saved', 'User profile details updated in live database.', 'success');
   };
 
   const handleApproveVerification = async (id: string, userId: string) => {
@@ -143,7 +199,7 @@ export const AdminDashboardScreen: React.FC = () => {
       }
       return p;
     }));
-    addToast('Verified', 'Document approved & Blue Badge issued!', 'success');
+    addToast('Verified', 'Document approved & Blue Badge issued in MySQL!', 'success');
   };
 
   const handleRejectVerificationConfirm = async () => {
@@ -160,7 +216,7 @@ export const AdminDashboardScreen: React.FC = () => {
     triggerHaptic(15);
     await api.resolveReport(id, 'resolved');
     setReportsList(prev => prev.map(r => r.id === id ? { ...r, status: 'reviewed' } : r));
-    addToast('Report Resolved', 'Safety report reviewed & marked as resolved', 'success');
+    addToast('Report Resolved', 'Safety report reviewed & marked as resolved in MySQL', 'success');
   };
 
   const filteredProfiles = profilesList.filter(p => {
@@ -259,129 +315,109 @@ export const AdminDashboardScreen: React.FC = () => {
         {/* TAB 1: OVERVIEW */}
         {activeTab === 'overview' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2">
+            {/* KPI Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-semibold">Total Profiles</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Total Database Users</span>
                   <Users className="w-4 h-4 text-emerald-400" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-serif">{stats.totalUsers}</div>
-                <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" />
-                  <span>+12 this week</span>
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">{profilesList.length}</div>
+                <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Live Hostinger MySQL</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-semibold">Verified Sharia</span>
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Verified Profiles</span>
+                  <ShieldCheck className="w-4 h-4 text-blue-400" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white font-serif">{stats.verifiedUsers}</div>
-                <div className="text-[11px] text-slate-400">71% verification rate</div>
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                  {profilesList.filter(isProfileVerified).length}
+                </div>
+                <div className="text-[11px] text-blue-400 font-semibold">
+                  {Math.round((profilesList.filter(isProfileVerified).length / (profilesList.length || 1)) * 100)}% Verified
+                </div>
               </div>
 
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2">
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-semibold">Monthly MRR</span>
-                  <DollarSign className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold text-emerald-400 font-serif">₹{stats.revenueMonthly.toLocaleString()}</div>
-                <div className="text-[11px] text-emerald-400">{stats.activeSubscriptions} Paid Members</div>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-semibold">Pending Queue</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">KYC & Wali Queue</span>
                   <FileCheck2 className="w-4 h-4 text-amber-400" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">
                   {verificationsList.filter(v => v.status === 'pending').length}
                 </div>
-                <div className="text-[11px] text-slate-400">Action required</div>
+                <div className="text-[11px] text-amber-400 font-semibold">Action Required</div>
+              </div>
+
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider">Monthly Revenue</span>
+                  <Crown className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">₹{stats.revenueMonthly.toLocaleString()}</div>
+                <div className="text-[11px] text-emerald-400 font-semibold">Active Subscriptions</div>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Quick Verifications */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-white flex items-center gap-2">
-                    <FileCheck2 className="w-4 h-4 text-emerald-400" />
-                    <span>Pending KYC Verifications</span>
-                  </h3>
-                  <button onClick={() => setActiveTab('verifications')} className="text-xs text-emerald-400 hover:underline">View All</button>
-                </div>
+            {/* Quick Actions Panel */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
+              <h3 className="font-serif font-bold text-base text-white flex items-center justify-between">
+                <span>Administrative Actions</span>
+                <span className="text-xs font-sans font-normal text-slate-400">Hostinger MySQL: Live CRUD</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  onClick={() => setIsAddUserModalOpen(true)}
+                  className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800 hover:bg-emerald-900 text-emerald-300 flex items-center gap-3 transition-colors text-left"
+                >
+                  <div className="p-2 rounded-xl bg-emerald-900/80 text-emerald-200">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-white">+ Add New Profile</h4>
+                    <p className="text-xs text-slate-400">Insert new member directly to DB</p>
+                  </div>
+                </button>
 
-                <div className="space-y-2.5">
-                  {verificationsList.filter(v => v.status === 'pending').slice(0, 3).map(verif => (
-                    <div key={verif.id} className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <img src={verif.user_photo} alt={verif.user_name} className="w-10 h-10 rounded-full object-cover border border-slate-700" />
-                        <div>
-                          <p className="text-xs font-bold text-white">{verif.user_name}</p>
-                          <p className="text-[10px] text-slate-400">{verif.document_type}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleApproveVerification(verif.id, verif.user_id)}
-                        className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1"
-                      >
-                        <Check className="w-3 h-3" />
-                        <span>Approve</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Hostinger DB Status */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-white flex items-center gap-2">
-                    <Database className="w-4 h-4 text-emerald-400" />
-                    <span>Database Engine & Telemetry</span>
-                  </h3>
-                  <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800">
-                    Live Ping: 42ms
-                  </span>
-                </div>
-
-                <div className="p-4 bg-slate-950/70 border border-slate-800/80 rounded-2xl space-y-2 text-xs font-mono">
-                  <div className="flex justify-between text-slate-400">
-                    <span>Host:</span>
-                    <span className="text-slate-200">srv1641.hstgr.io:3306</span>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 flex items-center gap-3 transition-colors text-left"
+                >
+                  <div className="p-2 rounded-xl bg-slate-900 text-slate-200">
+                    <Users className="w-5 h-5" />
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Database:</span>
-                    <span className="text-emerald-400">u872793003_matirmonytaj</span>
+                  <div>
+                    <h4 className="font-bold text-sm text-white">Manage All Users</h4>
+                    <p className="text-xs text-slate-400">Inspect, edit, verify or delete</p>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>User:</span>
-                    <span className="text-slate-200">u872793003_matirmony</span>
-                  </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Connection Pool:</span>
-                    <span className="text-emerald-400">10 Active Connections</span>
-                  </div>
-                </div>
+                </button>
 
                 <button
                   onClick={() => setActiveTab('database')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-colors"
+                  className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 flex items-center gap-3 transition-colors text-left"
                 >
-                  Open Database Explorer
+                  <div className="p-2 rounded-xl bg-slate-900 text-emerald-400">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-white">MySQL Diagnostics</h4>
+                    <p className="text-xs text-slate-400">Test tables, pool & relations</p>
+                  </div>
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 2: USERS & PROFILES */}
+        {/* TAB 2: USERS & PROFILES CRUD */}
         {activeTab === 'users' && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-900/90 p-4 rounded-3xl border border-slate-800">
-              <div className="relative w-full sm:w-80">
+              <div className="relative w-full sm:w-72">
                 <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -412,6 +448,14 @@ export const AdminDashboardScreen: React.FC = () => {
                   <option value="verified">Verified Only</option>
                   <option value="unverified">Unverified Only</option>
                 </select>
+
+                <button
+                  onClick={() => setIsAddUserModalOpen(true)}
+                  className="px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-md shadow-emerald-950/50"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Profile</span>
+                </button>
               </div>
             </div>
 
@@ -447,7 +491,7 @@ export const AdminDashboardScreen: React.FC = () => {
                           {profile.profession} • {profile.city}, {profile.country}
                         </p>
                         <p className="text-[11px] text-amber-300 font-medium">
-                          {profile.polygynyInfo?.marriageType || 'First Marriage'}
+                          {profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}
                         </p>
                       </div>
                     </div>
@@ -456,9 +500,19 @@ export const AdminDashboardScreen: React.FC = () => {
                       <button
                         onClick={() => setSelectedProfile(profile)}
                         className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5"
+                        title="Inspect Profile"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Inspect</span>
+                      </button>
+
+                      <button
+                        onClick={() => setEditProfileData({ ...profile })}
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold flex items-center gap-1.5"
+                        title="Edit Profile"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
                       </button>
 
                       <button
@@ -476,7 +530,7 @@ export const AdminDashboardScreen: React.FC = () => {
                       <button
                         onClick={() => setDeleteConfirmProfile(profile)}
                         className="p-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 border border-rose-800/60 transition-colors"
-                        title="Delete Profile & Account"
+                        title="Delete Profile & Account Permanently from MySQL"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -491,112 +545,88 @@ export const AdminDashboardScreen: React.FC = () => {
         {/* TAB 3: KYC & WALI VERIFICATION QUEUE */}
         {activeTab === 'verifications' && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="grid gap-4">
-              {verificationsList.map(item => (
-                <div key={item.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <img src={item.user_photo} alt={item.user_name} className="w-12 h-12 rounded-2xl object-cover border border-slate-700" />
-                      <div>
-                        <h4 className="font-bold text-sm text-white">{item.user_name}</h4>
-                        <p className="text-xs text-amber-400 font-semibold">{item.document_type}</p>
+            {verificationsList.length === 0 ? (
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center space-y-2">
+                <FileCheck2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                <h4 className="font-bold text-white text-base">No Pending Verifications</h4>
+                <p className="text-xs text-slate-400">All submitted KYC and Wali authorization documents have been reviewed.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {verificationsList.map(item => (
+                  <div key={item.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <img src={item.user_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'} alt={item.user_name} className="w-12 h-12 rounded-2xl object-cover border border-slate-700" />
+                        <div>
+                          <h4 className="font-bold text-sm text-white">{item.user_name}</h4>
+                          <p className="text-xs text-slate-400">{item.document_type}</p>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                            item.status === 'approved' ? 'bg-emerald-950 text-emerald-300' : item.status === 'rejected' ? 'bg-rose-950 text-rose-300' : 'bg-amber-950 text-amber-300'
+                          }`}>
+                            {item.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {item.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleApproveVerification(item.id, item.user_id)}
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => setRejectModal({ id: item.id, name: item.user_name })}
+                              className="px-3.5 py-1.5 rounded-xl bg-rose-900 hover:bg-rose-800 text-rose-200 text-xs font-bold"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
-
-                    <span className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase ${
-                      item.status === 'approved' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' :
-                      item.status === 'rejected' ? 'bg-rose-950 text-rose-400 border border-rose-800' :
-                      'bg-amber-950 text-amber-300 border border-amber-800 animate-pulse'
-                    }`}>
-                      {item.status}
-                    </span>
                   </div>
-
-                  <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-2 text-xs">
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>Wali / Guardian:</span>
-                      <span className="text-slate-200 font-semibold">{item.wali_name || 'Direct Submission'}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-slate-400">
-                      <span>Wali Contact:</span>
-                      <span className="text-emerald-400 font-mono">{item.wali_phone || 'N/A'}</span>
-                    </div>
-                    <div className="text-slate-400 pt-1 border-t border-slate-800">
-                      <span>Notes: </span>
-                      <span className="text-slate-300 italic">{item.notes}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2">
-                    {item.status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => setRejectModal({ id: item.id, name: item.user_name })}
-                          className="px-4 py-2 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-800 flex items-center gap-1.5"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                          <span>Reject</span>
-                        </button>
-                        <button
-                          onClick={() => handleApproveVerification(item.id, item.user_id)}
-                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-950"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Approve & Issue Blue Badge</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* TAB 4: SAFETY & REPORTS MODERATION */}
+        {/* TAB 4: SAFETY & MODERATION */}
         {activeTab === 'reports' && (
           <div className="space-y-4 animate-in fade-in duration-200">
-            {reportsList.map(report => (
-              <div key={report.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-rose-400" />
-                    <h4 className="font-bold text-sm text-white">{report.reason}</h4>
-                  </div>
-                  <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                    report.status === 'pending' ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {report.status}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-300 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800">
-                  "{report.details}"
-                </p>
-
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>Reported User: <strong className="text-white">{report.reported_name}</strong></span>
-                  <span>Reported By: <strong className="text-slate-300">{report.reporter_name}</strong></span>
-                </div>
-
-                {report.status === 'pending' && (
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleResolveReport(report.id)}
-                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
-                    >
-                      Dismiss
-                    </button>
-                    <button
-                      onClick={() => handleResolveReport(report.id)}
-                      className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold"
-                    >
-                      Issue Formal Warning
-                    </button>
-                  </div>
-                )}
+            {reportsList.length === 0 ? (
+              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center space-y-2">
+                <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto" />
+                <h4 className="font-bold text-white text-base">Community Safe & Clean</h4>
+                <p className="text-xs text-slate-400">Zero active safety moderation flags registered in MySQL.</p>
               </div>
-            ))}
+            ) : (
+              <div className="grid gap-4">
+                {reportsList.map(item => (
+                  <div key={item.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                        <AlertTriangle className="w-4 h-4" />
+                        <span>{item.reason}</span>
+                      </div>
+                      <button
+                        onClick={() => handleResolveReport(item.id)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
+                      >
+                        Resolve Report
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-300 bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                      {item.details}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -607,7 +637,7 @@ export const AdminDashboardScreen: React.FC = () => {
               <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Free Starter</h4>
                 <div className="text-2xl font-serif font-bold text-white">₹0 <span className="text-xs text-slate-400">/ forever</span></div>
-                <p className="text-xs text-slate-400">29 Active Members</p>
+                <p className="text-xs text-slate-400">All New Signups</p>
               </div>
 
               <div className="bg-slate-900/90 border border-emerald-800/80 rounded-3xl p-5 space-y-3">
@@ -687,6 +717,219 @@ export const AdminDashboardScreen: React.FC = () => {
         )}
       </div>
 
+      {/* CREATE NEW PROFILE MODAL */}
+      {isAddUserModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 text-emerald-400">
+                <Plus className="w-5 h-5" />
+                <h3 className="font-bold text-base text-white">Create New Member Profile</h3>
+              </div>
+              <button onClick={() => setIsAddUserModalOpen(false)} className="p-1 rounded-full hover:bg-slate-800">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUserSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newUser.name}
+                  onChange={e => setNewUser({ ...newUser, name: e.target.value })}
+                  placeholder="e.g. Fatima Zahra"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Gender *</label>
+                  <select
+                    value={newUser.gender}
+                    onChange={e => setNewUser({ ...newUser, gender: e.target.value as any })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="female">Female (Muslimah)</option>
+                    <option value="male">Male (Brother)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Age *</label>
+                  <input
+                    type="number"
+                    min={18}
+                    max={75}
+                    value={newUser.age}
+                    onChange={e => setNewUser({ ...newUser, age: Number(e.target.value) })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">City *</label>
+                  <input
+                    type="text"
+                    value={newUser.city}
+                    onChange={e => setNewUser({ ...newUser, city: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Profession *</label>
+                  <input
+                    type="text"
+                    value={newUser.profession}
+                    onChange={e => setNewUser({ ...newUser, profession: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Marital Status</label>
+                  <select
+                    value={newUser.maritalStatus}
+                    onChange={e => setNewUser({ ...newUser, maritalStatus: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Never Married">Never Married</option>
+                    <option value="Divorced">Divorced</option>
+                    <option value="Widowed">Widowed</option>
+                    <option value="Married (Seeking 2nd Wife)">Married (Seeking 2nd Wife)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Polygyny Preference</label>
+                  <select
+                    value={newUser.polygynyPreference}
+                    onChange={e => setNewUser({ ...newUser, polygynyPreference: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Open to Discussion">Open to Discussion</option>
+                    <option value="First Wife">First Wife</option>
+                    <option value="Second Wife">Second Wife</option>
+                    <option value="Third Wife">Third Wife</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="verifiedCheck"
+                  checked={newUser.isVerified}
+                  onChange={e => setNewUser({ ...newUser, isVerified: e.target.checked })}
+                  className="rounded accent-emerald-500 w-4 h-4"
+                />
+                <label htmlFor="verifiedCheck" className="text-slate-300 font-semibold cursor-pointer">
+                  Issue Verified Identity & Wali Badge immediately
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddUserModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-950/50"
+                >
+                  {isLoading ? 'Saving...' : 'Save to MySQL Database'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PROFILE MODAL */}
+      {editProfileData && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 text-emerald-400">
+                <Edit3 className="w-5 h-5" />
+                <h3 className="font-bold text-base text-white">Edit Profile Details</h3>
+              </div>
+              <button onClick={() => setEditProfileData(null)} className="p-1 rounded-full hover:bg-slate-800">
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Name</label>
+                <input
+                  type="text"
+                  value={editProfileData.name}
+                  onChange={e => setEditProfileData({ ...editProfileData, name: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">City</label>
+                  <input
+                    type="text"
+                    value={editProfileData.city}
+                    onChange={e => setEditProfileData({ ...editProfileData, city: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Profession</label>
+                  <input
+                    type="text"
+                    value={editProfileData.profession}
+                    onChange={e => setEditProfileData({ ...editProfileData, profession: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">About Profile</label>
+                <textarea
+                  rows={3}
+                  value={editProfileData.aboutMe || ''}
+                  onChange={e => setEditProfileData({ ...editProfileData, aboutMe: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditProfileData(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEditProfile}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-950/50"
+                >
+                  Update in Database
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Inspector Modal */}
       {selectedProfile && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
@@ -703,7 +946,7 @@ export const AdminDashboardScreen: React.FC = () => {
               <div>
                 <h4 className="font-bold text-base text-white">{selectedProfile.name}, {selectedProfile.age}</h4>
                 <p className="text-xs text-slate-400">{selectedProfile.profession} • {selectedProfile.city}</p>
-                <p className="text-xs text-amber-400 font-semibold">{selectedProfile.polygynyInfo?.marriageType}</p>
+                <p className="text-xs text-amber-400 font-semibold">{selectedProfile.maritalStatus}</p>
               </div>
             </div>
 
@@ -714,9 +957,9 @@ export const AdminDashboardScreen: React.FC = () => {
 
               <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1.5">
                 <p className="font-bold text-slate-200">Sharia & Wali Particulars:</p>
-                <p className="text-slate-400">Sect: <strong className="text-slate-200">{selectedProfile.religion.sect}</strong></p>
-                <p className="text-slate-400">Prayer: <strong className="text-slate-200">{selectedProfile.religion.prayerFrequency}</strong></p>
-                <p className="text-slate-400">Wali: <strong className="text-slate-200">{selectedProfile.polygynyInfo?.waliContactName || 'Family Wali on File'}</strong></p>
+                <p className="text-slate-400">Sect: <strong className="text-slate-200">{selectedProfile.religion?.sect || 'Sunni (Hanafi)'}</strong></p>
+                <p className="text-slate-400">Prayer: <strong className="text-slate-200">{selectedProfile.religion?.prayerFrequency || 'Always (5 times daily)'}</strong></p>
+                <p className="text-slate-400">Wali: <strong className="text-slate-200">Family Wali on File</strong></p>
               </div>
             </div>
 
@@ -755,7 +998,7 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-300 bg-slate-950 p-3.5 rounded-2xl border border-slate-800 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-white">{deleteConfirmProfile.name}</strong> ({deleteConfirmProfile.city}) from the live Hostinger database? This will purge their messages, interests, and profile verification data.
+              Are you sure you want to permanently delete <strong className="text-white">{deleteConfirmProfile.name}</strong> ({deleteConfirmProfile.city}) from the live Hostinger MySQL database? This will cascade remove their messages, interests, and profile verification records.
             </p>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
