@@ -345,8 +345,8 @@ export const Header: React.FC = () => {
               </div>
             </>
           ) : (
-            <>
-              {/* Landing state auth buttons */}
+            <div className="hidden md:flex items-center gap-2">
+              {/* Desktop landing state auth buttons */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -361,7 +361,7 @@ export const Header: React.FC = () => {
               >
                 Create Free Profile
               </Button>
-            </>
+            </div>
           )}
 
           {/* Mobile menu trigger */}
@@ -439,13 +439,7 @@ export const Header: React.FC = () => {
             </>
           ) : (
             <div className="space-y-2">
-              <Button variant="primary" fullWidth onClick={() => { setIsMobileNavOpen(false); navigateTo('register'); }}>
-                Create Free Profile
-              </Button>
-              <Button variant="secondary" fullWidth onClick={() => { setIsMobileNavOpen(false); navigateTo('login'); }}>
-                Log In to Account
-              </Button>
-              <div className="grid grid-cols-2 gap-2 pt-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { setIsMobileNavOpen(false); navigateTo('islamic-guidance'); }}
                   className="p-2.5 rounded-2xl bg-cream-100 text-xs font-bold text-center text-charcoal-700 hover:bg-cream-200 active:scale-95 transition-all"
