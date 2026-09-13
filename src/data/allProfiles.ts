@@ -1,5 +1,5 @@
 import { Profile } from '../types';
-import { INITIAL_PROFILES } from './mockProfiles';
+import { INITIAL_PROFILES } from './verifiedProfiles';
 
 export const ADDITIONAL_PROFILES: Profile[] = [
   {

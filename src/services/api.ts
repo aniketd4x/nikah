@@ -1,6 +1,6 @@
 import { Profile, SuccessStory, GuidanceArticle, InterestRequest } from '../types';
 import { ALL_PROFILES } from '../data/allProfiles';
-import { SUCCESS_STORIES, ISLAMIC_GUIDANCE_ARTICLES, INITIAL_INTERESTS } from '../data/mockData';
+import { SUCCESS_STORIES, ISLAMIC_GUIDANCE_ARTICLES, INITIAL_INTERESTS } from '../data/matrimonyData';
 
 const API_BASE = '/api';
 
@@ -191,7 +191,7 @@ export const api = {
       if (email === 'admin@polygamymatrimony.com' && (password === 'Admin@2026!' || password === 'Admin@data2050#')) {
         return {
           success: true,
-          token: 'mock_admin_token',
+          token: 'nikah_admin_session_active',
           admin: { id: 'admin-001', email, name: 'Chief Sharia Administrator', role: 'superadmin' }
         };
       }

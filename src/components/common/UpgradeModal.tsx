@@ -4,7 +4,7 @@ import { Modal } from './Modal';
 import { Button } from './Button';
 import { Badge } from './Badge';
 import { Check, Crown, ShieldCheck, Sparkles, Lock, Star } from 'lucide-react';
-import { SUBSCRIPTION_PLANS } from '../../data/mockData';
+import { SUBSCRIPTION_PLANS } from '../../data/matrimonyData';
 
 export const UpgradeModal: React.FC = () => {
   const { isUpgradeModalOpen, setIsUpgradeModalOpen, currentPlan, upgradePlan } = useApp();

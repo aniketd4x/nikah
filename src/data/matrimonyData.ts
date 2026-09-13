@@ -161,7 +161,7 @@ export const ISLAMIC_GUIDANCE_ARTICLES: GuidanceArticle[] = [
 export const INITIAL_INTERESTS: InterestRequest[] = [
   {
     id: 'int-1',
-    profileId: 'p-1', // Ayesha Khan
+    profileId: 'p-1',
     type: 'received',
     status: 'pending',
     timestamp: '2 hours ago',
@@ -169,7 +169,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
   },
   {
     id: 'int-2',
-    profileId: 'p-3', // Fatima Zahra Sheikh
+    profileId: 'p-3',
     type: 'received',
     status: 'pending',
     timestamp: 'Yesterday',
@@ -177,7 +177,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
   },
   {
     id: 'int-3',
-    profileId: 'p-9', // Hafsa Rahman
+    profileId: 'p-9',
     type: 'sent',
     status: 'accepted',
     timestamp: '3 days ago',
@@ -185,7 +185,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
   },
   {
     id: 'int-4',
-    profileId: 'p-5', // Maryam Siddiqui
+    profileId: 'p-5',
     type: 'sent',
     status: 'pending',
     timestamp: '4 days ago',
@@ -193,7 +193,7 @@ export const INITIAL_INTERESTS: InterestRequest[] = [
   },
   {
     id: 'int-5',
-    profileId: 'p-7', // Zainab Qureshi
+    profileId: 'p-7',
     type: 'received',
     status: 'declined',
     timestamp: '1 week ago',
@@ -255,7 +255,7 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 export const INITIAL_CONVERSATIONS: Conversation[] = [
   {
     id: 'conv-1',
-    partnerId: 'p-9', // Hafsa Rahman
+    partnerId: 'p-9',
     unreadCount: 1,
     lastMessage: 'Wa Alaikum Assalam! Yes, my father would be very glad to speak with your family over the weekend.',
     lastMessageTime: '11:42 AM',
@@ -298,7 +298,7 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
   },
   {
     id: 'conv-2',
-    partnerId: 'p-1', // Ayesha Khan
+    partnerId: 'p-1',
     unreadCount: 0,
     lastMessage: 'Insha\'Allah, looking forward to discussing our shared goals in Deen.',
     lastMessageTime: 'Yesterday',

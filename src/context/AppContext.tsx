@@ -15,7 +15,7 @@ import {
   INITIAL_INTERESTS, 
   INITIAL_NOTIFICATIONS, 
   INITIAL_CONVERSATIONS 
-} from '../data/mockData';
+} from '../data/matrimonyData';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
 

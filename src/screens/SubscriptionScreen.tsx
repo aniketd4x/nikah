@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
-import { SUBSCRIPTION_PLANS } from '../data/mockData';
+import { SUBSCRIPTION_PLANS } from '../data/matrimonyData';
 import { Crown, Check, ShieldCheck, Sparkles, Star, ArrowRight } from 'lucide-react';
 
 export const SubscriptionScreen: React.FC = () => {

@@ -126,7 +126,7 @@ export const LoginScreen: React.FC = () => {
             Continue to Dashboard
           </Button>
 
-          {/* Social login mock */}
+          {/* Fast Single-Sign-On */}
           <div className="relative my-4 text-center">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-cream-300" />
