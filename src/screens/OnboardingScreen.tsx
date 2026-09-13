@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/common/Button';
 import { ProgressBar } from '../components/common/ProgressBar';
@@ -13,12 +13,22 @@ import {
   Heart, 
   Briefcase, 
   User, 
-  ShieldCheck 
+  ShieldCheck,
+  ImagePlus,
+  Upload,
+  Trash2,
+  Star,
+  Loader2
 } from 'lucide-react';
+import { processImageFile, processMultipleImageFiles } from '../utils/imageUpload';
 
 export const OnboardingScreen: React.FC = () => {
   const { currentUser, updateCurrentUser, navigateTo, addToast } = useApp();
   const [step, setStep] = useState<number>(1);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const primaryPhotoInputRef = useRef<HTMLInputElement>(null);
+  const galleryPhotosInputRef = useRef<HTMLInputElement>(null);
 
   // Form local state
   const [formData, setFormData] = useState({
@@ -44,11 +54,71 @@ export const OnboardingScreen: React.FC = () => {
     relocation: currentUser.partnerPreferences.relocation,
     partnerAgeMin: currentUser.partnerPreferences.ageRange[0],
     partnerAgeMax: currentUser.partnerPreferences.ageRange[1],
-    photo: currentUser.photo
+    photo: currentUser.photo,
+    galleryPhotos: currentUser.galleryPhotos && currentUser.galleryPhotos.length > 0 
+      ? currentUser.galleryPhotos 
+      : [currentUser.photo]
   });
 
   const totalSteps = 8;
   const progressPercent = Math.round((step / totalSteps) * 100);
+
+  const handlePrimaryPhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const dataUrl = await processImageFile(file);
+      setFormData(prev => {
+        const existing = prev.galleryPhotos || [];
+        const updatedGallery = existing.includes(dataUrl) ? existing : [dataUrl, ...existing];
+        return { ...prev, photo: dataUrl, galleryPhotos: updatedGallery };
+      });
+      addToast('Profile Photo Updated', 'Main profile picture uploaded successfully.', 'success');
+    } catch (err) {
+      addToast('Upload Failed', 'Could not process selected image.', 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleGalleryPhotosChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      setIsUploading(true);
+      const dataUrls = await processMultipleImageFiles(files);
+      if (dataUrls.length > 0) {
+        setFormData(prev => {
+          const current = prev.galleryPhotos || [prev.photo];
+          const combined = [...current];
+          dataUrls.forEach(url => {
+            if (!combined.includes(url)) combined.push(url);
+          });
+          return { ...prev, galleryPhotos: combined };
+        });
+        addToast('Photos Uploaded', `${dataUrls.length} photo(s) added to gallery.`, 'success');
+      }
+    } catch (err) {
+      addToast('Upload Failed', 'Could not process gallery photos.', 'error');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemovePhoto = (photoUrl: string) => {
+    setFormData(prev => {
+      const filtered = (prev.galleryPhotos || []).filter(p => p !== photoUrl);
+      const newPrimary = prev.photo === photoUrl ? (filtered[0] || '') : prev.photo;
+      return { ...prev, photo: newPrimary, galleryPhotos: filtered };
+    });
+    addToast('Photo Removed', 'Removed photo from gallery.', 'info');
+  };
+
+  const handleSetPrimaryPhoto = (photoUrl: string) => {
+    setFormData(prev => ({ ...prev, photo: photoUrl }));
+    addToast('Primary Photo Set', 'Photo selected as main profile picture.', 'success');
+  };
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -68,6 +138,8 @@ export const OnboardingScreen: React.FC = () => {
         education: formData.education,
         degree: formData.degree,
         profession: formData.profession,
+        photo: formData.photo,
+        galleryPhotos: formData.galleryPhotos,
         religion: {
           ...currentUser.religion,
           sect: formData.sect,
@@ -97,6 +169,23 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10 pb-28 md:pb-12">
+      {/* Hidden File Inputs */}
+      <input
+        ref={primaryPhotoInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePrimaryPhotoChange}
+      />
+      <input
+        ref={galleryPhotosInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleGalleryPhotosChange}
+      />
+
       {/* Top Header Card */}
       <div className="bg-white/95 backdrop-blur-md rounded-[2rem] p-6 sm:p-8 border border-cream-300/80 shadow-soft mb-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -434,21 +523,141 @@ export const OnboardingScreen: React.FC = () => {
 
         {/* STEP 7: Photos */}
         {step === 7 && (
-          <div className="space-y-4 animate-in fade-in text-center">
-            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-emerald-800 mx-auto shadow-md">
-              <img src={formData.photo} alt="Profile" className="w-full h-full object-cover" />
+          <div className="space-y-6 animate-in fade-in">
+            {/* Primary Profile Photo Header Card */}
+            <div className="bg-cream-100/70 p-5 rounded-2xl border border-cream-300 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+              <div 
+                onClick={() => primaryPhotoInputRef.current?.click()}
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden border-4 border-emerald-900 shadow-md cursor-pointer group shrink-0"
+                title="Click to choose primary profile photo"
+              >
+                <img src={formData.photo} alt="Profile" className="w-full h-full object-cover group-hover:scale-105 transition-all" />
+                <div className="absolute inset-0 bg-emerald-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white p-2">
+                  {isUploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-gold-400" />
+                  ) : (
+                    <>
+                      <Camera className="w-5 h-5 text-gold-400 mb-1" />
+                      <span className="text-[10px] font-bold">Upload Photo</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2 flex-1">
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <h4 className="text-sm font-bold text-emerald-950">Primary Profile Photo</h4>
+                  <Badge variant="gold" size="sm">Main Avatar</Badge>
+                </div>
+                <p className="text-xs text-charcoal-600 leading-relaxed">
+                  Choose a clear, modest portrait photo from your device. Profiles with genuine photos receive 3x more halal responses.
+                </p>
+                <div className="pt-1 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    leftIcon={<Camera className="w-3.5 h-3.5" />}
+                    onClick={() => primaryPhotoInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    Select Main Photo
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-cream-100 p-4 rounded-2xl border border-cream-300 max-w-md mx-auto space-y-2">
-              <h4 className="text-xs font-bold text-emerald-950">Modest Photo Guidelines</h4>
-              <p className="text-[11px] text-charcoal-600 leading-relaxed">
-                Clear portrait with modest clothing, high resolution, single person (no group photos). You can enable Photo Blur in Privacy Settings anytime.
-              </p>
-              <div className="pt-2">
-                <Button size="sm" variant="outline" leftIcon={<Camera className="w-3.5 h-3.5" />}>
-                  Change Photo (Demo)
+            {/* Multi-Photo Gallery Upload */}
+            <div className="space-y-3 pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-bold text-emerald-950 flex items-center gap-1.5">
+                    <ImagePlus className="w-4 h-4 text-emerald-800" />
+                    Additional Gallery Photos (Upload Multiple)
+                  </h4>
+                  <p className="text-[11px] text-charcoal-500">
+                    Upload multiple pictures from your phone or PC to complete your profile album.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="gold"
+                  leftIcon={<Upload className="w-3.5 h-3.5" />}
+                  onClick={() => galleryPhotosInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  + Upload Multiple Photos
                 </Button>
               </div>
+
+              {/* Photos Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                {(formData.galleryPhotos || [formData.photo]).map((photoUrl, idx) => {
+                  const isMain = formData.photo === photoUrl;
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 group bg-cream-100 shadow-sm transition-all ${
+                        isMain ? 'border-emerald-700 ring-2 ring-emerald-600/30' : 'border-cream-300 hover:border-gold-400'
+                      }`}
+                    >
+                      <img src={photoUrl} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+
+                      {isMain && (
+                        <span className="absolute top-2 left-2 bg-emerald-700 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md flex items-center gap-1">
+                          <Star className="w-2.5 h-2.5 fill-white" />
+                          Main
+                        </span>
+                      )}
+
+                      {/* Hover Actions */}
+                      <div className="absolute inset-0 bg-emerald-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
+                        <div className="flex justify-end">
+                          {(formData.galleryPhotos?.length || 0) > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePhoto(photoUrl)}
+                              className="bg-rose-600/90 hover:bg-rose-600 text-white p-1.5 rounded-xl shadow-md transition-all active:scale-95"
+                              title="Delete photo"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+
+                        {!isMain && (
+                          <button
+                            type="button"
+                            onClick={() => handleSetPrimaryPhoto(photoUrl)}
+                            className="w-full py-1.5 px-2 bg-white/95 hover:bg-white text-emerald-950 text-[10px] font-bold rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1"
+                          >
+                            <Star className="w-3 h-3 text-gold-600" />
+                            Set as Main
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Add more button tile */}
+                <div
+                  onClick={() => galleryPhotosInputRef.current?.click()}
+                  className="aspect-[3/4] rounded-2xl border-2 border-dashed border-cream-400 hover:border-emerald-700 bg-cream-50/60 hover:bg-emerald-50/40 flex flex-col items-center justify-center cursor-pointer transition-all p-3 text-center group"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-cream-200 group-hover:bg-emerald-100 flex items-center justify-center mb-2 transition-colors">
+                    <Upload className="w-5 h-5 text-charcoal-600 group-hover:text-emerald-800" />
+                  </div>
+                  <span className="text-xs font-bold text-emerald-950 group-hover:text-emerald-800">Add More</span>
+                  <span className="text-[10px] text-charcoal-500">From Device</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modest photo reminder */}
+            <div className="bg-cream-50 p-3.5 rounded-2xl border border-cream-200 text-center">
+              <p className="text-[11px] text-charcoal-600">
+                🔒 <strong>Privacy Assurance:</strong> You can enable Photo Blur or Restrict Viewing to matches in your Privacy Settings anytime.
+              </p>
             </div>
           </div>
         )}
