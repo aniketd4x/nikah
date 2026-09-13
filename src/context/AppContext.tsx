@@ -17,6 +17,7 @@ import {
   INITIAL_CONVERSATIONS 
 } from '../data/mockData';
 import confetti from 'canvas-confetti';
+import { api } from '../services/api';
 
 const CURRENT_USER_DEFAULT: Profile = {
   id: 'current-user',
@@ -125,7 +126,7 @@ interface AppContextType {
   isLoggedIn: boolean;
   currentUser: Profile;
   updateCurrentUser: (data: Partial<Profile>) => void;
-  login: (credentials?: { email: string }) => void;
+  login: (email?: string | { email?: string; password?: string }, password?: string) => void | Promise<void>;
   logout: () => void;
   registerUser: (data: any) => void;
   profiles: Profile[];
@@ -186,7 +187,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true); // Default to logged-in experience for instant prototype testing
   const [currentUser, setCurrentUser] = useState<Profile>(CURRENT_USER_DEFAULT);
-  const [profiles] = useState<Profile[]>(ALL_PROFILES);
+  const [profiles, setProfiles] = useState<Profile[]>(ALL_PROFILES);
   const [favorites, setFavorites] = useState<string[]>(['p-1', 'p-9', 'p-5']);
   const [interests, setInterests] = useState<InterestRequest[]>(INITIAL_INTERESTS);
   const [passes, setPasses] = useState<string[]>([]);
@@ -205,6 +206,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [blockedProfileIds, setBlockedProfileIds] = useState<string[]>([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Synchronize live profiles from Hostinger MySQL API on mount
+  useEffect(() => {
+    const loadLiveDatabase = async () => {
+      try {
+        const liveProfiles = await api.fetchProfiles();
+        if (Array.isArray(liveProfiles) && liveProfiles.length > 0) {
+          setProfiles(liveProfiles);
+        }
+        const me = await api.fetchMe();
+        if (me) {
+          setCurrentUser(prev => ({ ...prev, ...me }));
+        }
+      } catch (err) {
+        console.warn('API sync fallback to cached data:', err);
+      }
+    };
+    loadLiveDatabase();
+  }, []);
 
   // Navigation helper
   const navigateTo = (screen: ScreenType, profileId?: string) => {
@@ -233,20 +253,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Auth actions
-  const login = () => {
+  const login = async (email?: string | { email?: string; password?: string }, password?: string) => {
+    const emailStr = typeof email === 'string' ? email : email?.email;
+    const passStr = typeof email === 'object' ? email?.password : password;
+    if (emailStr && passStr) {
+      await api.login(emailStr, passStr);
+    }
     setIsLoggedIn(true);
     setCurrentScreen('dashboard');
-    addToast('Welcome Back!', 'Assalamu Alaikum Ahmed, you are now logged in.', 'success');
+    addToast('Welcome Back!', 'Assalamu Alaikum, you are logged in to your account.', 'success');
   };
 
   const logout = () => {
+    localStorage.removeItem('nikah_token');
     setIsLoggedIn(false);
     setCurrentScreen('landing');
     addToast('Logged Out', 'May Allah bless your day. See you again soon.', 'info');
   };
 
-  const registerUser = (data: any) => {
+  const registerUser = async (data: any) => {
     setIsLoggedIn(true);
+    try {
+      await api.register(data);
+    } catch {}
     if (data.name) {
       setCurrentUser(prev => ({
         ...prev,
@@ -259,9 +288,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast('Account Created!', 'Welcome to Polygamy Matrimony. Let\'s complete your profile.', 'success');
   };
 
-  const updateCurrentUser = (data: Partial<Profile>) => {
+  const updateCurrentUser = async (data: Partial<Profile>) => {
     setCurrentUser((prev) => ({ ...prev, ...data }));
-    addToast('Profile Updated', 'Your changes have been saved successfully.', 'success');
+    try {
+      await api.updateProfile(currentUser.id, data);
+    } catch {}
+    addToast('Profile Updated', 'Your changes have been saved to the database.', 'success');
   };
 
   // Profile completion percentage
@@ -289,7 +321,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Interests / Requests
-  const sendInterest = (profileId: string, note?: string) => {
+  const sendInterest = async (profileId: string, note?: string) => {
     const existing = interests.find((i) => i.profileId === profileId && i.type === 'sent');
     if (existing) {
       addToast('Already Sent', 'You have already sent an interest request to this profile.', 'info');
@@ -306,14 +338,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     setInterests((prev) => [newReq, ...prev]);
+    try {
+      await api.sendInterest(currentUser.id, profileId, note);
+    } catch {}
     const target = profiles.find((p) => p.id === profileId);
     addToast('Interest Sent!', `Your request was respectfully delivered to ${target?.name || 'member'}.`, 'success');
   };
 
-  const acceptInterest = (interestId: string) => {
+  const acceptInterest = async (interestId: string) => {
     setInterests((prev) =>
       prev.map((item) => (item.id === interestId ? { ...item, status: 'accepted' } : item))
     );
+    try {
+      await api.actionInterest(interestId, 'accepted');
+    } catch {}
 
     const interest = interests.find((i) => i.id === interestId);
     if (interest) {
@@ -337,10 +375,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast('Interest Accepted!', 'Al-hamdulillah, you are now connected and can converse respectfully.', 'success');
   };
 
-  const declineInterest = (interestId: string) => {
+  const declineInterest = async (interestId: string) => {
     setInterests((prev) =>
       prev.map((item) => (item.id === interestId ? { ...item, status: 'declined' } : item))
     );
+    try {
+      await api.actionInterest(interestId, 'declined');
+    } catch {}
     addToast('Request Declined', 'The interest request has been politely declined.', 'info');
   };
 

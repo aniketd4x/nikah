@@ -1,8 +1,19 @@
-import React from 'react';
-import { SUCCESS_STORIES } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { api } from '../../services/api';
+import { SuccessStory } from '../../types';
 import { CheckCircle2, Heart, Sparkles, MapPin, Quote } from 'lucide-react';
 
 export const TestimonialsSection: React.FC = () => {
+  const [stories, setStories] = useState<SuccessStory[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await api.fetchStories();
+      setStories(data);
+    };
+    load();
+  }, []);
+
   return (
     <section className="space-y-6 select-none">
       <div className="text-center max-w-xl mx-auto space-y-1.5">
@@ -19,7 +30,7 @@ export const TestimonialsSection: React.FC = () => {
 
       {/* Grid on Desktop, Horizontal Scroll on Mobile */}
       <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto no-scrollbar pb-2 md:pb-0 px-1">
-        {SUCCESS_STORIES.slice(0, 3).map((story) => (
+        {stories.slice(0, 3).map((story) => (
           <div
             key={story.id}
             className="min-w-[280px] sm:min-w-0 flex-1 bg-white rounded-3xl p-5 border border-cream-300 shadow-soft hover:shadow-card transition-all flex flex-col justify-between space-y-4"

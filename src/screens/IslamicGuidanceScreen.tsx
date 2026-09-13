@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { ISLAMIC_GUIDANCE_ARTICLES } from '../data/mockData';
+import { api } from '../services/api';
+import { GuidanceArticle } from '../types';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { 
@@ -17,9 +18,21 @@ import {
 
 export const IslamicGuidanceScreen: React.FC = () => {
   const { navigateTo } = useApp();
-  const [selectedArticleId, setSelectedArticleId] = useState<string>(ISLAMIC_GUIDANCE_ARTICLES[0].id);
+  const [articles, setArticles] = useState<GuidanceArticle[]>([]);
+  const [selectedArticleId, setSelectedArticleId] = useState<string>('guide-istikhara');
 
-  const activeArticle = ISLAMIC_GUIDANCE_ARTICLES.find((a) => a.id === selectedArticleId) || ISLAMIC_GUIDANCE_ARTICLES[0];
+  useEffect(() => {
+    const load = async () => {
+      const data = await api.fetchGuidance();
+      setArticles(data);
+      if (data.length > 0 && !selectedArticleId) {
+        setSelectedArticleId(data[0].id);
+      }
+    };
+    load();
+  }, []);
+
+  const activeArticle = articles.find((a) => a.id === selectedArticleId) || articles[0];
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -55,8 +68,8 @@ export const IslamicGuidanceScreen: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Article Selector List */}
         <div className="lg:col-span-4 space-y-3">
-          {ISLAMIC_GUIDANCE_ARTICLES.map((article) => {
-            const isSelected = article.id === activeArticle.id;
+          {articles.map((article) => {
+            const isSelected = activeArticle && article.id === activeArticle.id;
             return (
               <div
                 key={article.id}
@@ -72,7 +85,7 @@ export const IslamicGuidanceScreen: React.FC = () => {
                     isSelected ? 'bg-emerald-950 border-gold-500/40 text-gold-400' : 'bg-cream-100 border-cream-200'
                   }`}
                 >
-                  {getIcon(article.iconName)}
+                  {getIcon(article.iconName || 'BookOpen')}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -103,8 +116,9 @@ export const IslamicGuidanceScreen: React.FC = () => {
         </div>
 
         {/* Right Column: Full Article View */}
-        <div className="lg:col-span-8 bg-white rounded-[2rem] p-6 sm:p-10 border border-cream-300 shadow-card space-y-6">
-          <div className="space-y-3 border-b border-cream-200 pb-6">
+        {activeArticle && (
+          <div className="lg:col-span-8 bg-white rounded-[2rem] p-6 sm:p-10 border border-cream-300 shadow-card space-y-6">
+            <div className="space-y-3 border-b border-cream-200 pb-6">
             <div className="flex items-center gap-2">
               <Badge variant="emerald" size="sm">{activeArticle.category}</Badge>
               <span className="text-xs text-charcoal-400">• {activeArticle.readTime}</span>
@@ -119,7 +133,7 @@ export const IslamicGuidanceScreen: React.FC = () => {
 
           {/* Article Body Content */}
           <div className="space-y-4 text-xs sm:text-sm text-charcoal-700 leading-relaxed">
-            {activeArticle.content.map((paragraph, index) => (
+            {(Array.isArray(activeArticle.content) ? activeArticle.content : String(activeArticle.content || '').split('\n\n')).map((paragraph: string, index: number) => (
               <p key={index} className="leading-relaxed">
                 {paragraph}
               </p>
@@ -133,7 +147,7 @@ export const IslamicGuidanceScreen: React.FC = () => {
               <span>Core Sunnah Takeaways</span>
             </h4>
             <div className="space-y-2">
-              {activeArticle.keyTakeaways.map((takeaway, i) => (
+              {(activeArticle.keyTakeaways || ['Seek Allah’s guidance through Istikhara prayer.', 'Prioritize piety, character, and honest communication.']).map((takeaway, i) => (
                 <div key={i} className="flex items-start gap-2.5 text-xs text-charcoal-700">
                   <span className="text-gold-600 font-bold">•</span>
                   <span>{takeaway}</span>
@@ -142,6 +156,7 @@ export const IslamicGuidanceScreen: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

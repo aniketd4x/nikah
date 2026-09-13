@@ -1,12 +1,13 @@
-﻿import pool from './db.js';
+import pool from './db.js';
 import crypto from 'crypto';
+import fs from 'fs';
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
-export async function seedDatabase() {
-  console.log('🌱 Starting database seeding on Hostinger MySQL...');
+async function run() {
+  console.log('🌱 Starting Full Production Database Seeding on Hostinger MySQL...');
   const connection = await pool.getConnection();
 
   try {
@@ -20,119 +21,157 @@ export async function seedDatabase() {
       VALUES (?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE name=VALUES(name), password_hash=VALUES(password_hash);
     `, [adminId, adminEmail, adminPass, 'Chief Sharia Administrator', 'superadmin']);
+    console.log('✅ Admin user verified: ' + adminEmail);
 
-    console.log('✅ Admin user created:', adminEmail);
+    // 2. Load INITIAL_PROFILES and ADDITIONAL_PROFILES
+    const mockFile = fs.readFileSync('./src/data/mockProfiles.ts', 'utf8');
+    const initMatch = mockFile.match(/export const INITIAL_PROFILES:\s*Profile\[\]\s*=\s*(\[[\s\S]*?\]);/);
+    if (!initMatch) throw new Error('Could not parse INITIAL_PROFILES');
+    const initialProfiles = Function('"use strict"; return (' + initMatch[1] + ');')();
 
-    // 2. Seed Default Logged-In User (Ahmed Khan)
-    const ahmedId = 'current-user';
-    const ahmedEmail = 'ahmed.khan@example.com';
-    const ahmedPass = hashPassword('Ahmed@2026');
+    const addFile = fs.readFileSync('./src/data/allProfiles.ts', 'utf8');
+    const addMatch = addFile.match(/export const ADDITIONAL_PROFILES:\s*Profile\[\]\s*=\s*(\[[\s\S]*?\]);/);
+    if (!addMatch) throw new Error('Could not parse ADDITIONAL_PROFILES');
+    const additionalProfiles = Function('"use strict"; return (' + addMatch[1] + ');')();
 
-    await connection.query(`
-      INSERT INTO users (id, email, password_hash, phone, role, status, plan)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE status=VALUES(status);
-    `, [ahmedId, ahmedEmail, ahmedPass, '+91 98765 43210', 'user', 'active', 'Premium Blessed']);
+    const allProfiles = [...initialProfiles, ...additionalProfiles];
+    console.log('📦 Total loaded profiles: ' + allProfiles.length);
 
-    await connection.query(`
-      INSERT INTO profiles (
-        id, user_id, name, age, gender, city, state, country, photo, gallery_photos,
-        profession, company, education, degree, university, religion, marital_status,
-        has_children, height, mother_tongue, languages, family_type, family_values,
-        father_occupation, mother_occupation, siblings, about_me, looking_for_summary,
-        polygyny_preference, financial_status, accommodation_plan, wali_name, wali_relation,
-        wali_phone, is_verified, verification_level, is_vip
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE name=VALUES(name);
-    `, [
-      ahmedId, ahmedId, 'Ahmed Khan', 28, 'male', 'Pune', 'Maharashtra', 'India',
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
-      JSON.stringify(['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80']),
-      'Senior Product Lead', 'Fintech Corp India', 'Postgraduate', 'B.Tech & MBA', 'Symbiosis International University',
-      JSON.stringify({ sect: 'Sunni (Hanafi)', prayerFrequency: 'Always (5 times daily)', quranRecitation: 'Daily', fastingRamadan: 'Always', halalDiet: 'Strictly Halal', hijabNiqabBeard: 'Maintains Neat Beard', revertStatus: 'Born Muslim', islamicValues: ['Taqwa', 'Truthfulness', 'Honest Livelihood', 'Family Caring'] }),
-      'Never Married', 'No', "5' 11\" (180 cm)", 'Urdu', JSON.stringify(['Urdu', 'English', 'Hindi', 'Arabic (Basic)']),
-      'Nuclear', 'Moderate', 'Executive Engineer (Retd)', 'Homemaker & Quran Teacher', '1 Younger Brother',
-      'Assalamu Alaikum. I am a product strategist in Pune with deep appreciation for faith, technological advancement, and healthy living.',
-      'A practicing Muslimah with good family values, a gentle character, and high moral integrity.',
-      'Open to Discussion / Monogamy first', 'Comfortable upper middle-class', 'Independent residence',
-      'Farooq Khan', 'Father', '+91 98220 11223', true, 'id_wali_verified', true
-    ]);
-
-    // 3. Seed Sample Verification Requests for Admin Panel
-    const verifications = [
-      {
-        id: 'ver-1',
-        user_id: 'current-user',
-        document_type: 'Government ID & Wali Authorization',
-        document_url: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
-        status: 'approved',
-        notes: 'Wali phone verified directly via phone call. ID proof matches registered name.'
-      },
-      {
-        id: 'ver-2',
-        user_id: 'p-1',
-        document_type: 'Passport & Degree Certificate',
-        document_url: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80',
-        status: 'pending',
-        notes: 'Pending review by moderation team.'
-      },
-      {
-        id: 'ver-3',
-        user_id: 'p-2',
-        document_type: 'Financial Eligibility & Housing Proof',
-        document_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&q=80',
-        status: 'pending',
-        notes: 'Submitted for Polygyny Second Marriage verification badge.'
-      }
-    ];
-
-    for (const v of verifications) {
+    for (const p of allProfiles) {
+      const userEmail = `${p.id}@polygamymatrimony.com`;
+      const userPass = hashPassword('Nikah@2026!');
+      const plan = p.id === 'current-user' ? 'Premium Blessed' : (p.id === 'p-1' || p.id === 'p-5' ? 'Royal Nikah Elite' : 'Free Starter');
+      
+      // Insert User
       await connection.query(`
-        INSERT INTO verifications (id, user_id, document_type, document_url, status, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE status=VALUES(status);
-      `, [v.id, v.user_id, v.document_type, v.document_url, v.status, v.notes]);
+        INSERT INTO users (id, email, password_hash, phone, role, status, plan)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE status=VALUES(status), plan=VALUES(plan);
+      `, [p.id, userEmail, userPass, '+91 98765 00000', 'user', 'active', plan]);
+
+      // Insert Profile
+      await connection.query(`
+        INSERT INTO profiles (
+          id, user_id, name, age, gender, city, state, country, photo, gallery_photos,
+          profession, company, education, degree, university, religion, marital_status,
+          has_children, height, mother_tongue, languages, family_type, family_values,
+          father_occupation, mother_occupation, siblings, about_me, looking_for_summary,
+          polygyny_preference, financial_status, accommodation_plan, wali_name, wali_relation,
+          wali_phone, is_verified, verification_level, is_vip
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+          name=VALUES(name), age=VALUES(age), city=VALUES(city), photo=VALUES(photo),
+          profession=VALUES(profession), about_me=VALUES(about_me), is_verified=VALUES(is_verified);
+      `, [
+        p.id,
+        p.id,
+        p.name,
+        p.age,
+        p.gender,
+        p.city,
+        p.state || 'State',
+        p.country,
+        p.photo,
+        JSON.stringify(p.galleryPhotos || [p.photo]),
+        p.profession,
+        p.company || 'Private Enterprise',
+        p.education,
+        p.degree,
+        p.university || 'Recognized University',
+        JSON.stringify(p.religion),
+        p.maritalStatus,
+        p.hasChildren || 'No',
+        p.height,
+        p.motherTongue,
+        JSON.stringify(p.languages),
+        p.familyType,
+        p.familyValues,
+        p.fatherOccupation || 'Retired Professional',
+        p.motherOccupation || 'Homemaker',
+        p.siblings || '1 Sibling',
+        p.aboutMe,
+        p.lookingForSummary,
+        p.polygynyInfo?.marriageType || 'Monogamy / Open to Discussion',
+        p.polygynyInfo?.financialMaintenance || 'Comfortable Financial Support',
+        p.polygynyInfo?.accommodationOffer || 'Independent Residence',
+        p.polygynyInfo?.waliContactName || 'Family Guardian',
+        p.polygynyInfo?.waliRelationship || 'Father',
+        '+91 98220 00000',
+        p.verified?.identity || p.verified?.reviewed ? 1 : 0,
+        'id_wali_verified',
+        (p.id === 'p-1' || p.id === 'p-5' || p.id === 'current-user') ? 1 : 0
+      ]);
+    }
+    console.log('✅ ' + allProfiles.length + ' profiles successfully stored in Hostinger MySQL!');
+
+    // 3. Load Success Stories and Articles from mockData.ts
+    const mockDataFile = fs.readFileSync('./src/data/mockData.ts', 'utf8');
+    const storiesMatch = mockDataFile.match(/export const SUCCESS_STORIES:\s*SuccessStory\[\]\s*=\s*(\[[\s\S]*?\]);/);
+    if (storiesMatch) {
+      const stories = Function('"use strict"; return (' + storiesMatch[1] + ');')();
+      for (const story of stories) {
+        await connection.query(`
+          INSERT INTO success_stories (id, names, wedding_date, city, country, image, short_quote, story, duration, badge, is_published)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE names=VALUES(names), story=VALUES(story);
+        `, [
+          story.id,
+          story.names,
+          story.weddingDate,
+          story.city,
+          story.country,
+          story.image,
+          story.shortQuote,
+          story.story,
+          story.duration,
+          story.badge || 'Blessed Nikah',
+          1
+        ]);
+      }
+      console.log('✅ ' + stories.length + ' Success Stories stored in MySQL!');
     }
 
-    // 4. Seed Reports for Moderation
-    const reports = [
-      {
-        id: 'rep-1',
-        reporter_id: 'p-1',
-        reported_user_id: 'p-5',
-        reason: 'Unverified Polygyny Claim',
-        details: 'User claims first wife consent without presenting Wali authorization or documentation.',
-        status: 'pending'
-      },
-      {
-        id: 'rep-2',
-        reporter_id: 'current-user',
-        reported_user_id: 'p-7',
-        reason: 'Inappropriate profile image',
-        details: 'Photo does not meet Islamic modest dress guidelines.',
-        status: 'reviewed'
+    const articlesMatch = mockDataFile.match(/export const ISLAMIC_GUIDANCE_ARTICLES:\s*GuidanceArticle\[\]\s*=\s*(\[[\s\S]*?\]);/);
+    if (articlesMatch) {
+      const articles = Function('"use strict"; return (' + articlesMatch[1] + ');')();
+      for (const article of articles) {
+        const contentText = Array.isArray(article.content) ? article.content.join('\n\n') : (article.content || '');
+        await connection.query(`
+          INSERT INTO guidance_articles (id, title, category, read_time, summary, content, image, is_published)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE title=VALUES(title), content=VALUES(content);
+        `, [
+          article.id,
+          article.title,
+          article.category,
+          article.readTime,
+          article.summary,
+          contentText,
+          article.image || null,
+          1
+        ]);
       }
-    ];
-
-    for (const r of reports) {
-      await connection.query(`
-        INSERT INTO reports (id, reporter_id, reported_user_id, reason, details, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE status=VALUES(status);
-      `, [r.id, r.reporter_id, r.reported_user_id, r.reason, r.details, r.status]);
+      console.log('✅ ' + articles.length + ' Islamic Guidance Articles stored in MySQL!');
     }
 
-    console.log('✅ Database seeded with Admin user, profiles, verifications, and safety moderation logs!');
+    // Verify row counts in MySQL
+    const [[pCount]] = await connection.query('SELECT COUNT(*) as count FROM profiles');
+    const [[sCount]] = await connection.query('SELECT COUNT(*) as count FROM success_stories');
+    const [[gCount]] = await connection.query('SELECT COUNT(*) as count FROM guidance_articles');
+    console.log('📊 DATABASE TOTALS IN HOSTINGER MYSQL:');
+    console.log('  - Total Profiles: ' + pCount.count);
+    console.log('  - Success Stories: ' + sCount.count);
+    console.log('  - Guidance Articles: ' + gCount.count);
+
+    console.log('🎉 PRODUCTION DATABASE SEEDING COMPLETED!');
   } catch (err) {
-    console.error('❌ Seeding failed:', err);
+    console.error('❌ Seeding error:', err);
     throw err;
   } finally {
     connection.release();
   }
 }
 
-if (process.argv[1] && process.argv[1].endsWith('seed.js')) {
-  seedDatabase()
-    .then(() => process.exit(0))
-    .catch(() => process.exit(1));
-}
+run()
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));

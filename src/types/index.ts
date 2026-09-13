@@ -167,12 +167,13 @@ export interface SuccessStory {
 export interface GuidanceArticle {
   id: string;
   title: string;
-  category: 'Preparation' | 'Compatibility' | 'Family & Wali' | 'Fiqh of Nikah' | 'Istikhara' | 'Polygyny & Justice';
+  category: 'Preparation' | 'Compatibility' | 'Family & Wali' | 'Fiqh of Nikah' | 'Istikhara' | 'Polygyny & Justice' | string;
   readTime: string;
   summary: string;
-  content: string[];
-  keyTakeaways: string[];
-  iconName: string;
+  content: string[] | string;
+  keyTakeaways?: string[];
+  iconName?: string;
+  image?: string;
 }
 
 export interface FilterState {

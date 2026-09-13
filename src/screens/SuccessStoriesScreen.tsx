@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { SUCCESS_STORIES } from '../data/mockData';
+import { api } from '../services/api';
+import { SuccessStory } from '../types';
 import { Button } from '../components/common/Button';
 import { Badge } from '../components/common/Badge';
 import { Sparkles, Star, MapPin, Heart, ArrowRight } from 'lucide-react';
 
 export const SuccessStoriesScreen: React.FC = () => {
   const { navigateTo } = useApp();
+  const [stories, setStories] = useState<SuccessStory[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
 
+  useEffect(() => {
+    const load = async () => {
+      const data = await api.fetchStories();
+      setStories(data);
+    };
+    load();
+  }, []);
+
   const filteredStories = selectedCountry === 'all'
-    ? SUCCESS_STORIES
-    : SUCCESS_STORIES.filter((s) => s.country.toLowerCase().includes(selectedCountry.toLowerCase()));
+    ? stories
+    : stories.filter((s) => s.country.toLowerCase().includes(selectedCountry.toLowerCase()));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 space-y-10 pb-24 md:pb-12">
