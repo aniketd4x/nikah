@@ -629,11 +629,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Comprehensive profile search and filtering logic
   const filteredProfiles = useMemo(() => {
+    // STRICT OPPOSITE GENDER RULE: Male can see ONLY Female, Female can see ONLY Male
+    const targetGender = currentUser.gender === 'female' ? 'male' : 'female';
+
     return profiles.filter((p) => {
-      // 1. Blocked profiles check
+      // 1. Exclude own profile
+      if (p.id === currentUser.id) return false;
+
+      // 2. Strict opposite-gender enforcement
+      if (p.gender !== targetGender) return false;
+
+      // 3. Blocked profiles check
       if (blockedProfileIds.includes(p.id)) return false;
 
-      // 2. Keyword search logic (searches across name, city, state, country, profession, bio, education, sect)
+      // 4. Keyword search logic (searches across name, city, state, country, profession, bio, education, sect)
       if (filterState.keyword && filterState.keyword.trim().length > 0) {
         const queryTerms = filterState.keyword.toLowerCase().trim().split(/\s+/);
         const searchableText = [
@@ -662,12 +671,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!matchesAllTerms) return false;
       }
 
-      // 3. Gender filter
-      if (filterState.gender && filterState.gender !== 'all' && p.gender !== filterState.gender) {
-        return false;
-      }
-
-      // 4. Age range filter
+      // 5. Age range filter
       if (typeof p.age === 'number') {
         if (p.age < filterState.ageRange[0] || p.age > filterState.ageRange[1]) return false;
       }

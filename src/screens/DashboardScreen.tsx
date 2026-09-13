@@ -22,7 +22,7 @@ import {
 export const DashboardScreen: React.FC = () => {
   const { 
     currentUser, 
-    profiles, 
+    filteredProfiles, 
     navigateTo, 
     profileCompletionPercentage,
     setIsVerificationModalOpen,
@@ -32,10 +32,10 @@ export const DashboardScreen: React.FC = () => {
     setFilterState
   } = useApp();
 
-  // Top recommended profiles (excluding self)
-  const recommendedProfiles = profiles.slice(0, 6);
-  const onlineSingles = profiles.filter((p) => p.online || p.compatibilityScore > 85);
-  const dailyPick = profiles[0]; // Ayesha Khan
+  // Top recommended profiles (strictly opposite gender, excluding self)
+  const recommendedProfiles = filteredProfiles.slice(0, 6);
+  const onlineSingles = filteredProfiles.filter((p) => p.online || p.compatibilityScore > 85);
+  const dailyPick = filteredProfiles[0];
 
   const quickFilters = [
     { label: '🌟 2nd Wife (Polygyny)', action: () => setFilterState((p) => ({ ...p, maritalStatus: 'Married (Seeking 2nd Wife)' })) },

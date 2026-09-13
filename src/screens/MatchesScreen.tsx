@@ -6,20 +6,20 @@ import { Badge } from '../components/common/Badge';
 import { Heart, Sparkles, Compass, Users } from 'lucide-react';
 
 export const MatchesScreen: React.FC = () => {
-  const { profiles, interests, navigateTo } = useApp();
+  const { filteredProfiles, interests, navigateTo } = useApp();
   const [activeSection, setActiveSection] = useState<'all' | 'mutual' | 'recommended'>('all');
 
   // Mutual matches (accepted interests)
   const acceptedProfileIds = interests
     .filter((i) => i.status === 'accepted')
     .map((i) => i.profileId);
-  const mutualMatches = profiles.filter((p) => acceptedProfileIds.includes(p.id));
+  const mutualMatches = filteredProfiles.filter((p) => acceptedProfileIds.includes(p.id));
 
-  // New matches (first 4 profiles)
-  const newMatches = profiles.slice(0, 4);
+  // New matches (first 4 opposite-gender profiles)
+  const newMatches = filteredProfiles.slice(0, 4);
 
   // High compatibility recommendations (score >= 93%)
-  const recommendedMatches = profiles.filter((p) => p.compatibilityScore >= 92);
+  const recommendedMatches = filteredProfiles.filter((p) => p.compatibilityScore >= 92);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-24 md:pb-12">

@@ -10,11 +10,7 @@ interface FilterPanelProps {
 }
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onApply }) => {
-  const { filterState, setFilterState, resetFilters, appliedFiltersCount } = useApp();
-
-  const handleGenderChange = (gender: 'all' | 'female' | 'male') => {
-    setFilterState((prev) => ({ ...prev, gender }));
-  };
+  const { currentUser, filterState, setFilterState, resetFilters, appliedFiltersCount } = useApp();
 
   const handleAgeChange = (index: 0 | 1, value: number) => {
     setFilterState((prev) => {
@@ -50,29 +46,18 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ isMobile = false, onAp
         </button>
       </div>
 
-      {/* Looking For (Gender) */}
+      {/* Looking For (Gender - Locked to Opposite Gender for Islamic Compliance) */}
       <div className="space-y-2">
         <label className="text-xs font-bold uppercase tracking-wider text-charcoal-600 block">
           Looking For
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { id: 'female', label: 'Bride' },
-            { id: 'male', label: 'Groom' },
-            { id: 'all', label: 'All' }
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleGenderChange(item.id as any)}
-              className={`py-2 px-3 rounded-2xl text-xs font-semibold border transition-all ${
-                filterState.gender === item.id
-                  ? 'bg-emerald-900 text-white border-emerald-900 shadow-sm'
-                  : 'bg-cream-100 text-charcoal-700 border-cream-300 hover:bg-cream-200'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="p-2.5 rounded-2xl bg-cream-100 border border-cream-300 flex items-center justify-between">
+          <span className="text-xs font-bold text-emerald-950">
+            {currentUser.gender === 'female' ? '🤵 Groom (Brother)' : '🧕 Bride (Muslimah)'}
+          </span>
+          <span className="text-[10px] font-bold text-gold-700 bg-gold-100 px-2 py-0.5 rounded-full border border-gold-300">
+            Halal Verified
+          </span>
         </div>
       </div>
 
