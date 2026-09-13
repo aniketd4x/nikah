@@ -45,8 +45,7 @@ export const DesktopRail: React.FC = () => {
     { label: 'Guidance', screen: 'islamic-guidance', icon: BookOpen },
     { label: 'Search', screen: 'search', icon: SlidersHorizontal },
     { label: 'Stories', screen: 'success-stories', icon: Sparkles },
-    { label: 'Settings', screen: 'settings', icon: Settings },
-    { label: 'Admin Console', screen: 'admin-login', icon: ShieldCheck },
+    { label: 'Settings', screen: 'settings', icon: Settings }
   ];
 
   return (

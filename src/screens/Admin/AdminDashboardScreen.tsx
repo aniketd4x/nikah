@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
-type AdminTab = 'overview' | 'users' | 'verifications' | 'reports' | 'subscriptions' | 'database';
+type AdminTab = 'overview' | 'users' | 'verifications' | 'reports' | 'subscriptions';
 
 export const AdminDashboardScreen: React.FC = () => {
   const { navigateTo, addToast } = useApp();
@@ -128,7 +128,7 @@ export const AdminDashboardScreen: React.FC = () => {
       } : null);
     }
     await api.updateUserVerification(profileId, newStatus);
-    addToast('Verification Updated', `Profile verification ${newStatus ? 'Approved' : 'Revoked'} in MySQL database`, 'success');
+    addToast('Verification Updated', `Profile verification ${newStatus ? 'Approved' : 'Revoked'}`, 'success');
   };
 
   const handleDeleteProfile = async (profile: Profile) => {
@@ -143,7 +143,7 @@ export const AdminDashboardScreen: React.FC = () => {
       verifiedUsers: (profile.verified?.identity || profile.verified?.reviewed) ? Math.max(0, prev.verifiedUsers - 1) : prev.verifiedUsers
     }));
     await api.deleteUser(profile.id);
-    addToast('Profile Deleted', `${profile.name}'s profile and account were purged permanently from Hostinger MySQL.`, 'info');
+    addToast('Profile Deleted', `${profile.name}'s profile and account were purged permanently.`, 'info');
   };
 
   const handleCreateUserSubmit = async (e: React.FormEvent) => {
@@ -153,8 +153,8 @@ export const AdminDashboardScreen: React.FC = () => {
     triggerHaptic(20);
     setIsLoading(true);
     try {
-      const res = await api.createAdminUser(newUser);
-      addToast('User Created', `Successfully inserted ${newUser.name} into Hostinger MySQL!`, 'success');
+      await api.createAdminUser(newUser);
+      addToast('User Created', `Successfully created ${newUser.name}'s profile!`, 'success');
       setIsAddUserModalOpen(false);
       setNewUser({
         name: '',
@@ -169,7 +169,7 @@ export const AdminDashboardScreen: React.FC = () => {
       });
       await loadData();
     } catch {
-      addToast('Error', 'Failed to create user in MySQL', 'error');
+      addToast('Error', 'Failed to create user', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +182,7 @@ export const AdminDashboardScreen: React.FC = () => {
     setProfilesList(prev => prev.map(p => p.id === editProfileData.id ? { ...p, ...editProfileData } : p));
     if (selectedProfile?.id === editProfileData.id) setSelectedProfile({ ...selectedProfile, ...editProfileData });
     setEditProfileData(null);
-    addToast('Changes Saved', 'User profile details updated in live database.', 'success');
+    addToast('Changes Saved', 'User profile details updated.', 'success');
   };
 
   const handleApproveVerification = async (id: string, userId: string) => {
@@ -198,7 +198,7 @@ export const AdminDashboardScreen: React.FC = () => {
       }
       return p;
     }));
-    addToast('Verified', 'Document approved & Blue Badge issued in MySQL!', 'success');
+    addToast('Verified', 'Document approved & Blue Badge issued!', 'success');
   };
 
   const handleRejectVerificationConfirm = async () => {
@@ -215,7 +215,7 @@ export const AdminDashboardScreen: React.FC = () => {
     triggerHaptic(15);
     await api.resolveReport(id, 'resolved');
     setReportsList(prev => prev.map(r => r.id === id ? { ...r, status: 'reviewed' } : r));
-    addToast('Report Resolved', 'Safety report reviewed & marked as resolved in MySQL', 'success');
+    addToast('Report Resolved', 'Safety report reviewed & marked as resolved', 'success');
   };
 
   const filteredProfiles = profilesList.filter(p => {
@@ -245,11 +245,6 @@ export const AdminDashboardScreen: React.FC = () => {
                 Admin Console
               </span>
             </h1>
-            <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
-              <Database className="w-3 h-3 text-emerald-400" />
-              <span>Supabase DB: <span className="text-slate-200 font-mono">rfqfqlpuybidmdvjtsxk.supabase.co</span></span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            </p>
           </div>
         </div>
 
@@ -257,7 +252,7 @@ export const AdminDashboardScreen: React.FC = () => {
           <button
             onClick={() => { triggerHaptic(10); loadData(); }}
             className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition-colors"
-            title="Refresh Database Data"
+            title="Refresh Data"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -271,7 +266,10 @@ export const AdminDashboardScreen: React.FC = () => {
           </button>
 
           <button
-            onClick={() => navigateTo('landing')}
+            onClick={() => {
+              localStorage.removeItem('nikah_admin_token');
+              navigateTo('landing');
+            }}
             className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900 transition-colors text-xs font-semibold flex items-center gap-1"
           >
             <LogOut className="w-4 h-4" />
@@ -289,8 +287,7 @@ export const AdminDashboardScreen: React.FC = () => {
             { id: 'users' as const, label: `Users & Profiles (${profilesList.length})`, icon: Users },
             { id: 'verifications' as const, label: `KYC & Wali Queue (${verificationsList.filter(v => v.status === 'pending').length})`, icon: FileCheck2 },
             { id: 'reports' as const, label: `Safety & Moderation (${reportsList.filter(r => r.status === 'pending').length})`, icon: AlertTriangle },
-            { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown },
-            { id: 'database' as const, label: 'Supabase Cloud Diagnostics', icon: Database }
+            { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -366,9 +363,9 @@ export const AdminDashboardScreen: React.FC = () => {
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
               <h3 className="font-serif font-bold text-base text-white flex items-center justify-between">
                 <span>Administrative Actions</span>
-                <span className="text-xs font-sans font-normal text-slate-400">Hostinger MySQL: Live CRUD</span>
+                <span className="text-xs font-sans font-normal text-slate-400">Sharia Control Panel</span>
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   onClick={() => setIsAddUserModalOpen(true)}
                   className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800 hover:bg-emerald-900 text-emerald-300 flex items-center gap-3 transition-colors text-left"
@@ -378,7 +375,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-sm text-white">+ Add New Profile</h4>
-                    <p className="text-xs text-slate-400">Insert new member directly to DB</p>
+                    <p className="text-xs text-slate-400">Create new member profile</p>
                   </div>
                 </button>
 
@@ -391,20 +388,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-sm text-white">Manage All Users</h4>
-                    <p className="text-xs text-slate-400">Inspect, edit, verify or delete</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('database')}
-                  className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 flex items-center gap-3 transition-colors text-left"
-                >
-                  <div className="p-2 rounded-xl bg-slate-900 text-emerald-400">
-                    <Database className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white">MySQL Diagnostics</h4>
-                    <p className="text-xs text-slate-400">Test tables, pool & relations</p>
+                    <p className="text-xs text-slate-400">Inspect, edit, verify or remove</p>
                   </div>
                 </button>
               </div>
@@ -655,61 +639,6 @@ export const AdminDashboardScreen: React.FC = () => {
                 <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Royal Nikah Elite</h4>
                 <div className="text-2xl font-serif font-bold text-white">₹2,999 <span className="text-xs text-slate-400">/ month</span></div>
                 <p className="text-xs text-amber-400 font-semibold">5 Active VIP Members</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: SUPABASE CLOUD DIAGNOSTICS */}
-        {activeTab === 'database' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-5">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div className="space-y-1">
-                  <h3 className="font-serif font-bold text-base text-white flex items-center gap-2">
-                    <Database className="w-5 h-5 text-emerald-400" />
-                    <span>Supabase Cloud Database Instance</span>
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Direct pooled connection to <span className="text-emerald-400 font-mono">rfqfqlpuybidmdvjtsxk.supabase.co</span>
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 bg-emerald-950 px-3 py-1 rounded-full border border-emerald-800 text-emerald-400 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Online & Healthy</span>
-                </div>
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Project Reference</span>
-                  <span className="text-slate-200 font-bold">rfqfqlpuybidmdvjtsxk</span>
-                </div>
-                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">API Engine</span>
-                  <span className="text-slate-200 font-bold">Supabase PostgREST & Auth</span>
-                </div>
-                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">REST & Realtime Endpoint</span>
-                  <span className="text-slate-200 font-bold">https://rfqfqlpuybidmdvjtsxk.supabase.co</span>
-                </div>
-                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Database Engine</span>
-                  <span className="text-slate-200 font-bold">PostgreSQL 15+ (Cloud)</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-300">Configured Cloud Relational Tables:</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono">
-                  {['profiles', 'users', 'interest_requests', 'conversations', 'messages', 'verifications', 'reports', 'admin_users', 'success_stories', 'guidance_articles'].map(table => (
-                    <div key={table} className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-slate-300">
-                      <span>{table}</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

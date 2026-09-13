@@ -175,7 +175,20 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
+  const [currentScreen, setCurrentScreen] = useState<ScreenType>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path.includes('admin/login') || hash.includes('admin/login') || hash.includes('admin-login')) {
+        return 'admin-login';
+      }
+      if (path.includes('admin') || hash.includes('admin')) {
+        const adminToken = localStorage.getItem('nikah_admin_token');
+        return adminToken ? 'admin' : 'admin-login';
+      }
+    }
+    return 'landing';
+  });
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
@@ -214,21 +227,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Synchronize live profiles from Supabase Cloud API and handle separate URL paths
+  // Synchronize browser history and URL routes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const handlePopState = () => {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      if (path.includes('admin') || hash.includes('admin')) {
+      if (path.includes('admin/login') || hash.includes('admin/login') || hash.includes('admin-login')) {
+        setCurrentScreen('admin-login');
+      } else if (path.includes('admin') || hash.includes('admin')) {
         const adminToken = localStorage.getItem('nikah_admin_token');
-        if (adminToken) {
-          setCurrentScreen('admin');
-        } else {
-          setCurrentScreen('admin-login');
-        }
+        setCurrentScreen(adminToken ? 'admin' : 'admin-login');
       }
-    }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
+  // Synchronize live profiles from Supabase Cloud API
+  useEffect(() => {
     const loadLiveDatabase = async () => {
       try {
         const liveProfiles = await api.fetchProfiles();
