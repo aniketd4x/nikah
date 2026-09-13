@@ -6,16 +6,23 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "node server/index.js",
+    "db:migrate": "node server/migrate.js",
+    "db:seed": "node server/seed.js"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",
+    "mysql2": "^3.24.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.0.1",
-    "canvas-confetti": "^1.9.4"
+    "tailwind-merge": "^3.0.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",

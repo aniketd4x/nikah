@@ -22,6 +22,7 @@ import {
   SlidersHorizontal,
   ArrowLeft
 } from 'lucide-react';
+import { useScrollVisibility } from '../../hooks/useScrollVisibility';
 
 export const Header: React.FC = () => {
   const {
@@ -39,9 +40,18 @@ export const Header: React.FC = () => {
     setIsMobileFilterOpen
   } = useApp();
 
+  const isNavVisible = useScrollVisibility();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Auto-close open menus if scrolled away
+  useEffect(() => {
+    if (!isNavVisible) {
+      setIsProfileMenuOpen(false);
+      setIsMobileNavOpen(false);
+    }
+  }, [isNavVisible]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -91,7 +101,9 @@ export const Header: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300 shadow-sm transition-all select-none">
+    <header className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-300 shadow-sm transition-transform duration-300 ease-in-out select-none ${
+      isNavVisible ? 'translate-y-0' : '-translate-y-full pointer-events-none'
+    }`}>
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-15 sm:h-16 flex items-center justify-between gap-3">
         {/* Left: Back Button on Sub-screens OR Brand Logo */}
         <div className="flex items-center gap-2">
@@ -292,6 +304,17 @@ export const Header: React.FC = () => {
                         <Crown className="w-4 h-4 text-gold-600" />
                         <span>Subscription Plans</span>
                       </button>
+
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          navigateTo('admin-login');
+                        }}
+                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-emerald-900 bg-emerald-50/60 hover:bg-emerald-100/80 flex items-center gap-2.5"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                        <span>Sharia Admin Console</span>
+                      </button>
                     </div>
 
                     <div className="border-t border-cream-200 pt-1">
@@ -386,6 +409,16 @@ export const Header: React.FC = () => {
                 >
                   <Crown className="w-4 h-4 text-gold-600" />
                   <span>Upgrade Membership ({currentPlan})</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    navigateTo('admin-login');
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-emerald-900 bg-emerald-50 rounded-xl flex items-center gap-2"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  <span>Admin Console</span>
                 </button>
                 <button
                   onClick={() => {

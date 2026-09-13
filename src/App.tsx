@@ -35,9 +35,31 @@ import { SuccessStoriesScreen } from './screens/SuccessStoriesScreen';
 import { IslamicGuidanceScreen } from './screens/IslamicGuidanceScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { HelpSupportScreen } from './screens/HelpSupportScreen';
+import { AdminLoginScreen } from './screens/Admin/AdminLoginScreen';
+import { AdminDashboardScreen } from './screens/Admin/AdminDashboardScreen';
 
 export const AppContent: React.FC = () => {
   const { currentScreen, isLoggedIn } = useApp();
+
+  const isAdminScreen = currentScreen === 'admin' || currentScreen === 'admin-login';
+
+  if (currentScreen === 'admin') {
+    return (
+      <>
+        <AdminDashboardScreen />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  if (currentScreen === 'admin-login') {
+    return (
+      <>
+        <AdminLoginScreen />
+        <ToastContainer />
+      </>
+    );
+  }
 
   const renderScreen = () => {
     switch (currentScreen) {

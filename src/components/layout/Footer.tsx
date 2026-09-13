@@ -136,6 +136,12 @@ export const Footer: React.FC = () => {
                   Account Settings
                 </button>
               </li>
+              <li>
+                <button onClick={() => navigateTo('admin-login')} className="text-gold-400 font-semibold hover:text-gold-300 transition-colors flex items-center gap-1">
+                  <span>Sharia Admin Portal</span>
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </button>
+              </li>
             </ul>
           </div>
         </div>

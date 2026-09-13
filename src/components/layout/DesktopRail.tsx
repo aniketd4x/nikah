@@ -24,19 +24,17 @@ export const DesktopRail: React.FC = () => {
     currentScreen, 
     navigateTo, 
     isLoggedIn, 
+    currentUser, 
+    logout, 
     unreadMessagesCount,
-    unreadNotificationsCount,
-    currentUser,
     currentPlan,
-    setIsUpgradeModalOpen,
-    setIsVerificationModalOpen,
-    logout
+    setIsUpgradeModalOpen
   } = useApp();
 
   if (!isLoggedIn) return null;
 
   const primaryTabs: { label: string; screen: ScreenType; icon: React.FC<{ className?: string }>; badge?: number }[] = [
-    { label: 'Home', screen: 'dashboard', icon: Home },
+    { label: 'Dashboard', screen: 'dashboard', icon: Home },
     { label: 'Discover', screen: 'discover', icon: Compass },
     { label: 'Matches', screen: 'matches', icon: Heart },
     { label: 'Chats', screen: 'messages', icon: MessageCircle, badge: unreadMessagesCount },
@@ -48,6 +46,7 @@ export const DesktopRail: React.FC = () => {
     { label: 'Search', screen: 'search', icon: SlidersHorizontal },
     { label: 'Stories', screen: 'success-stories', icon: Sparkles },
     { label: 'Settings', screen: 'settings', icon: Settings },
+    { label: 'Admin Console', screen: 'admin-login', icon: ShieldCheck },
   ];
 
   return (

@@ -22,7 +22,9 @@ export type ScreenType =
   | 'success-stories'
   | 'islamic-guidance'
   | 'settings'
-  | 'help-support';
+  | 'help-support'
+  | 'admin'
+  | 'admin-login';
 
 export interface VerificationStatus {
   mobile: boolean;

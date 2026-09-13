@@ -8,6 +8,7 @@ import {
   User 
 } from 'lucide-react';
 import { ScreenType } from '../../types';
+import { useScrollVisibility } from '../../hooks/useScrollVisibility';
 
 export const BottomNav: React.FC = () => {
   const { 
@@ -18,6 +19,8 @@ export const BottomNav: React.FC = () => {
     unreadNotificationsCount,
     currentUser
   } = useApp();
+
+  const isNavVisible = useScrollVisibility();
 
   if (!isLoggedIn) return null;
 
@@ -35,7 +38,9 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-cream-300 md:hidden shadow-[0_-6px_20px_rgba(0,0,0,0.06)] pb-[max(env(safe-area-inset-bottom),6px)] select-none">
+    <nav className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-cream-300 md:hidden shadow-[0_-6px_20px_rgba(0,0,0,0.06)] pb-[max(env(safe-area-inset-bottom),6px)] select-none transition-transform duration-300 ease-in-out ${
+      isNavVisible ? 'translate-y-0' : 'translate-y-[120%] pointer-events-none'
+    }`}>
       <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
