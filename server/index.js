@@ -473,19 +473,29 @@ app.get('/api/admin/users', async (req, res) => {
       LEFT JOIN users u ON p.user_id = u.id
       ORDER BY p.created_at DESC
     `);
-    res.json(profiles);
+    const parsed = profiles.map(p => {
+      try { if (typeof p.religion === 'string') p.religion = JSON.parse(p.religion); } catch {}
+      try { if (typeof p.gallery_photos === 'string') p.galleryPhotos = JSON.parse(p.gallery_photos); } catch {}
+      try { if (typeof p.languages === 'string') p.languages = JSON.parse(p.languages); } catch {}
+      return p;
+    });
+    res.json(parsed);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Admin: Delete User Profile
+// Admin: Delete User Profile & Cascade Remove All Associated DB Records
 app.delete('/api/admin/users/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    await pool.query('DELETE FROM interest_requests WHERE sender_id = ? OR receiver_id = ?', [id, id]);
+    await pool.query('DELETE FROM verifications WHERE user_id = ?', [id]);
+    await pool.query('DELETE FROM reports WHERE reporter_id = ? OR reported_user_id = ?', [id, id]);
+    await pool.query('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', [id, id]);
     await pool.query('DELETE FROM profiles WHERE id = ? OR user_id = ?', [id, id]);
     await pool.query('DELETE FROM users WHERE id = ?', [id]);
-    res.json({ success: true, message: 'User and profile removed successfully' });
+    res.json({ success: true, message: 'User and all profile records permanently purged from MySQL database' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

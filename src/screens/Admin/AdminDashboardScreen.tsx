@@ -59,14 +59,18 @@ export const AdminDashboardScreen: React.FC = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [s, v, r] = await Promise.all([
+      const [s, v, r, users] = await Promise.all([
         api.getAdminStats(),
         api.getVerifications(),
-        api.getReports()
+        api.getReports(),
+        api.getUsers()
       ]);
       setStats(s);
       if (v) setVerificationsList(v);
       if (r) setReportsList(r);
+      if (Array.isArray(users) && users.length > 0) {
+        setProfilesList(users);
+      }
     } catch {
       // Keep defaults
     } finally {
@@ -117,6 +121,11 @@ export const AdminDashboardScreen: React.FC = () => {
     setProfilesList(prev => prev.filter(p => p.id !== profile.id));
     if (selectedProfile?.id === profile.id) setSelectedProfile(null);
     setDeleteConfirmProfile(null);
+    setStats(prev => ({
+      ...prev,
+      totalUsers: Math.max(0, prev.totalUsers - 1),
+      verifiedUsers: (profile.verified?.identity || profile.verified?.reviewed) ? Math.max(0, prev.verifiedUsers - 1) : prev.verifiedUsers
+    }));
     await api.deleteUser(profile.id);
     addToast('Profile Deleted', `${profile.name}'s profile and account were purged from the system.`, 'info');
   };
