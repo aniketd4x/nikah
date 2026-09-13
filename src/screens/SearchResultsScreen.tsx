@@ -19,6 +19,7 @@ export const SearchResultsScreen: React.FC = () => {
   const { 
     filteredProfiles, 
     filterState, 
+    setFilterState,
     resetFilters, 
     appliedFiltersCount,
     navigateTo 
@@ -59,6 +60,18 @@ export const SearchResultsScreen: React.FC = () => {
           <p className="text-xs text-charcoal-500 mt-0.5">
             Verified members matching your religious, cultural, and career criteria.
           </p>
+        </div>
+
+        {/* Live Search Input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-emerald-800 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={filterState.keyword || ''}
+            onChange={(e) => setFilterState((p) => ({ ...p, keyword: e.target.value }))}
+            placeholder="Type keyword, city, profession..."
+            className="w-full bg-cream-50 border border-cream-300 rounded-2xl pl-10 pr-4 py-2 text-xs text-charcoal-800 placeholder-charcoal-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+          />
         </div>
 
         {/* Action Controls & Sort */}

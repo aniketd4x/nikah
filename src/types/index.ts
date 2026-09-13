@@ -184,6 +184,7 @@ export interface GuidanceArticle {
 }
 
 export interface FilterState {
+  keyword?: string;
   gender: 'all' | 'female' | 'male';
   ageRange: [number, number];
   heightMin: string;

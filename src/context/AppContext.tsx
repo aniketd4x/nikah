@@ -79,8 +79,9 @@ const CURRENT_USER_DEFAULT: Profile = {
 };
 
 const DEFAULT_FILTERS: FilterState = {
-  gender: 'female',
-  ageRange: [20, 36],
+  keyword: '',
+  gender: 'all',
+  ageRange: [18, 60],
   heightMin: '',
   country: '',
   city: '',
@@ -606,8 +607,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const appliedFiltersCount = useMemo(() => {
     let count = 0;
-    if (filterState.gender !== 'all' && filterState.gender !== 'female') count++;
-    if (filterState.ageRange[0] !== 20 || filterState.ageRange[1] !== 36) count++;
+    if (filterState.keyword && filterState.keyword.trim().length > 0) count++;
+    if (filterState.gender && filterState.gender !== 'all') count++;
+    if (filterState.ageRange[0] !== 18 || filterState.ageRange[1] !== 60) count++;
     if (filterState.country) count++;
     if (filterState.city) count++;
     if (filterState.education) count++;
@@ -625,21 +627,118 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return count;
   }, [filterState]);
 
-  // Profile filtering
+  // Comprehensive profile search and filtering logic
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
+      // 1. Blocked profiles check
       if (blockedProfileIds.includes(p.id)) return false;
-      if (filterState.gender !== 'all' && p.gender !== filterState.gender) return false;
-      if (p.age < filterState.ageRange[0] || p.age > filterState.ageRange[1]) return false;
-      if (filterState.country && !p.country.toLowerCase().includes(filterState.country.toLowerCase())) return false;
-      if (filterState.city && !p.city.toLowerCase().includes(filterState.city.toLowerCase())) return false;
-      if (filterState.education && !p.education?.toLowerCase().includes(filterState.education.toLowerCase())) return false;
-      if (filterState.profession && !p.profession?.toLowerCase().includes(filterState.profession.toLowerCase())) return false;
-      if (filterState.maritalStatus && p.maritalStatus !== filterState.maritalStatus) return false;
-      if (filterState.motherTongue && !p.motherTongue?.toLowerCase().includes(filterState.motherTongue.toLowerCase())) return false;
-      if (filterState.religiousPractice && !p.religion?.prayerFrequency?.includes(filterState.religiousPractice)) return false;
-      if (filterState.sect && !p.religion?.sect?.toLowerCase().includes(filterState.sect.toLowerCase())) return false;
-      if (filterState.verifiedOnly && !p.verified?.photo && !p.verified?.identity) return false;
+
+      // 2. Keyword search logic (searches across name, city, state, country, profession, bio, education, sect)
+      if (filterState.keyword && filterState.keyword.trim().length > 0) {
+        const queryTerms = filterState.keyword.toLowerCase().trim().split(/\s+/);
+        const searchableText = [
+          p.name,
+          p.city,
+          p.state,
+          p.country,
+          p.profession,
+          p.company,
+          p.education,
+          p.degree,
+          p.university,
+          p.maritalStatus,
+          p.polygynyPreference,
+          p.aboutMe,
+          p.lookingForSummary,
+          p.motherTongue,
+          p.religion?.sect,
+          ...(Array.isArray(p.languages) ? p.languages : [])
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        const matchesAllTerms = queryTerms.every((term) => searchableText.includes(term));
+        if (!matchesAllTerms) return false;
+      }
+
+      // 3. Gender filter
+      if (filterState.gender && filterState.gender !== 'all' && p.gender !== filterState.gender) {
+        return false;
+      }
+
+      // 4. Age range filter
+      if (typeof p.age === 'number') {
+        if (p.age < filterState.ageRange[0] || p.age > filterState.ageRange[1]) return false;
+      }
+
+      // 5. Country filter
+      if (filterState.country) {
+        const pCountry = (p.country || '').toLowerCase();
+        const fCountry = filterState.country.toLowerCase();
+        if (!pCountry.includes(fCountry)) return false;
+      }
+
+      // 6. City filter
+      if (filterState.city) {
+        const pCity = (p.city || '').toLowerCase();
+        const fCity = filterState.city.toLowerCase();
+        if (!pCity.includes(fCity)) return false;
+      }
+
+      // 7. Education filter
+      if (filterState.education) {
+        const pEdu = `${p.education || ''} ${p.degree || ''} ${p.university || ''}`.toLowerCase();
+        const fEdu = filterState.education.toLowerCase();
+        if (!pEdu.includes(fEdu)) return false;
+      }
+
+      // 8. Profession filter
+      if (filterState.profession) {
+        const pProf = `${p.profession || ''} ${p.company || ''}`.toLowerCase();
+        const fProf = filterState.profession.toLowerCase();
+        if (!pProf.includes(fProf)) return false;
+      }
+
+      // 9. Marital Status & Polygyny filter
+      if (filterState.maritalStatus) {
+        const pStatus = `${p.maritalStatus || ''} ${p.polygynyPreference || ''}`.toLowerCase();
+        const fStatus = filterState.maritalStatus.toLowerCase();
+        if (!pStatus.includes(fStatus)) return false;
+      }
+
+      // 10. Mother Tongue filter
+      if (filterState.motherTongue) {
+        const pLang = `${p.motherTongue || ''} ${(p.languages || []).join(' ')}`.toLowerCase();
+        const fLang = filterState.motherTongue.toLowerCase();
+        if (!pLang.includes(fLang)) return false;
+      }
+
+      // 11. Religious Practice (Salah frequency)
+      if (filterState.religiousPractice) {
+        const pPrayer = (p.religion?.prayerFrequency || '').toLowerCase();
+        const fPrayer = filterState.religiousPractice.toLowerCase();
+        if (!pPrayer.includes(fPrayer)) return false;
+      }
+
+      // 12. Islamic Sect filter
+      if (filterState.sect) {
+        const pSect = (p.religion?.sect || '').toLowerCase();
+        const fSect = filterState.sect.toLowerCase();
+        if (!pSect.includes(fSect)) return false;
+      }
+
+      // 13. Verified Only filter
+      if (filterState.verifiedOnly) {
+        const isVerified = Boolean(p.is_verified || p.verified?.identity || p.verified?.reviewed);
+        if (!isVerified) return false;
+      }
+
+      // 14. Photo Only filter
+      if (filterState.photoOnly) {
+        if (!p.photo || p.photo.includes('placeholder')) return false;
+      }
+
       return true;
     });
   }, [profiles, filterState, blockedProfileIds]);

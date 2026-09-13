@@ -6,16 +6,15 @@ import { Badge } from '../components/common/Badge';
 import { Search, Sparkles, MapPin, Briefcase, GraduationCap, ArrowRight, SlidersHorizontal } from 'lucide-react';
 
 export const SearchScreen: React.FC = () => {
-  const { navigateTo, setFilterState, filteredProfiles } = useApp();
-  const [keyword, setKeyword] = useState('');
+  const { navigateTo, filterState, setFilterState, filteredProfiles } = useApp();
 
   const quickFilterChips = [
-    { label: 'Software & Tech Leads', action: () => setFilterState((p) => ({ ...p, profession: 'Software' })) },
-    { label: 'Doctors & Healthcare', action: () => setFilterState((p) => ({ ...p, profession: 'Doctor' })) },
-    { label: 'United Arab Emirates (Dubai)', action: () => setFilterState((p) => ({ ...p, country: 'United Arab Emirates' })) },
-    { label: 'United Kingdom (London)', action: () => setFilterState((p) => ({ ...p, country: 'United Kingdom' })) },
-    { label: 'Postgraduates & Ph.D.', action: () => setFilterState((p) => ({ ...p, education: 'Postgraduate' })) },
-    { label: 'Strictly 5x Daily Salah', action: () => setFilterState((p) => ({ ...p, religiousPractice: 'Always' })) }
+    { label: 'Software & Tech Leads', action: () => setFilterState((p) => ({ ...p, profession: 'Software', keyword: '' })) },
+    { label: 'Doctors & Healthcare', action: () => setFilterState((p) => ({ ...p, profession: 'Doctor', keyword: '' })) },
+    { label: 'United Arab Emirates (Dubai)', action: () => setFilterState((p) => ({ ...p, country: 'United Arab Emirates', keyword: '' })) },
+    { label: 'United Kingdom (London)', action: () => setFilterState((p) => ({ ...p, country: 'United Kingdom', keyword: '' })) },
+    { label: 'Postgraduates & Ph.D.', action: () => setFilterState((p) => ({ ...p, education: 'Postgraduate', keyword: '' })) },
+    { label: 'Strictly 5x Daily Salah', action: () => setFilterState((p) => ({ ...p, religiousPractice: 'Always', keyword: '' })) }
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -46,8 +45,8 @@ export const SearchScreen: React.FC = () => {
           </div>
           <input
             type="text"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            value={filterState.keyword || ''}
+            onChange={(e) => setFilterState((p) => ({ ...p, keyword: e.target.value }))}
             placeholder="Search by keyword, degree, city (e.g. 'Software Mumbai', 'Doctor Dubai', 'Urdu London')..."
             className="flex-1 px-4 py-3 text-xs sm:text-sm bg-transparent border-none focus:outline-none text-charcoal-800 placeholder:text-charcoal-400"
           />
