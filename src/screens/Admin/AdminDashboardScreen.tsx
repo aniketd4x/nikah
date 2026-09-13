@@ -248,7 +248,7 @@ export const AdminDashboardScreen: React.FC = () => {
             </h1>
             <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
               <Database className="w-3 h-3 text-emerald-400" />
-              <span>Hostinger DB: <span className="text-slate-200 font-mono">u872793003_matirmonytaj</span></span>
+              <span>Supabase DB: <span className="text-slate-200 font-mono">rfqfqlpuybidmdvjtsxk.supabase.co</span></span>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </p>
           </div>
@@ -291,7 +291,7 @@ export const AdminDashboardScreen: React.FC = () => {
             { id: 'verifications' as const, label: `KYC & Wali Queue (${verificationsList.filter(v => v.status === 'pending').length})`, icon: FileCheck2 },
             { id: 'reports' as const, label: `Safety & Moderation (${reportsList.filter(r => r.status === 'pending').length})`, icon: AlertTriangle },
             { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown },
-            { id: 'database' as const, label: 'Hostinger MySQL Diagnostics', icon: Database }
+            { id: 'database' as const, label: 'Supabase Cloud Diagnostics', icon: Database }
           ].map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -661,7 +661,7 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         )}
 
-        {/* TAB 6: HOSTINGER MYSQL DIAGNOSTICS */}
+        {/* TAB 6: SUPABASE CLOUD DIAGNOSTICS */}
         {activeTab === 'database' && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-5">
@@ -669,10 +669,10 @@ export const AdminDashboardScreen: React.FC = () => {
                 <div className="space-y-1">
                   <h3 className="font-serif font-bold text-base text-white flex items-center gap-2">
                     <Database className="w-5 h-5 text-emerald-400" />
-                    <span>Hostinger MySQL Remote Instance</span>
+                    <span>Supabase Cloud Database Instance</span>
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Direct pooled connection to <span className="text-emerald-400 font-mono">srv1641.hstgr.io</span>
+                    Direct pooled connection to <span className="text-emerald-400 font-mono">rfqfqlpuybidmdvjtsxk.supabase.co</span>
                   </p>
                 </div>
 
@@ -684,27 +684,27 @@ export const AdminDashboardScreen: React.FC = () => {
 
               <div className="grid sm:grid-cols-2 gap-3 text-xs font-mono">
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Database Name</span>
-                  <span className="text-slate-200 font-bold">u872793003_matirmonytaj</span>
+                  <span className="text-slate-500 block">Project Reference</span>
+                  <span className="text-slate-200 font-bold">rfqfqlpuybidmdvjtsxk</span>
                 </div>
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Database User</span>
-                  <span className="text-slate-200 font-bold">u872793003_matirmony</span>
+                  <span className="text-slate-500 block">API Engine</span>
+                  <span className="text-slate-200 font-bold">Supabase PostgREST & Auth</span>
                 </div>
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Host Endpoint</span>
-                  <span className="text-slate-200 font-bold">srv1641.hstgr.io:3306</span>
+                  <span className="text-slate-500 block">REST & Realtime Endpoint</span>
+                  <span className="text-slate-200 font-bold">https://rfqfqlpuybidmdvjtsxk.supabase.co</span>
                 </div>
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                  <span className="text-slate-500 block">Character Set & Collation</span>
-                  <span className="text-slate-200 font-bold">utf8mb4_unicode_ci</span>
+                  <span className="text-slate-500 block">Database Engine</span>
+                  <span className="text-slate-200 font-bold">PostgreSQL 15+ (Cloud)</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="text-xs font-bold text-slate-300">Migrated Relational Tables:</h4>
+                <h4 className="text-xs font-bold text-slate-300">Configured Cloud Relational Tables:</h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] font-mono">
-                  {['admin_users', 'users', 'profiles', 'interest_requests', 'conversations', 'messages', 'verifications', 'subscriptions', 'reports', 'success_stories', 'guidance_articles'].map(table => (
+                  {['profiles', 'users', 'interest_requests', 'conversations', 'messages', 'verifications', 'reports', 'admin_users', 'success_stories', 'guidance_articles'].map(table => (
                     <div key={table} className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-slate-300">
                       <span>{table}</span>
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
