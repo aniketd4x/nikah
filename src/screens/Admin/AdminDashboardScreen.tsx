@@ -40,7 +40,7 @@ export const AdminDashboardScreen: React.FC = () => {
   const { navigateTo, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
@@ -242,11 +242,11 @@ export const AdminDashboardScreen: React.FC = () => {
   });
 
   const navTabs = [
-    { id: 'overview' as const, label: 'Analytics Overview', icon: TrendingUp, count: null },
-    { id: 'users' as const, label: 'Users & Profiles', icon: Users, count: profilesList.length },
-    { id: 'verifications' as const, label: 'KYC & Wali Queue', icon: FileCheck2, count: verificationsList.filter(v => v.status === 'pending').length },
-    { id: 'reports' as const, label: 'Safety & Moderation', icon: AlertTriangle, count: reportsList.filter(r => r.status === 'pending').length },
-    { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown, count: null }
+    { id: 'overview' as const, label: 'Overview', fullLabel: 'Analytics Overview', icon: TrendingUp, count: null },
+    { id: 'users' as const, label: 'Profiles', fullLabel: 'Users & Profiles', icon: Users, count: profilesList.length },
+    { id: 'verifications' as const, label: 'KYC / Wali', fullLabel: 'KYC & Wali Queue', icon: FileCheck2, count: verificationsList.filter(v => v.status === 'pending').length },
+    { id: 'reports' as const, label: 'Safety', fullLabel: 'Safety & Moderation', icon: AlertTriangle, count: reportsList.filter(r => r.status === 'pending').length },
+    { id: 'subscriptions' as const, label: 'VIP Plans', fullLabel: 'Subscriptions & VIP', icon: Crown, count: null }
   ];
 
   return (
@@ -295,7 +295,7 @@ export const AdminDashboardScreen: React.FC = () => {
                 >
                   <div className="flex items-center gap-3">
                     <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
-                    <span>{tab.label}</span>
+                    <span>{tab.fullLabel}</span>
                   </div>
                   {tab.count !== null && (
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -386,7 +386,7 @@ export const AdminDashboardScreen: React.FC = () => {
                     >
                       <div className="flex items-center gap-3">
                         <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
-                        <span>{tab.label}</span>
+                        <span>{tab.fullLabel}</span>
                       </div>
                       {tab.count !== null && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
@@ -481,37 +481,8 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
         </header>
 
-        {/* Mobile Horizontal Native Tab Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar p-3 bg-white border-b border-slate-200/80 md:hidden">
-          {navTabs.map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => { triggerHaptic(10); setActiveTab(tab.id); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${
-                  isActive
-                    ? 'bg-emerald-700 text-white shadow-xs font-bold'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-                {tab.count !== null && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
-                    isActive ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Dashboard Content Container */}
-        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Dashboard Content Container with Native Mobile App Bottom Padding */}
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 pb-28 md:pb-8">
           {/* ================= TAB 1: OVERVIEW ================= */}
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-in fade-in duration-200">
@@ -645,7 +616,7 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
           )}
 
-          {/* ================= TAB 2: USERS & PROFILES CRUD ================= */}
+          {/* ================= TAB 2: USERS & PROFILES CRUD (CARDS VIEW FIRST) ================= */}
           {activeTab === 'users' && (
             <div className="space-y-4 animate-in fade-in duration-200">
               {/* Search & Filter Header Bar */}
@@ -687,6 +658,15 @@ export const AdminDashboardScreen: React.FC = () => {
                   {/* View Mode Switcher */}
                   <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/70">
                     <button
+                      onClick={() => setViewMode('cards')}
+                      className={`p-1.5 rounded-lg text-xs transition-colors ${
+                        viewMode === 'cards' ? 'bg-white text-emerald-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                      title="Cards View (Default)"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
                       onClick={() => setViewMode('table')}
                       className={`p-1.5 rounded-lg text-xs transition-colors ${
                         viewMode === 'table' ? 'bg-white text-emerald-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
@@ -694,15 +674,6 @@ export const AdminDashboardScreen: React.FC = () => {
                       title="Table View"
                     >
                       <List className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode('cards')}
-                      className={`p-1.5 rounded-lg text-xs transition-colors ${
-                        viewMode === 'cards' ? 'bg-white text-emerald-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
-                      }`}
-                      title="Cards View"
-                    >
-                      <LayoutGrid className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -716,7 +687,133 @@ export const AdminDashboardScreen: React.FC = () => {
                 </div>
               </div>
 
-              {/* TABLE VIEW (Responsive Modern Table) */}
+              {/* CARD VIEW (Every Profile in Clean White App Cards) */}
+              {viewMode === 'cards' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                  {filteredProfiles.length === 0 ? (
+                    <div className="col-span-full bg-white border border-slate-200/80 rounded-2xl p-12 text-center text-slate-500 font-medium">
+                      No profiles found matching your search and filter criteria.
+                    </div>
+                  ) : (
+                    filteredProfiles.map(profile => {
+                      const verified = isProfileVerified(profile);
+                      return (
+                        <div
+                          key={profile.id}
+                          className="bg-white border border-slate-200/80 rounded-3xl p-5 space-y-4 shadow-xs hover:shadow-card hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between group"
+                        >
+                          <div className="space-y-3.5">
+                            {/* Card Top Avatar & Identity */}
+                            <div className="flex items-start gap-4">
+                              <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border-2 border-slate-200 group-hover:border-emerald-500 transition-colors shadow-xs">
+                                <img src={profile.photo} alt={profile.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                {verified && (
+                                  <div className="absolute top-1 right-1 bg-emerald-600 text-white p-0.5 rounded-full shadow-xs">
+                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-1.5 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="font-serif font-bold text-base text-slate-900 truncate">
+                                    {profile.name}
+                                  </h4>
+                                  <span className="text-xs text-slate-500 font-medium">
+                                    ({profile.age} yrs)
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className={`inline-block text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
+                                    profile.gender === 'female' 
+                                      ? 'bg-rose-50 text-rose-700 border border-rose-200/80' 
+                                      : 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                                  }`}>
+                                    {profile.gender}
+                                  </span>
+                                  {verified ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                      <ShieldCheck className="w-3 h-3" />
+                                      Verified
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                      Unverified
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Details Information */}
+                            <div className="p-3 bg-slate-50/80 rounded-2xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
+                              <div className="flex items-center gap-1.5 text-slate-800 font-medium">
+                                <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate">{profile.profession}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-slate-500">
+                                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate">{profile.city}, {profile.country}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11px] text-amber-800 font-semibold pt-0.5">
+                                <Heart className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span className="truncate">{profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons Row */}
+                          <div className="flex items-center gap-2 pt-3 border-t border-slate-100 justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => setSelectedProfile(profile)}
+                                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200/70 flex items-center gap-1 active:scale-95 transition-all"
+                                title="Inspect Profile"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                <span>Inspect</span>
+                              </button>
+
+                              <button
+                                onClick={() => setEditProfileData({ ...profile })}
+                                className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200/80 flex items-center gap-1 active:scale-95 transition-all"
+                                title="Edit Profile"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                                <span>Edit</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => handleToggleVerify(profile.id, verified)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 active:scale-95 transition-all ${
+                                  verified
+                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                                }`}
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span>{verified ? 'Verified' : 'Verify'}</span>
+                              </button>
+
+                              <button
+                                onClick={() => setDeleteConfirmProfile(profile)}
+                                className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 active:scale-95 transition-colors"
+                                title="Delete Profile & Account Permanently from MySQL"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* TABLE VIEW (Optional Toggle for Desktop) */}
               {viewMode === 'table' && (
                 <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
                   <div className="overflow-x-auto">
@@ -850,112 +947,6 @@ export const AdminDashboardScreen: React.FC = () => {
                       </tbody>
                     </table>
                   </div>
-                </div>
-              )}
-
-              {/* CARD VIEW (Beautiful Modern Cards) */}
-              {viewMode === 'cards' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredProfiles.length === 0 ? (
-                    <div className="col-span-full bg-white border border-slate-200/80 rounded-2xl p-12 text-center text-slate-500 font-medium">
-                      No profiles found matching your search and filter criteria.
-                    </div>
-                  ) : (
-                    filteredProfiles.map(profile => {
-                      const verified = isProfileVerified(profile);
-                      return (
-                        <div
-                          key={profile.id}
-                          className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between"
-                        >
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3.5">
-                              <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
-                                <img src={profile.photo} alt={profile.name} className="w-full h-full object-cover" />
-                                {verified && (
-                                  <div className="absolute top-1 right-1 bg-emerald-600 text-white p-0.5 rounded-full shadow-xs">
-                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="space-y-1 flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h4 className="font-bold text-sm text-slate-900 truncate">{profile.name}</h4>
-                                  <span className="text-xs text-slate-500 font-medium">({profile.age} yrs)</span>
-                                </div>
-                                <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                                  profile.gender === 'female' 
-                                    ? 'bg-rose-50 text-rose-700 border border-rose-200/80' 
-                                    : 'bg-blue-50 text-blue-700 border border-blue-200/80'
-                                }`}>
-                                  {profile.gender}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="space-y-1 text-xs text-slate-600">
-                              <div className="flex items-center gap-1 text-slate-700 font-medium">
-                                <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span className="truncate">{profile.profession}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-slate-500">
-                                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <span className="truncate">{profile.city}, {profile.country}</span>
-                              </div>
-                              <div className="text-[11px] text-amber-700 font-semibold pt-1">
-                                {profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 justify-between">
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => setSelectedProfile(profile)}
-                                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1"
-                                title="Inspect Profile"
-                              >
-                                <Eye className="w-3.5 h-3.5 text-slate-500" />
-                                <span>Inspect</span>
-                              </button>
-
-                              <button
-                                onClick={() => setEditProfileData({ ...profile })}
-                                className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-1"
-                                title="Edit Profile"
-                              >
-                                <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
-                                <span>Edit</span>
-                              </button>
-                            </div>
-
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => handleToggleVerify(profile.id, verified)}
-                                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
-                                  verified
-                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
-                                    : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
-                                }`}
-                              >
-                                <ShieldCheck className="w-3.5 h-3.5" />
-                                <span>{verified ? 'Verified' : 'Verify'}</span>
-                              </button>
-
-                              <button
-                                onClick={() => setDeleteConfirmProfile(profile)}
-                                className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors"
-                                title="Delete Profile & Account Permanently from MySQL"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
                 </div>
               )}
             </div>
@@ -1115,6 +1106,49 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
           )}
         </main>
+
+        {/* ================= MOBILE NATIVE APP BOTTOM NAVBAR ================= */}
+        <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] px-2 py-1.5 flex items-center justify-around md:hidden">
+          {navTabs.map(tab => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  triggerHaptic(12);
+                  setActiveTab(tab.id);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl relative transition-all duration-200 active:scale-95 ${
+                  isActive
+                    ? 'text-emerald-800 font-bold'
+                    : 'text-slate-400 hover:text-slate-600 font-medium'
+                }`}
+              >
+                <div className={`p-1.5 rounded-xl transition-all ${
+                  isActive ? 'bg-emerald-50 scale-110 shadow-xs' : ''
+                }`}>
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
+                </div>
+                <span className="text-[10px] mt-0.5 tracking-tight truncate max-w-[62px]">
+                  {tab.label}
+                </span>
+
+                {/* Notification Bubble for items needing attention or count */}
+                {tab.count !== null && tab.count > 0 && (
+                  <span className={`absolute top-0.5 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full leading-tight shadow-xs ${
+                    tab.id === 'verifications' || tab.id === 'reports'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-emerald-600 text-white'
+                  }`}>
+                    {tab.count > 99 ? '99+' : tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       {/* ================= MODAL 1: CREATE NEW PROFILE ================= */}
