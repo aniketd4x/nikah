@@ -228,7 +228,22 @@ app.get('/api/profiles/:id', async (req, res) => {
 // 7. Profiles: Update Profile
 app.put('/api/profiles/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, profession, city, about_me, marital_status, polygyny_preference } = req.body;
+  const body = req.body;
+  const name = body.name || null;
+  const profession = body.profession || null;
+  const city = body.city || null;
+  const country = body.country || null;
+  const about_me = body.aboutMe || body.about_me || null;
+  const marital_status = body.maritalStatus || body.marital_status || null;
+  const polygyny_preference = body.polygynyPreference || body.polygyny_preference || null;
+  const education = body.education || null;
+  const degree = body.degree || null;
+  const height = body.height || null;
+  const mother_tongue = body.motherTongue || body.mother_tongue || null;
+  const family_type = body.familyType || body.family_type || null;
+  const family_values = body.familyValues || body.family_values || null;
+  const photo = body.photo || null;
+  const religion = body.religion ? (typeof body.religion === 'string' ? body.religion : JSON.stringify(body.religion)) : null;
 
   try {
     await pool.query(`
@@ -236,11 +251,24 @@ app.put('/api/profiles/:id', async (req, res) => {
         name = COALESCE(?, name),
         profession = COALESCE(?, profession),
         city = COALESCE(?, city),
+        country = COALESCE(?, country),
         about_me = COALESCE(?, about_me),
         marital_status = COALESCE(?, marital_status),
-        polygyny_preference = COALESCE(?, polygyny_preference)
+        polygyny_preference = COALESCE(?, polygyny_preference),
+        education = COALESCE(?, education),
+        degree = COALESCE(?, degree),
+        height = COALESCE(?, height),
+        mother_tongue = COALESCE(?, mother_tongue),
+        family_type = COALESCE(?, family_type),
+        family_values = COALESCE(?, family_values),
+        photo = COALESCE(?, photo),
+        religion = COALESCE(?, religion)
       WHERE id = ? OR user_id = ?
-    `, [name, profession, city, about_me, marital_status, polygyny_preference, id, id]);
+    `, [
+      name, profession, city, country, about_me, marital_status, polygyny_preference,
+      education, degree, height, mother_tongue, family_type, family_values, photo, religion,
+      id, id
+    ]);
 
     res.json({ success: true, message: 'Profile updated in MySQL database' });
   } catch (err) {

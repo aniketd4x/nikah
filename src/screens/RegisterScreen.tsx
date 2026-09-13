@@ -17,13 +17,22 @@ export const RegisterScreen: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const finalGender = lookingFor === 'bride' ? 'male' : 'female';
+    const cityParts = location.split(',');
+    const city = cityParts[0]?.trim() || location.trim() || 'Mumbai';
+    const country = cityParts[1]?.trim() || 'India';
+
     registerUser({
-      lookingFor,
-      name: name || (lookingFor === 'bride' ? 'Ahmed Farooq' : 'Ayesha Siddiqui'),
+      name: name.trim() || (finalGender === 'male' ? 'Brother Ahmed' : 'Sister Ayesha'),
+      email: email.trim(),
+      password: password.trim() || 'Nikah@2026!',
+      gender: finalGender,
       age: parseInt(age) || 26,
-      location,
-      email,
-      mobile
+      city,
+      country,
+      phone: mobile.trim() || '+91 98765 43210',
+      maritalStatus: 'Never Married',
+      polygynyPreference: finalGender === 'male' ? 'Open to Discussion' : 'First Marriage'
     });
   };
 

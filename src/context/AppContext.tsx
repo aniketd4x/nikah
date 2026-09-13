@@ -194,8 +194,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [favorites, setFavorites] = useState<string[]>(['p-1', 'p-9', 'p-5']);
   const [interests, setInterests] = useState<InterestRequest[]>(INITIAL_INTERESTS);
   const [passes, setPasses] = useState<string[]>([]);
-  const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>('conv-1');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [filterState, setFilterState] = useState<FilterState>(DEFAULT_FILTERS);
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>(DEFAULT_PRIVACY);
@@ -303,27 +303,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const registerUser = async (data: any) => {
-    setIsLoggedIn(true);
     try {
-      await api.register(data);
-    } catch {}
-    if (data.name) {
-      setCurrentUser(prev => ({
-        ...prev,
-        name: data.name,
-        gender: data.lookingFor === 'groom' ? 'female' : 'male',
-        city: data.location || prev.city
-      }));
+      const res = await api.register(data);
+      const newUserId = res?.user?.id || `u-${Date.now()}`;
+      const defaultPhoto = data.gender === 'female'
+        ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
+        : 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+
+      const newUserProfile: Profile = {
+        ...CURRENT_USER_DEFAULT,
+        id: newUserId,
+        name: data.name || (data.gender === 'male' ? 'Brother Ahmed' : 'Sister Ayesha'),
+        age: Number(data.age) || 26,
+        gender: data.gender || 'male',
+        city: data.city || 'Mumbai',
+        country: data.country || 'India',
+        profession: data.profession || 'Professional',
+        maritalStatus: data.maritalStatus || 'Never Married',
+        photo: defaultPhoto,
+        galleryPhotos: [defaultPhoto],
+        aboutMe: `Assalamu Alaikum, my name is ${data.name}. I am seeking a pious, God-fearing partner for a blessed Nikah.`,
+        lookingForSummary: 'A practicing Muslim partner with good Islamic character, honesty, and family values.'
+      };
+
+      setCurrentUser(newUserProfile);
+      setProfiles(prev => [newUserProfile, ...prev]);
+      setIsLoggedIn(true);
+      if (res?.token) {
+        localStorage.setItem('nikah_token', res.token);
+      }
+      setCurrentScreen('onboarding');
+      addToast('Profile Created!', 'Al-hamdulillah! Your new profile has been saved to the database.', 'success');
+    } catch (err) {
+      console.error('Registration error:', err);
+      setIsLoggedIn(true);
+      setCurrentScreen('onboarding');
     }
-    setCurrentScreen('onboarding');
-    addToast('Account Created!', 'Welcome to Polygamy Matrimony. Let\'s complete your profile.', 'success');
   };
 
   const updateCurrentUser = async (data: Partial<Profile>) => {
-    setCurrentUser((prev) => ({ ...prev, ...data }));
+    setCurrentUser((prev) => {
+      const updated = { ...prev, ...data };
+      setProfiles(pList => pList.map(p => p.id === updated.id ? { ...p, ...data } : p));
+      return updated;
+    });
     try {
       await api.updateProfile(currentUser.id, data);
-    } catch {}
+    } catch (err) {
+      console.warn('Profile update API error:', err);
+    }
     addToast('Profile Updated', 'Your changes have been saved to the database.', 'success');
   };
 
@@ -390,6 +418,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (partner) {
         setCelebrationPartner(partner);
         setIsCelebrationModalOpen(true);
+
+        // Open active chat conversation for this connected partner
+        setConversations((prev) => {
+          if (prev.some((c) => c.partnerId === partner.id)) return prev;
+          const newConv: Conversation = {
+            id: `conv-${Date.now()}`,
+            partnerId: partner.id,
+            unreadCount: 0,
+            lastMessage: 'Connected! You can now exchange respectful matrimonial messages.',
+            lastMessageTime: 'Just now',
+            messages: [
+              {
+                id: `msg-${Date.now()}`,
+                senderId: partner.id,
+                text: 'Assalamu Alaikum wa Rahmatullah. JazakAllah for connecting. Looking forward to discussing our matrimonial goals in accordance with Islamic values.',
+                timestamp: 'Just now',
+                isSelf: false,
+                read: true
+              }
+            ]
+          };
+          return [newConv, ...prev];
+        });
+
         // Fire confetti
         try {
           confetti({

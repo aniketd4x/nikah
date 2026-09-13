@@ -83,42 +83,52 @@ export const MessagingScreen: React.FC = () => {
 
           {/* Conversations */}
           <div className="flex-1 overflow-y-auto divide-y divide-cream-200">
-            {conversations.map((conv) => {
-              const convPartner = profiles.find((p) => p.id === conv.partnerId);
-              if (!convPartner) return null;
-              const isActive = activeConversation?.id === conv.id;
+            {conversations.length === 0 ? (
+              <div className="p-6 text-center text-charcoal-500 space-y-2 mt-8">
+                <Users className="w-8 h-8 text-cream-400 mx-auto" />
+                <p className="text-xs font-semibold text-charcoal-700">No Active Chats Yet</p>
+                <p className="text-[11px] text-charcoal-500 leading-relaxed">
+                  Chats appear here when an interest request is accepted by both parties.
+                </p>
+              </div>
+            ) : (
+              conversations.map((conv) => {
+                const convPartner = profiles.find((p) => p.id === conv.partnerId);
+                if (!convPartner) return null;
+                const isActive = activeConversation?.id === conv.id;
 
-              return (
-                <div
-                  key={conv.id}
-                  onClick={() => setActiveConversationId(conv.id)}
-                  className={`p-3.5 flex items-start gap-3 cursor-pointer transition-colors ${
-                    isActive ? 'bg-emerald-50/90 border-l-4 border-emerald-800' : 'hover:bg-cream-100'
-                  }`}
-                >
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border border-cream-300">
-                    <img src={convPartner.photo} alt={convPartner.name} className="w-full h-full object-cover" />
-                    {convPartner.online && (
-                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                return (
+                  <div
+                    key={conv.id}
+                    onClick={() => setActiveConversationId(conv.id)}
+                    className={`p-3.5 flex items-start gap-3 cursor-pointer transition-colors ${
+                      isActive ? 'bg-emerald-50/90 border-l-4 border-emerald-800' : 'hover:bg-cream-100'
+                    }`}
+                  >
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border border-cream-300">
+                      <img src={convPartner.photo} alt={convPartner.name} className="w-full h-full object-cover" />
+                      {convPartner.online && (
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                        <h4 className="text-xs font-bold text-emerald-950 truncate">{convPartner.name}</h4>
+                        <span className="text-[10px] text-charcoal-400 shrink-0">{conv.lastMessageTime}</span>
+                      </div>
+                      <p className="text-[11px] text-charcoal-500 truncate">{conv.lastMessage}</p>
+                    </div>
+
+                    {conv.unreadCount > 0 && (
+                      <span className="bg-gold-500 text-emerald-950 text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                        {conv.unreadCount}
+                      </span>
                     )}
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <h4 className="text-xs font-bold text-emerald-950 truncate">{convPartner.name}</h4>
-                      <span className="text-[10px] text-charcoal-400 shrink-0">{conv.lastMessageTime}</span>
-                    </div>
-                    <p className="text-[11px] text-charcoal-500 truncate">{conv.lastMessage}</p>
-                  </div>
-
-                  {conv.unreadCount > 0 && (
-                    <span className="bg-gold-500 text-emerald-950 text-[10px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                      {conv.unreadCount}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -291,9 +301,35 @@ export const MessagingScreen: React.FC = () => {
             </form>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-cream-50">
-            <h3 className="font-serif font-bold text-lg text-emerald-950">No Conversation Selected</h3>
-            <p className="text-xs text-charcoal-500 mt-1">Select a connected match on the left to start conversing.</p>
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-cream-50/40 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 border border-emerald-200 shadow-sm mx-auto">
+              <ShieldCheck className="w-8 h-8 text-emerald-800" />
+            </div>
+            <div className="max-w-md mx-auto space-y-2">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-emerald-950">
+                Direct Chats Require Mutual Connection
+              </h3>
+              <p className="text-xs text-charcoal-600 leading-relaxed">
+                In accordance with Islamic matrimonial etiquette and Sharia privacy, direct conversations are enabled only after an interest proposal has been mutually accepted by both parties.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5 justify-center pt-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigateTo('discover')}
+                rightIcon={<Sparkles className="w-3.5 h-3.5" />}
+              >
+                Explore Compatible Matches
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateTo('interests')}
+              >
+                View Received Interests
+              </Button>
+            </div>
           </div>
         )}
       </div>
