@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS public.guidance_articles (
 );
 
 -- =========================================================
--- DISABLE ROW LEVEL SECURITY (RLS) FOR DIRECT ACCESS VIA ANON KEY
+-- DISABLE ROW LEVEL SECURITY OR ALLOW ALL (PERMISSIVE)
 -- =========================================================
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
@@ -163,7 +163,20 @@ ALTER TABLE public.admin_users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.success_stories DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.guidance_articles DISABLE ROW LEVEL SECURITY;
 
--- Grant access to public anon and service_role
+-- If RLS is re-enabled in the future, create universal access policies:
+DO $$
+DECLARE
+    tbl text;
+BEGIN
+    FOR tbl IN SELECT unnest(ARRAY['profiles', 'users', 'interest_requests', 'conversations', 'messages', 'verifications', 'reports', 'admin_users', 'success_stories', 'guidance_articles'])
+    LOOP
+        EXECUTE format('DROP POLICY IF EXISTS "Allow all for %I" ON public.%I;', tbl, tbl);
+        EXECUTE format('CREATE POLICY "Allow all for %I" ON public.%I FOR ALL USING (true) WITH CHECK (true);', tbl, tbl);
+    END LOOP;
+END $$;
+
+-- Grant permissions to anon, authenticated, and service_role
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
