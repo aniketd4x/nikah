@@ -22,7 +22,15 @@ import {
   Plus,
   Edit3,
   UserCheck,
-  UserX
+  UserX,
+  Menu,
+  ChevronRight,
+  LayoutGrid,
+  List,
+  MapPin,
+  Briefcase,
+  Heart,
+  Sparkles
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
@@ -31,6 +39,9 @@ type AdminTab = 'overview' | 'users' | 'verifications' | 'reports' | 'subscripti
 export const AdminDashboardScreen: React.FC = () => {
   const { navigateTo, addToast } = useApp();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
+  
   const [stats, setStats] = useState<AdminStats>({
     totalUsers: 0,
     verifiedUsers: 0,
@@ -230,38 +241,86 @@ export const AdminDashboardScreen: React.FC = () => {
     return matchesSearch && matchesGender && matchesVerified;
   });
 
+  const navTabs = [
+    { id: 'overview' as const, label: 'Analytics Overview', icon: TrendingUp, count: null },
+    { id: 'users' as const, label: 'Users & Profiles', icon: Users, count: profilesList.length },
+    { id: 'verifications' as const, label: 'KYC & Wali Queue', icon: FileCheck2, count: verificationsList.filter(v => v.status === 'pending').length },
+    { id: 'reports' as const, label: 'Safety & Moderation', icon: AlertTriangle, count: reportsList.filter(r => r.status === 'pending').length },
+    { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown, count: null }
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col select-none antialiased">
-      {/* Top Admin Navigation Header */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-2xl bg-emerald-950 border border-emerald-800 text-emerald-400">
-            <ShieldCheck className="w-5 h-5" />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex antialiased select-none font-sans">
+      {/* ================= DESKTOP SIDEBAR (PURE WHITE) ================= */}
+      <aside className="hidden md:flex flex-col w-64 lg:w-72 shrink-0 h-screen sticky top-0 bg-white border-r border-slate-200/80 p-5 space-y-6 z-30 justify-between">
+        <div className="space-y-6">
+          {/* Brand Header */}
+          <div className="flex items-center gap-3 px-1 py-1">
+            <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 shadow-xs">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className="font-serif font-bold text-base text-slate-900 leading-tight">
+                Polygamy Matrimony
+              </h1>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                  Admin Console
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="font-serif font-bold text-sm sm:text-base text-white flex items-center gap-2">
-              <span>Polygamy Matrimony</span>
-              <span className="text-[10px] uppercase font-mono tracking-widest px-2 py-0.5 rounded-full bg-emerald-900/80 text-emerald-300 border border-emerald-700">
-                Admin Console
-              </span>
-            </h1>
+
+          {/* Database Status Chip */}
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-600 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-semibold text-slate-800">Live Hostinger MySQL</span>
+            <span className="ml-auto text-emerald-700 font-bold">Online</span>
           </div>
+
+          {/* Nav Items */}
+          <nav className="space-y-1.5 pt-1">
+            {navTabs.map(tab => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => { triggerHaptic(10); setActiveTab(tab.id); }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+                    isActive
+                      ? 'bg-emerald-50 text-emerald-900 border border-emerald-200/80 shadow-xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.count !== null && (
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      isActive 
+                        ? 'bg-emerald-200/80 text-emerald-900' 
+                        : tab.count > 0 && (tab.id === 'verifications' || tab.id === 'reports')
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => { triggerHaptic(10); loadData(); }}
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-700 transition-colors"
-            title="Refresh Data"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
-
+        {/* Sidebar Footer Shortcuts */}
+        <div className="pt-4 border-t border-slate-100 space-y-2">
           <button
             onClick={() => navigateTo('dashboard')}
-            className="hidden sm:flex items-center gap-1.5 text-xs text-slate-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-colors"
+            className="w-full flex items-center gap-2.5 text-xs text-slate-700 hover:text-slate-900 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 font-semibold transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4 text-slate-500" />
             <span>Switch to User View</span>
           </button>
 
@@ -270,461 +329,879 @@ export const AdminDashboardScreen: React.FC = () => {
               localStorage.removeItem('nikah_admin_token');
               navigateTo('landing');
             }}
-            className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-rose-950/60 text-rose-300 border border-rose-800/60 hover:bg-rose-900 transition-colors text-xs font-semibold flex items-center gap-1"
+            className="w-full flex items-center gap-2.5 text-xs text-rose-600 hover:text-rose-700 px-3.5 py-2 rounded-xl hover:bg-rose-50 font-semibold transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <span>Sign Out</span>
           </button>
         </div>
-      </header>
+      </aside>
 
-      {/* Main Admin Body */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 border-b border-slate-800">
-          {[
-            { id: 'overview' as const, label: 'Analytics Overview', icon: TrendingUp },
-            { id: 'users' as const, label: `Users & Profiles (${profilesList.length})`, icon: Users },
-            { id: 'verifications' as const, label: `KYC & Wali Queue (${verificationsList.filter(v => v.status === 'pending').length})`, icon: FileCheck2 },
-            { id: 'reports' as const, label: `Safety & Moderation (${reportsList.filter(r => r.status === 'pending').length})`, icon: AlertTriangle },
-            { id: 'subscriptions' as const, label: 'Subscriptions & VIP', icon: Crown }
-          ].map(tab => {
+      {/* ================= MOBILE DRAWER SIDEBAR ================= */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-150">
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <div className="relative w-72 max-w-[80vw] bg-white h-full shadow-2xl p-5 flex flex-col justify-between z-10 space-y-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-serif font-bold text-sm text-slate-900">Polygamy Matrimony</h2>
+                    <span className="text-[10px] font-bold uppercase text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                      Admin Console
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <nav className="space-y-1">
+                {navTabs.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => { 
+                        triggerHaptic(10); 
+                        setActiveTab(tab.id); 
+                        setIsMobileSidebarOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-900 border border-emerald-200 font-bold'
+                          : 'text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-700' : 'text-slate-400'}`} />
+                        <span>{tab.label}</span>
+                      </div>
+                      {tab.count !== null && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 space-y-2">
+              <button
+                onClick={() => navigateTo('dashboard')}
+                className="w-full flex items-center gap-2 text-xs text-slate-700 p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Switch to User View</span>
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('nikah_admin_token');
+                  navigateTo('landing');
+                }}
+                className="w-full flex items-center gap-2 text-xs text-rose-600 p-2 rounded-xl font-semibold"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= MAIN CONTENT AREA ================= */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        {/* Sticky Top Header (Clean Minimal White) */}
+        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-8 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="p-2 rounded-xl md:hidden text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80"
+              title="Open Navigation"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
+                <span>Admin Console</span>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-slate-700 capitalize">{activeTab}</span>
+              </div>
+              <h2 className="font-serif font-bold text-base sm:text-lg text-slate-900 tracking-tight">
+                {activeTab === 'overview' && 'Analytics Overview'}
+                {activeTab === 'users' && `Users & Profiles (${profilesList.length})`}
+                {activeTab === 'verifications' && `KYC & Wali Queue (${verificationsList.filter(v => v.status === 'pending').length})`}
+                {activeTab === 'reports' && `Safety & Moderation (${reportsList.filter(r => r.status === 'pending').length})`}
+                {activeTab === 'subscriptions' && 'Subscriptions & VIP'}
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => { triggerHaptic(10); loadData(); }}
+              className="p-2 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5 text-xs font-semibold"
+              title="Refresh Data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-emerald-600' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+
+            <button
+              onClick={() => navigateTo('dashboard')}
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 transition-colors shadow-xs"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
+              <span>Switch to User View</span>
+            </button>
+
+            <button
+              onClick={() => {
+                localStorage.removeItem('nikah_admin_token');
+                navigateTo('landing');
+              }}
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200/70 hover:bg-rose-100 transition-colors text-xs font-semibold flex items-center gap-1.5"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Horizontal Native Tab Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar p-3 bg-white border-b border-slate-200/80 md:hidden">
+          {navTabs.map(tab => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => { triggerHaptic(10); setActiveTab(tab.id); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all ${
                   isActive
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/50'
-                    : 'bg-slate-900 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
+                    ? 'bg-emerald-700 text-white shadow-xs font-bold'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{tab.label}</span>
+                {tab.count !== null && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isActive ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {tab.count}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
 
-        {/* TAB 1: OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            {/* KPI Cards Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Total Database Users</span>
-                  <Users className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">{profilesList.length}</div>
-                <div className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Live Hostinger MySQL</span>
-                </div>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Verified Profiles</span>
-                  <ShieldCheck className="w-4 h-4 text-blue-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">
-                  {profilesList.filter(isProfileVerified).length}
-                </div>
-                <div className="text-[11px] text-blue-400 font-semibold">
-                  {Math.round((profilesList.filter(isProfileVerified).length / (profilesList.length || 1)) * 100)}% Verified
-                </div>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">KYC & Wali Queue</span>
-                  <FileCheck2 className="w-4 h-4 text-amber-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">
-                  {verificationsList.filter(v => v.status === 'pending').length}
-                </div>
-                <div className="text-[11px] text-amber-400 font-semibold">Action Required</div>
-              </div>
-
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 space-y-2">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Monthly Revenue</span>
-                  <Crown className="w-4 h-4 text-amber-400" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-serif font-bold text-white">₹{stats.revenueMonthly.toLocaleString()}</div>
-                <div className="text-[11px] text-emerald-400 font-semibold">Active Subscriptions</div>
-              </div>
-            </div>
-
-            {/* Quick Actions Panel */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-              <h3 className="font-serif font-bold text-base text-white flex items-center justify-between">
-                <span>Administrative Actions</span>
-                <span className="text-xs font-sans font-normal text-slate-400">Sharia Control Panel</span>
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  onClick={() => setIsAddUserModalOpen(true)}
-                  className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800 hover:bg-emerald-900 text-emerald-300 flex items-center gap-3 transition-colors text-left"
-                >
-                  <div className="p-2 rounded-xl bg-emerald-900/80 text-emerald-200">
-                    <Plus className="w-5 h-5" />
+        {/* Dashboard Content Container */}
+        <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+          {/* ================= TAB 1: OVERVIEW ================= */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Statistic Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total Database Users */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-3 shadow-xs hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Total Database Users
+                    </span>
+                    <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      <Users className="w-4 h-4" />
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white">+ Add New Profile</h4>
-                    <p className="text-xs text-slate-400">Create new member profile</p>
+                  <div className="text-3xl font-serif font-bold text-slate-900 tracking-tight">
+                    {profilesList.length}
                   </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('users')}
-                  className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:bg-slate-800 text-slate-300 flex items-center gap-3 transition-colors text-left"
-                >
-                  <div className="p-2 rounded-xl bg-slate-900 text-slate-200">
-                    <Users className="w-5 h-5" />
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50/70 border border-emerald-100 px-2.5 py-1 rounded-full w-fit">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Live Hostinger MySQL</span>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-white">Manage All Users</h4>
-                    <p className="text-xs text-slate-400">Inspect, edit, verify or remove</p>
+                </div>
+
+                {/* Verified Profiles */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-3 shadow-xs hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Verified Profiles
+                    </span>
+                    <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-100">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
                   </div>
-                </button>
+                  <div className="text-3xl font-serif font-bold text-slate-900 tracking-tight">
+                    {profilesList.filter(isProfileVerified).length}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50/70 border border-blue-100 px-2.5 py-1 rounded-full w-fit">
+                    <span>{Math.round((profilesList.filter(isProfileVerified).length / (profilesList.length || 1)) * 100)}% Verified</span>
+                  </div>
+                </div>
+
+                {/* KYC & Wali Queue */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-3 shadow-xs hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      KYC & Wali Queue
+                    </span>
+                    <div className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
+                      <FileCheck2 className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="text-3xl font-serif font-bold text-slate-900 tracking-tight">
+                    {verificationsList.filter(v => v.status === 'pending').length}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 bg-amber-50/70 border border-amber-100 px-2.5 py-1 rounded-full w-fit">
+                    <span>Action Required</span>
+                  </div>
+                </div>
+
+                {/* Monthly Revenue */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-3 shadow-xs hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Monthly Revenue
+                    </span>
+                    <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      <Crown className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="text-3xl font-serif font-bold text-slate-900 tracking-tight">
+                    ₹{stats.revenueMonthly.toLocaleString()}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50/70 border border-emerald-100 px-2.5 py-1 rounded-full w-fit">
+                    <span>Active Subscriptions</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* TAB 2: USERS & PROFILES CRUD */}
-        {activeTab === 'users' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between bg-slate-900/90 p-4 rounded-3xl border border-slate-800">
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search name, city, profession..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+              {/* Administrative Actions Panel */}
+              <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <h3 className="font-serif font-bold text-base text-slate-900">
+                    Administrative Actions
+                  </h3>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Sharia Control Panel
+                  </span>
+                </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-                <select
-                  value={genderFilter}
-                  onChange={(e) => setGenderFilter(e.target.value as any)}
-                  className="bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2 text-xs text-slate-300 focus:outline-none"
-                >
-                  <option value="all">All Genders</option>
-                  <option value="female">Female (Muslimah)</option>
-                  <option value="male">Male (Brother)</option>
-                </select>
-
-                <select
-                  value={verifiedFilter}
-                  onChange={(e) => setVerifiedFilter(e.target.value as any)}
-                  className="bg-slate-950 border border-slate-800 rounded-2xl px-3 py-2 text-xs text-slate-300 focus:outline-none"
-                >
-                  <option value="all">All Verification</option>
-                  <option value="verified">Verified Only</option>
-                  <option value="unverified">Unverified Only</option>
-                </select>
-
-                <button
-                  onClick={() => setIsAddUserModalOpen(true)}
-                  className="px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-md shadow-emerald-950/50"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Profile</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid gap-3">
-              {filteredProfiles.map(profile => {
-                const verified = isProfileVerified(profile);
-                return (
-                  <div
-                    key={profile.id}
-                    className="bg-slate-950/80 border border-slate-800 rounded-3xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-slate-700 transition-colors"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setIsAddUserModalOpen(true)}
+                    className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50/70 to-teal-50/40 border border-emerald-200/80 hover:border-emerald-300 text-left transition-all duration-150 group shadow-xs hover:shadow-sm"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-800 shrink-0 border border-slate-700">
-                        <img src={profile.photo} alt={profile.name} className="w-full h-full object-cover" />
-                        {verified && (
-                          <div className="absolute top-1 right-1 bg-emerald-600 text-white p-0.5 rounded-full">
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      <div className="p-3 rounded-xl bg-emerald-700 text-white group-hover:scale-105 transition-transform">
+                        <Plus className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-800 transition-colors">
+                          + Add New Profile
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Create new member profile
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('users')}
+                    className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 text-left transition-all duration-150 group shadow-xs hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="p-3 rounded-xl bg-slate-800 text-white group-hover:scale-105 transition-transform">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-800 transition-colors">
+                          Manage All Users
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Inspect, edit, verify or remove
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= TAB 2: USERS & PROFILES CRUD ================= */}
+          {activeTab === 'users' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {/* Search & Filter Header Bar */}
+              <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                {/* Search Input */}
+                <div className="relative flex-1 max-w-md">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search name, city, profession..."
+                    className="w-full bg-slate-50/80 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 transition-all"
+                  />
+                </div>
+
+                {/* Filters & Actions */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={genderFilter}
+                    onChange={(e) => setGenderFilter(e.target.value as any)}
+                    className="bg-slate-50/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none focus:border-emerald-600"
+                  >
+                    <option value="all">All Genders</option>
+                    <option value="female">Female (Muslimah)</option>
+                    <option value="male">Male (Brother)</option>
+                  </select>
+
+                  <select
+                    value={verifiedFilter}
+                    onChange={(e) => setVerifiedFilter(e.target.value as any)}
+                    className="bg-slate-50/80 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none focus:border-emerald-600"
+                  >
+                    <option value="all">All Verification</option>
+                    <option value="verified">Verified Only</option>
+                    <option value="unverified">Unverified Only</option>
+                  </select>
+
+                  {/* View Mode Switcher */}
+                  <div className="hidden sm:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/70">
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`p-1.5 rounded-lg text-xs transition-colors ${
+                        viewMode === 'table' ? 'bg-white text-emerald-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                      title="Table View"
+                    >
+                      <List className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      className={`p-1.5 rounded-lg text-xs transition-colors ${
+                        viewMode === 'cards' ? 'bg-white text-emerald-800 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
+                      }`}
+                      title="Cards View"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => setIsAddUserModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-xs hover:shadow active:scale-98 transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Profile</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* TABLE VIEW (Responsive Modern Table) */}
+              {viewMode === 'table' && (
+                <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
+                          <th className="py-3.5 px-4">Profile</th>
+                          <th className="py-3.5 px-3">Gender</th>
+                          <th className="py-3.5 px-3">Career & City</th>
+                          <th className="py-3.5 px-3">Matrimonial Status</th>
+                          <th className="py-3.5 px-3">Verification</th>
+                          <th className="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {filteredProfiles.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-12 text-center text-slate-500 font-medium">
+                              No profiles found matching your search and filter criteria.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredProfiles.map(profile => {
+                            const verified = isProfileVerified(profile);
+                            return (
+                              <tr 
+                                key={profile.id}
+                                className="hover:bg-slate-50/70 transition-colors"
+                              >
+                                {/* Profile Info */}
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                                      <img src={profile.photo} alt={profile.name} className="w-full h-full object-cover" />
+                                      {verified && (
+                                        <div className="absolute top-0.5 right-0.5 bg-emerald-600 text-white p-0.5 rounded-full shadow-xs">
+                                          <Check className="w-2 h-2 stroke-[3]" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <div className="font-bold text-slate-900 text-sm">{profile.name}</div>
+                                      <div className="text-[11px] text-slate-500">{profile.age} yrs</div>
+                                    </div>
+                                  </div>
+                                </td>
+
+                                {/* Gender Badge */}
+                                <td className="py-3 px-3">
+                                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
+                                    profile.gender === 'female' 
+                                      ? 'bg-rose-50 text-rose-700 border border-rose-200/70' 
+                                      : 'bg-blue-50 text-blue-700 border border-blue-200/70'
+                                  }`}>
+                                    {profile.gender}
+                                  </span>
+                                </td>
+
+                                {/* Career & Location */}
+                                <td className="py-3 px-3 text-slate-700">
+                                  <div className="font-medium text-slate-800">{profile.profession}</div>
+                                  <div className="text-[11px] text-slate-500">{profile.city}, {profile.country}</div>
+                                </td>
+
+                                {/* Marital Status */}
+                                <td className="py-3 px-3">
+                                  <div className="font-medium text-slate-800">{profile.maritalStatus}</div>
+                                  <div className="text-[11px] text-amber-700 font-semibold">{profile.polygynyPreference || 'Polygyny Open'}</div>
+                                </td>
+
+                                {/* Verification Status */}
+                                <td className="py-3 px-3">
+                                  {verified ? (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                      <ShieldCheck className="w-3 h-3" />
+                                      Verified
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                      Unverified
+                                    </span>
+                                  )}
+                                </td>
+
+                                {/* Action Buttons */}
+                                <td className="py-3 px-4 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      onClick={() => setSelectedProfile(profile)}
+                                      className="px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1 transition-colors"
+                                      title="Inspect Profile"
+                                    >
+                                      <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                      <span>Inspect</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => setEditProfileData({ ...profile })}
+                                      className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-1 transition-colors"
+                                      title="Edit Profile"
+                                    >
+                                      <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                                      <span>Edit</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleToggleVerify(profile.id, verified)}
+                                      className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                                        verified
+                                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                                          : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                                      }`}
+                                    >
+                                      <ShieldCheck className="w-3.5 h-3.5" />
+                                      <span>{verified ? 'Verified' : 'Verify'}</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => setDeleteConfirmProfile(profile)}
+                                      className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors"
+                                      title="Delete Profile & Account Permanently from MySQL"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* CARD VIEW (Beautiful Modern Cards) */}
+              {viewMode === 'cards' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredProfiles.length === 0 ? (
+                    <div className="col-span-full bg-white border border-slate-200/80 rounded-2xl p-12 text-center text-slate-500 font-medium">
+                      No profiles found matching your search and filter criteria.
+                    </div>
+                  ) : (
+                    filteredProfiles.map(profile => {
+                      const verified = isProfileVerified(profile);
+                      return (
+                        <div
+                          key={profile.id}
+                          className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between"
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-3.5">
+                              <div className="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+                                <img src={profile.photo} alt={profile.name} className="w-full h-full object-cover" />
+                                {verified && (
+                                  <div className="absolute top-1 right-1 bg-emerald-600 text-white p-0.5 rounded-full shadow-xs">
+                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-1 flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="font-bold text-sm text-slate-900 truncate">{profile.name}</h4>
+                                  <span className="text-xs text-slate-500 font-medium">({profile.age} yrs)</span>
+                                </div>
+                                <span className={`inline-block text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                                  profile.gender === 'female' 
+                                    ? 'bg-rose-50 text-rose-700 border border-rose-200/80' 
+                                    : 'bg-blue-50 text-blue-700 border border-blue-200/80'
+                                }`}>
+                                  {profile.gender}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1 text-xs text-slate-600">
+                              <div className="flex items-center gap-1 text-slate-700 font-medium">
+                                <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate">{profile.profession}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-slate-500">
+                                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <span className="truncate">{profile.city}, {profile.country}</span>
+                              </div>
+                              <div className="text-[11px] text-amber-700 font-semibold pt-1">
+                                {profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </div>
 
-                      <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 pt-3 border-t border-slate-100 justify-between">
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setSelectedProfile(profile)}
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 flex items-center gap-1"
+                                title="Inspect Profile"
+                              >
+                                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                <span>Inspect</span>
+                              </button>
+
+                              <button
+                                onClick={() => setEditProfileData({ ...profile })}
+                                className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-200 flex items-center gap-1"
+                                title="Edit Profile"
+                              >
+                                <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                                <span>Edit</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleToggleVerify(profile.id, verified)}
+                                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all ${
+                                  verified
+                                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                                    : 'bg-amber-600 hover:bg-amber-700 text-white shadow-xs'
+                                }`}
+                              >
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <span>{verified ? 'Verified' : 'Verify'}</span>
+                              </button>
+
+                              <button
+                                onClick={() => setDeleteConfirmProfile(profile)}
+                                className="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors"
+                                title="Delete Profile & Account Permanently from MySQL"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ================= TAB 3: KYC & WALI VERIFICATION QUEUE ================= */}
+          {activeTab === 'verifications' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {verificationsList.length === 0 ? (
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center space-y-3 shadow-xs">
+                  <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 w-fit mx-auto">
+                    <FileCheck2 className="w-8 h-8" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-base">No Pending Verifications</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    All submitted KYC and Wali authorization documents have been reviewed.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {verificationsList.map(item => (
+                    <div key={item.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-4 shadow-xs hover:shadow-md transition-all">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          <img 
+                            src={item.user_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'} 
+                            alt={item.user_name} 
+                            className="w-12 h-12 rounded-xl object-cover border border-slate-200" 
+                          />
+                          <div>
+                            <h4 className="font-bold text-sm text-slate-900">{item.user_name}</h4>
+                            <p className="text-xs text-slate-500 font-medium">{item.document_type}</p>
+                            <span className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                              item.status === 'approved' 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                                : item.status === 'rejected' 
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200' 
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                              {item.status}
+                            </span>
+                          </div>
+                        </div>
+
                         <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-sm text-white">{profile.name}</h4>
-                          <span className="text-xs text-slate-400">({profile.age} yrs)</span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                            profile.gender === 'female' ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-blue-950 text-blue-300 border border-blue-800'
-                          }`}>
-                            {profile.gender}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-400">
-                          {profile.profession} • {profile.city}, {profile.country}
-                        </p>
-                        <p className="text-[11px] text-amber-300 font-medium">
-                          {profile.maritalStatus} • {profile.polygynyPreference || 'Polygyny Open'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-800">
-                      <button
-                        onClick={() => setSelectedProfile(profile)}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5"
-                        title="Inspect Profile"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Inspect</span>
-                      </button>
-
-                      <button
-                        onClick={() => setEditProfileData({ ...profile })}
-                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-semibold flex items-center gap-1.5"
-                        title="Edit Profile"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span>Edit</span>
-                      </button>
-
-                      <button
-                        onClick={() => handleToggleVerify(profile.id, verified)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors ${
-                          verified
-                            ? 'bg-emerald-950 text-emerald-300 border border-emerald-800 hover:bg-emerald-900'
-                            : 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm'
-                        }`}
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>{verified ? 'Verified' : 'Verify'}</span>
-                      </button>
-
-                      <button
-                        onClick={() => setDeleteConfirmProfile(profile)}
-                        className="p-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-400 border border-rose-800/60 transition-colors"
-                        title="Delete Profile & Account Permanently from MySQL"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: KYC & WALI VERIFICATION QUEUE */}
-        {activeTab === 'verifications' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            {verificationsList.length === 0 ? (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center space-y-2">
-                <FileCheck2 className="w-10 h-10 text-emerald-400 mx-auto" />
-                <h4 className="font-bold text-white text-base">No Pending Verifications</h4>
-                <p className="text-xs text-slate-400">All submitted KYC and Wali authorization documents have been reviewed.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {verificationsList.map(item => (
-                  <div key={item.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <img src={item.user_photo || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'} alt={item.user_name} className="w-12 h-12 rounded-2xl object-cover border border-slate-700" />
-                        <div>
-                          <h4 className="font-bold text-sm text-white">{item.user_name}</h4>
-                          <p className="text-xs text-slate-400">{item.document_type}</p>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                            item.status === 'approved' ? 'bg-emerald-950 text-emerald-300' : item.status === 'rejected' ? 'bg-rose-950 text-rose-300' : 'bg-amber-950 text-amber-300'
-                          }`}>
-                            {item.status}
-                          </span>
+                          {item.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleApproveVerification(item.id, item.user_id)}
+                                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white text-xs font-bold shadow-xs active:scale-98 transition-all"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => setRejectModal({ id: item.id, name: item.user_name })}
+                                className="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        {item.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleApproveVerification(item.id, item.user_id)}
-                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => setRejectModal({ id: item.id, name: item.user_name })}
-                              className="px-3.5 py-1.5 rounded-xl bg-rose-900 hover:bg-rose-800 text-rose-200 text-xs font-bold"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* TAB 4: SAFETY & MODERATION */}
-        {activeTab === 'reports' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            {reportsList.length === 0 ? (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center space-y-2">
-                <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto" />
-                <h4 className="font-bold text-white text-base">Community Safe & Clean</h4>
-                <p className="text-xs text-slate-400">Zero active safety moderation flags registered in MySQL.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {reportsList.map(item => (
-                  <div key={item.id} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
-                        <AlertTriangle className="w-4 h-4" />
-                        <span>{item.reason}</span>
+          {/* ================= TAB 4: SAFETY & MODERATION ================= */}
+          {activeTab === 'reports' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {reportsList.length === 0 ? (
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-12 text-center space-y-3 shadow-xs">
+                  <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-100 w-fit mx-auto">
+                    <ShieldCheck className="w-8 h-8" />
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-base">Community Safe & Clean</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Zero active safety moderation flags registered in MySQL.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {reportsList.map(item => (
+                    <div key={item.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 space-y-3 shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-rose-700 font-bold text-sm">
+                          <AlertTriangle className="w-4 h-4 text-rose-600" />
+                          <span>{item.reason}</span>
+                        </div>
+                        <button
+                          onClick={() => handleResolveReport(item.id)}
+                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs active:scale-98 transition-all"
+                        >
+                          Resolve Report
+                        </button>
                       </div>
-                      <button
-                        onClick={() => handleResolveReport(item.id)}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold"
-                      >
-                        Resolve Report
-                      </button>
+                      <p className="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-xl border border-slate-200/70 leading-relaxed">
+                        {item.details}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-300 bg-slate-950 p-3 rounded-2xl border border-slate-800">
-                      {item.details}
-                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ================= TAB 5: SUBSCRIPTIONS & VIP ================= */}
+          {activeTab === 'subscriptions' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              <div className="grid md:grid-cols-3 gap-5">
+                {/* Free Starter */}
+                <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4 shadow-xs hover:shadow-md transition-all">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Free Starter</h4>
+                  <div className="text-3xl font-serif font-bold text-slate-900">
+                    ₹0 <span className="text-xs font-sans text-slate-400 font-normal">/ forever</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 5: SUBSCRIPTIONS */}
-        {activeTab === 'subscriptions' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-3">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Free Starter</h4>
-                <div className="text-2xl font-serif font-bold text-white">₹0 <span className="text-xs text-slate-400">/ forever</span></div>
-                <p className="text-xs text-slate-400">All New Signups</p>
-              </div>
-
-              <div className="bg-slate-900/90 border border-emerald-800/80 rounded-3xl p-5 space-y-3">
-                <div className="text-[10px] uppercase font-bold text-emerald-400 bg-emerald-950 px-2.5 py-0.5 rounded-full w-fit border border-emerald-800">
-                  Most Popular
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-xs font-semibold text-slate-600">All New Signups</p>
+                  </div>
                 </div>
-                <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Premium Blessed</h4>
-                <div className="text-2xl font-serif font-bold text-white">₹1,499 <span className="text-xs text-slate-400">/ month</span></div>
-                <p className="text-xs text-emerald-400 font-semibold">14 Active Members</p>
-              </div>
 
-              <div className="bg-slate-900/90 border border-amber-500/40 rounded-3xl p-5 space-y-3">
-                <div className="text-[10px] uppercase font-bold text-amber-400 bg-amber-950 px-2.5 py-0.5 rounded-full w-fit border border-amber-800">
-                  VIP Concierge
+                {/* Premium Blessed */}
+                <div className="bg-white border-2 border-emerald-600/80 rounded-2xl p-6 space-y-4 shadow-sm hover:shadow-md transition-all relative">
+                  <div className="absolute -top-3 left-6">
+                    <span className="text-[10px] uppercase font-bold text-emerald-800 bg-emerald-100 px-3 py-0.5 rounded-full border border-emerald-200 shadow-xs">
+                      Most Popular
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Premium Blessed</h4>
+                  <div className="text-3xl font-serif font-bold text-slate-900">
+                    ₹1,499 <span className="text-xs font-sans text-slate-400 font-normal">/ month</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-xs text-emerald-700 font-bold">14 Active Members</p>
+                  </div>
                 </div>
-                <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Royal Nikah Elite</h4>
-                <div className="text-2xl font-serif font-bold text-white">₹2,999 <span className="text-xs text-slate-400">/ month</span></div>
-                <p className="text-xs text-amber-400 font-semibold">5 Active VIP Members</p>
+
+                {/* Royal Nikah Elite */}
+                <div className="bg-white border border-amber-300 rounded-2xl p-6 space-y-4 shadow-xs hover:shadow-md transition-all relative">
+                  <div className="absolute -top-3 left-6">
+                    <span className="text-[10px] uppercase font-bold text-amber-800 bg-amber-100 px-3 py-0.5 rounded-full border border-amber-200 shadow-xs">
+                      VIP Concierge
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-amber-700 uppercase tracking-wider">Royal Nikah Elite</h4>
+                  <div className="text-3xl font-serif font-bold text-slate-900">
+                    ₹2,999 <span className="text-xs font-sans text-slate-400 font-normal">/ month</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-100">
+                    <p className="text-xs text-amber-700 font-bold">5 Active VIP Members</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
 
-      {/* CREATE NEW PROFILE MODAL */}
+      {/* ================= MODAL 1: CREATE NEW PROFILE ================= */}
       {isAddUserModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-emerald-400">
-                <Plus className="w-5 h-5" />
-                <h3 className="font-bold text-base text-white">Create New Member Profile</h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5 text-emerald-700">
+                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <Plus className="w-5 h-5 text-emerald-700" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900">Create New Member Profile</h3>
               </div>
-              <button onClick={() => setIsAddUserModalOpen(false)} className="p-1 rounded-full hover:bg-slate-800">
-                <X className="w-5 h-5 text-slate-400" />
+              <button 
+                onClick={() => setIsAddUserModalOpen(false)} 
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateUserSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleCreateUserSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Full Name *</label>
+                <label className="block text-slate-700 mb-1 font-semibold">Full Name *</label>
                 <input
                   type="text"
                   required
                   value={newUser.name}
                   onChange={e => setNewUser({ ...newUser, name: e.target.value })}
                   placeholder="e.g. Fatima Zahra"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Gender *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Gender *</label>
                   <select
                     value={newUser.gender}
                     onChange={e => setNewUser({ ...newUser, gender: e.target.value as any })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   >
                     <option value="female">Female (Muslimah)</option>
                     <option value="male">Male (Brother)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Age *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Age *</label>
                   <input
                     type="number"
                     min={18}
                     max={75}
                     value={newUser.age}
                     onChange={e => setNewUser({ ...newUser, age: Number(e.target.value) })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">City *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">City *</label>
                   <input
                     type="text"
                     value={newUser.city}
                     onChange={e => setNewUser({ ...newUser, city: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Profession *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Profession *</label>
                   <input
                     type="text"
                     value={newUser.profession}
                     onChange={e => setNewUser({ ...newUser, profession: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Marital Status</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Marital Status</label>
                   <select
                     value={newUser.maritalStatus}
                     onChange={e => setNewUser({ ...newUser, maritalStatus: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   >
                     <option value="Never Married">Never Married</option>
                     <option value="Divorced">Divorced</option>
@@ -733,11 +1210,11 @@ export const AdminDashboardScreen: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Polygyny Preference</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Polygyny Preference</label>
                   <select
                     value={newUser.polygynyPreference}
                     onChange={e => setNewUser({ ...newUser, polygynyPreference: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   >
                     <option value="Open to Discussion">Open to Discussion</option>
                     <option value="First Wife">First Wife</option>
@@ -753,25 +1230,25 @@ export const AdminDashboardScreen: React.FC = () => {
                   id="verifiedCheck"
                   checked={newUser.isVerified}
                   onChange={e => setNewUser({ ...newUser, isVerified: e.target.checked })}
-                  className="rounded accent-emerald-500 w-4 h-4"
+                  className="rounded accent-emerald-600 w-4 h-4"
                 />
-                <label htmlFor="verifiedCheck" className="text-slate-300 font-semibold cursor-pointer">
+                <label htmlFor="verifiedCheck" className="text-slate-800 font-semibold cursor-pointer">
                   Issue Verified Identity & Wali Badge immediately
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsAddUserModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-950/50"
+                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-sm active:scale-98 transition-all"
                 >
                   {isLoading ? 'Saving...' : 'Save to MySQL Database'}
                 </button>
@@ -781,74 +1258,79 @@ export const AdminDashboardScreen: React.FC = () => {
         </div>
       )}
 
-      {/* EDIT PROFILE MODAL */}
+      {/* ================= MODAL 2: EDIT PROFILE ================= */}
       {editProfileData && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-emerald-400">
-                <Edit3 className="w-5 h-5" />
-                <h3 className="font-bold text-base text-white">Edit Profile Details</h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5 text-emerald-700">
+                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <Edit3 className="w-5 h-5 text-emerald-700" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900">Edit Profile Details</h3>
               </div>
-              <button onClick={() => setEditProfileData(null)} className="p-1 rounded-full hover:bg-slate-800">
-                <X className="w-5 h-5 text-slate-400" />
+              <button 
+                onClick={() => setEditProfileData(null)} 
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Name</label>
+                <label className="block text-slate-700 mb-1 font-semibold">Name</label>
                 <input
                   type="text"
                   value={editProfileData.name}
                   onChange={e => setEditProfileData({ ...editProfileData, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">City</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">City</label>
                   <input
                     type="text"
                     value={editProfileData.city}
                     onChange={e => setEditProfileData({ ...editProfileData, city: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Profession</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Profession</label>
                   <input
                     type="text"
                     value={editProfileData.profession}
                     onChange={e => setEditProfileData({ ...editProfileData, profession: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">About Profile</label>
+                <label className="block text-slate-700 mb-1 font-semibold">About Profile</label>
                 <textarea
                   rows={3}
                   value={editProfileData.aboutMe || ''}
                   onChange={e => setEditProfileData({ ...editProfileData, aboutMe: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditProfileData(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveEditProfile}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-950/50"
+                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-sm active:scale-98 transition-all"
                 >
                   Update in Database
                 </button>
@@ -858,50 +1340,55 @@ export const AdminDashboardScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Profile Inspector Modal */}
+      {/* ================= MODAL 3: PROFILE INSPECTOR ================= */}
       {selectedProfile && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-white">Full Profile Inspector</h3>
-              <button onClick={() => setSelectedProfile(null)} className="p-1 rounded-full hover:bg-slate-800">
-                <X className="w-5 h-5 text-slate-400" />
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-lg rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-bold text-base text-slate-900">Full Profile Inspector</h3>
+              <button 
+                onClick={() => setSelectedProfile(null)} 
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3 bg-slate-950 rounded-2xl border border-slate-800">
-              <img src={selectedProfile.photo} alt={selectedProfile.name} className="w-16 h-16 rounded-2xl object-cover" />
+            <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+              <img src={selectedProfile.photo} alt={selectedProfile.name} className="w-16 h-16 rounded-2xl object-cover border border-slate-200" />
               <div>
-                <h4 className="font-bold text-base text-white">{selectedProfile.name}, {selectedProfile.age}</h4>
-                <p className="text-xs text-slate-400">{selectedProfile.profession} • {selectedProfile.city}</p>
-                <p className="text-xs text-amber-400 font-semibold">{selectedProfile.maritalStatus}</p>
+                <h4 className="font-bold text-base text-slate-900">{selectedProfile.name}, {selectedProfile.age}</h4>
+                <p className="text-xs text-slate-500">{selectedProfile.profession} • {selectedProfile.city}</p>
+                <p className="text-xs text-amber-700 font-semibold">{selectedProfile.maritalStatus}</p>
               </div>
             </div>
 
             <div className="space-y-2 text-xs">
-              <p className="text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-2xl border border-slate-800">
+              <p className="text-slate-700 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70">
                 "{selectedProfile.aboutMe}"
               </p>
 
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1.5">
-                <p className="font-bold text-slate-200">Sharia & Wali Particulars:</p>
-                <p className="text-slate-400">Sect: <strong className="text-slate-200">{selectedProfile.religion?.sect || 'Sunni (Hanafi)'}</strong></p>
-                <p className="text-slate-400">Prayer: <strong className="text-slate-200">{selectedProfile.religion?.prayerFrequency || 'Always (5 times daily)'}</strong></p>
-                <p className="text-slate-400">Wali: <strong className="text-slate-200">Family Wali on File</strong></p>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1.5">
+                <p className="font-bold text-slate-900">Sharia & Wali Particulars:</p>
+                <p className="text-slate-600">Sect: <strong className="text-slate-900">{selectedProfile.religion?.sect || 'Sunni (Hanafi)'}</strong></p>
+                <p className="text-slate-600">Prayer: <strong className="text-slate-900">{selectedProfile.religion?.prayerFrequency || 'Always (5 times daily)'}</strong></p>
+                <p className="text-slate-600">Wali: <strong className="text-slate-900">Family Wali on File</strong></p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 onClick={() => setSelectedProfile(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
               >
                 Close
               </button>
               <button
                 onClick={() => handleToggleVerify(selectedProfile.id, isProfileVerified(selectedProfile))}
-                className={`px-4 py-2 rounded-xl text-xs font-bold ${
-                  isProfileVerified(selectedProfile) ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isProfileVerified(selectedProfile) 
+                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200' 
+                    : 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs'
                 }`}
               >
                 {isProfileVerified(selectedProfile) ? 'Revoke Verification' : 'Issue Verification'}
@@ -911,34 +1398,34 @@ export const AdminDashboardScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* ================= MODAL 4: DELETE CONFIRMATION ================= */}
       {deleteConfirmProfile && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center gap-3 text-rose-400">
-              <div className="p-2.5 rounded-2xl bg-rose-950/80 border border-rose-800">
-                <Trash2 className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-700">
+              <div className="p-2.5 rounded-2xl bg-rose-50 border border-rose-100">
+                <Trash2 className="w-5 h-5 text-rose-600" />
               </div>
               <div>
-                <h3 className="font-bold text-base text-white">Delete Profile & Account</h3>
-                <p className="text-xs text-slate-400">Permanent administrative action</p>
+                <h3 className="font-bold text-base text-slate-900">Delete Profile & Account</h3>
+                <p className="text-xs text-slate-500">Permanent administrative action</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 bg-slate-950 p-3.5 rounded-2xl border border-slate-800 leading-relaxed">
-              Are you sure you want to permanently delete <strong className="text-white">{deleteConfirmProfile.name}</strong> ({deleteConfirmProfile.city}) from the live Hostinger MySQL database? This will cascade remove their messages, interests, and profile verification records.
+            <p className="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 leading-relaxed">
+              Are you sure you want to permanently delete <strong className="text-slate-900">{deleteConfirmProfile.name}</strong> ({deleteConfirmProfile.city}) from the live Hostinger MySQL database? This will cascade remove their messages, interests, and profile verification records.
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 onClick={() => setDeleteConfirmProfile(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteProfile(deleteConfirmProfile)}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-950/50"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-colors"
               >
                 Confirm Delete
               </button>
@@ -947,22 +1434,27 @@ export const AdminDashboardScreen: React.FC = () => {
         </div>
       )}
 
-      {/* Reject Verification Modal */}
+      {/* ================= MODAL 5: REJECT VERIFICATION ================= */}
       {rejectModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5 text-amber-400">
-                <AlertTriangle className="w-5 h-5" />
-                <h3 className="font-bold text-base text-white">Reject Verification Request</h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5 text-amber-700">
+                <div className="p-2 rounded-xl bg-amber-50 border border-amber-100">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                </div>
+                <h3 className="font-bold text-base text-slate-900">Reject Verification Request</h3>
               </div>
-              <button onClick={() => setRejectModal(null)} className="p-1 rounded-full hover:bg-slate-800">
-                <X className="w-5 h-5 text-slate-400" />
+              <button 
+                onClick={() => setRejectModal(null)} 
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-300">
-              Provide an administrative rejection reason for <strong className="text-white">{rejectModal.name}</strong>:
+            <p className="text-xs text-slate-700">
+              Provide an administrative rejection reason for <strong className="text-slate-900">{rejectModal.name}</strong>:
             </p>
 
             <textarea
@@ -970,19 +1462,19 @@ export const AdminDashboardScreen: React.FC = () => {
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="e.g. Wali identity document is blurred; unverified matrimonial status claim."
               rows={3}
-              className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-xs text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-amber-600"
             />
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 onClick={() => setRejectModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRejectVerificationConfirm}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm"
               >
                 Confirm Rejection
               </button>
