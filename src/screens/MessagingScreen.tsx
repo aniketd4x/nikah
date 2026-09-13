@@ -34,7 +34,6 @@ export const MessagingScreen: React.FC = () => {
 
   const [inputMessage, setInputMessage] = useState('');
   const [showIcebreakers, setShowIcebreakers] = useState(false);
-  const [isRecordingMock, setIsRecordingMock] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId) || conversations[0];
