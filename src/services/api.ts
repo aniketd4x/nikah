@@ -487,32 +487,142 @@ export const api = {
 
   // Admin Auth: Login
   adminLogin: async (email: string, password: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
     try {
-      if (email === 'admin@polygamymatrimony.com' && (password === 'Admin@2026!' || password === 'Admin@data2050#')) {
+      // 1. Check custom credentials stored locally
+      const customCredentials = localStorage.getItem('nikah_custom_admin_creds');
+      if (customCredentials) {
+        try {
+          const creds = JSON.parse(customCredentials);
+          if (creds.email && creds.email.trim().toLowerCase() === normalizedEmail && creds.password === password) {
+            return {
+              success: true,
+              token: 'nikah_admin_session_active',
+              admin: { id: creds.id || 'admin-001', email: creds.email, name: creds.name || 'Chief Sharia Administrator', role: 'superadmin' }
+            };
+          }
+        } catch {}
+      }
+
+      // 2. Check Supabase admin_users table
+      const { data } = await supabase.from('admin_users').select('*').eq('email', normalizedEmail).limit(1);
+      if (data && data.length > 0) {
+        const adminUser = data[0];
+        if (adminUser.password_hash === password || adminUser.password === password) {
+          return {
+            success: true,
+            token: `admin_token_${adminUser.id}`,
+            admin: adminUser
+          };
+        }
+      }
+
+      // 3. Default fallback credentials (if not customized)
+      if (!customCredentials && normalizedEmail === 'admin@polygamymatrimony.com' && (password === 'Admin@2026!' || password === 'Admin@data2050#')) {
         return {
           success: true,
           token: 'nikah_admin_session_active',
-          admin: { id: 'admin-001', email, name: 'Chief Sharia Administrator', role: 'superadmin' }
-        };
-      }
-      const { data } = await supabase.from('admin_users').select('*').eq('email', email).limit(1);
-      if (data && data.length > 0) {
-        return {
-          success: true,
-          token: `admin_token_${data[0].id}`,
-          admin: data[0]
+          admin: { id: 'admin-001', email: 'admin@polygamymatrimony.com', name: 'Chief Sharia Administrator', role: 'superadmin' }
         };
       }
     } catch {}
 
-    if (email === 'admin@polygamymatrimony.com' && (password === 'Admin@2026!' || password === 'Admin@data2050#')) {
+    // Fallback check
+    const customCreds = localStorage.getItem('nikah_custom_admin_creds');
+    if (customCreds) {
+      try {
+        const creds = JSON.parse(customCreds);
+        if (creds.email && creds.email.trim().toLowerCase() === normalizedEmail && creds.password === password) {
+          return {
+            success: true,
+            token: 'nikah_admin_session_active',
+            admin: { id: creds.id || 'admin-001', email: creds.email, name: creds.name || 'Chief Sharia Administrator', role: 'superadmin' }
+          };
+        }
+      } catch {}
+    }
+
+    if (!customCreds && normalizedEmail === 'admin@polygamymatrimony.com' && (password === 'Admin@2026!' || password === 'Admin@data2050#')) {
       return {
         success: true,
         token: 'nikah_admin_session_active',
-        admin: { id: 'admin-001', email, name: 'Chief Sharia Administrator', role: 'superadmin' }
+        admin: { id: 'admin-001', email: 'admin@polygamymatrimony.com', name: 'Chief Sharia Administrator', role: 'superadmin' }
       };
     }
+
     return { error: 'Invalid admin credentials' };
+  },
+
+  // Admin Auth: Update Admin Email (ID) and Password
+  updateAdminCredentials: async (newEmail: string, newPassword?: string, name?: string) => {
+    try {
+      const cleanEmail = newEmail.trim().toLowerCase();
+      
+      // 1. Persist to localStorage
+      const existing = localStorage.getItem('nikah_custom_admin_creds');
+      let current = existing ? JSON.parse(existing) : { email: 'admin@polygamymatrimony.com', password: 'Admin@2026!' };
+      const updatedCreds = {
+        id: 'admin-001',
+        email: cleanEmail,
+        password: newPassword ? newPassword : current.password,
+        name: name || current.name || 'Chief Sharia Administrator'
+      };
+      localStorage.setItem('nikah_custom_admin_creds', JSON.stringify(updatedCreds));
+
+      // 2. Persist to Supabase admin_users table
+      try {
+        const { data: rows } = await supabase.from('admin_users').select('*').limit(1);
+        const adminId = rows && rows.length > 0 ? rows[0].id : 'admin-001';
+        
+        const payload: any = {
+          id: adminId,
+          email: cleanEmail,
+          name: updatedCreds.name,
+          role: 'superadmin'
+        };
+        if (newPassword) {
+          payload.password_hash = newPassword;
+        }
+
+        await supabase.from('admin_users').upsert([payload]);
+      } catch (e) {
+        console.warn('Supabase admin update sync:', e);
+      }
+
+      return { success: true, email: cleanEmail };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to update admin credentials' };
+    }
+  },
+
+  // Admin Auth: Retrieve Current Admin Profile
+  getAdminProfile: async () => {
+    try {
+      const customCredentials = localStorage.getItem('nikah_custom_admin_creds');
+      if (customCredentials) {
+        const parsed = JSON.parse(customCredentials);
+        if (parsed.email) {
+          return {
+            id: 'admin-001',
+            email: parsed.email,
+            name: parsed.name || 'Chief Sharia Administrator',
+            role: 'superadmin'
+          };
+        }
+      }
+
+      const { data } = await supabase.from('admin_users').select('*').limit(1);
+      if (data && data.length > 0) {
+        return data[0];
+      }
+    } catch {}
+
+    return {
+      id: 'admin-001',
+      email: 'admin@polygamymatrimony.com',
+      name: 'Chief Sharia Administrator',
+      role: 'superadmin'
+    };
   },
 
   // Admin: Stats

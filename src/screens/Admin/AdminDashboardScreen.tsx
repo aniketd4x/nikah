@@ -15,6 +15,7 @@ import {
   ArrowLeft, 
   RefreshCw, 
   Eye, 
+  EyeOff,
   X, 
   TrendingUp, 
   CheckCircle2,
@@ -30,7 +31,11 @@ import {
   MapPin,
   Briefcase,
   Heart,
-  Sparkles
+  Sparkles,
+  KeyRound,
+  Lock,
+  Mail,
+  User
 } from 'lucide-react';
 import { triggerHaptic } from '../../styles/designTokens';
 
@@ -60,6 +65,20 @@ export const AdminDashboardScreen: React.FC = () => {
   const [genderFilter, setGenderFilter] = useState<'all' | 'female' | 'male'>('all');
   const [verifiedFilter, setVerifiedFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   
+  // Admin Profile & Security State
+  const [adminProfile, setAdminProfile] = useState<{ id: string; email: string; name: string }>({
+    id: 'admin-001',
+    email: 'admin@polygamymatrimony.com',
+    name: 'Chief Sharia Administrator'
+  });
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [adminFormEmail, setAdminFormEmail] = useState('');
+  const [adminFormName, setAdminFormName] = useState('');
+  const [adminFormNewPassword, setAdminFormNewPassword] = useState('');
+  const [adminFormConfirmPassword, setAdminFormConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSavingSecurity, setIsSavingSecurity] = useState(false);
+
   // Modals
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [deleteConfirmProfile, setDeleteConfirmProfile] = useState<Profile | null>(null);
@@ -85,17 +104,25 @@ export const AdminDashboardScreen: React.FC = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [s, v, r, users] = await Promise.all([
+      const [s, v, r, users, aProfile] = await Promise.all([
         api.getAdminStats(),
         api.getVerifications(),
         api.getReports(),
-        api.getUsers()
+        api.getUsers(),
+        api.getAdminProfile()
       ]);
       if (s) setStats(s);
       if (Array.isArray(v)) setVerificationsList(v);
       if (Array.isArray(r)) setReportsList(r);
       if (Array.isArray(users)) {
         setProfilesList(users);
+      }
+      if (aProfile) {
+        setAdminProfile({
+          id: aProfile.id || 'admin-001',
+          email: aProfile.email || 'admin@polygamymatrimony.com',
+          name: aProfile.name || 'Chief Sharia Administrator'
+        });
       }
     } catch {
       // Keep state
@@ -107,6 +134,63 @@ export const AdminDashboardScreen: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  const openSecurityModal = () => {
+    setAdminFormEmail(adminProfile.email);
+    setAdminFormName(adminProfile.name);
+    setAdminFormNewPassword('');
+    setAdminFormConfirmPassword('');
+    setIsSecurityModalOpen(true);
+    setIsMobileSidebarOpen(false);
+  };
+
+  const handleSaveSecurity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminFormEmail.trim()) {
+      addToast('Error', 'Admin ID (Email) cannot be empty', 'error');
+      return;
+    }
+
+    if (adminFormNewPassword && adminFormNewPassword !== adminFormConfirmPassword) {
+      addToast('Password Mismatch', 'New password and confirmation password do not match', 'error');
+      return;
+    }
+
+    if (adminFormNewPassword && adminFormNewPassword.length < 6) {
+      addToast('Weak Password', 'New password must be at least 6 characters long', 'error');
+      return;
+    }
+
+    try {
+      setIsSavingSecurity(true);
+      triggerHaptic(15);
+      const res = await api.updateAdminCredentials(
+        adminFormEmail.trim(), 
+        adminFormNewPassword || undefined, 
+        adminFormName.trim()
+      );
+
+      if (res.success) {
+        setAdminProfile(prev => ({
+          ...prev,
+          email: adminFormEmail.trim(),
+          name: adminFormName.trim() || prev.name
+        }));
+        setIsSecurityModalOpen(false);
+        addToast(
+          'Admin Credentials Updated', 
+          `Your Admin ID (${adminFormEmail.trim()}) and password were saved successfully!`, 
+          'success'
+        );
+      } else {
+        addToast('Update Failed', res.error || 'Could not update credentials', 'error');
+      }
+    } catch {
+      addToast('Error', 'An unexpected error occurred while saving credentials', 'error');
+    } finally {
+      setIsSavingSecurity(false);
+    }
+  };
 
   const isProfileVerified = (p: Profile) => {
     return Boolean(p.verified?.identity || p.verified?.reviewed || (p as any).is_verified);
@@ -271,6 +355,26 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
           </div>
 
+          {/* Current Admin ID Badge & Edit Trigger */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 font-semibold">Active Admin ID</span>
+              <button
+                onClick={openSecurityModal}
+                className="text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1 hover:underline"
+              >
+                <KeyRound className="w-3 h-3" />
+                <span>Change</span>
+              </button>
+            </div>
+            <div className="font-bold text-xs text-slate-900 truncate" title={adminProfile.email}>
+              {adminProfile.email}
+            </div>
+            <div className="text-[10px] text-slate-500 truncate">
+              {adminProfile.name}
+            </div>
+          </div>
+
           {/* Database Status Chip */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/70 text-[11px] text-slate-600 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -317,8 +421,16 @@ export const AdminDashboardScreen: React.FC = () => {
         {/* Sidebar Footer Shortcuts */}
         <div className="pt-4 border-t border-slate-100 space-y-2">
           <button
+            onClick={openSecurityModal}
+            className="w-full flex items-center gap-2.5 text-xs text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl bg-white hover:bg-emerald-50/50 border border-slate-200/80 font-semibold transition-colors"
+          >
+            <KeyRound className="w-4 h-4 text-emerald-700" />
+            <span>Change ID / Password</span>
+          </button>
+
+          <button
             onClick={() => navigateTo('dashboard')}
-            className="w-full flex items-center gap-2.5 text-xs text-slate-700 hover:text-slate-900 px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 font-semibold transition-colors"
+            className="w-full flex items-center gap-2.5 text-xs text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 font-semibold transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-slate-500" />
             <span>Switch to User View</span>
@@ -366,6 +478,19 @@ export const AdminDashboardScreen: React.FC = () => {
                 </button>
               </div>
 
+              {/* Mobile Admin ID Preview */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 space-y-1">
+                <div className="text-[10px] font-semibold text-slate-500">Logged in Admin ID:</div>
+                <div className="text-xs font-bold text-slate-900 truncate">{adminProfile.email}</div>
+                <button
+                  onClick={openSecurityModal}
+                  className="text-xs font-bold text-emerald-700 flex items-center gap-1 pt-1"
+                >
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Change ID or Password</span>
+                </button>
+              </div>
+
               <nav className="space-y-1">
                 {navTabs.map(tab => {
                   const Icon = tab.icon;
@@ -400,6 +525,14 @@ export const AdminDashboardScreen: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t border-slate-100 space-y-2">
+              <button
+                onClick={openSecurityModal}
+                className="w-full flex items-center gap-2 text-xs text-slate-800 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 font-semibold"
+              >
+                <KeyRound className="w-4 h-4 text-emerald-700" />
+                <span>Change ID & Password</span>
+              </button>
+
               <button
                 onClick={() => navigateTo('dashboard')}
                 className="w-full flex items-center gap-2 text-xs text-slate-700 p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-semibold"
@@ -451,6 +584,17 @@ export const AdminDashboardScreen: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Change Admin ID & Password Button */}
+            <button
+              onClick={openSecurityModal}
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80 hover:bg-emerald-50/40 hover:border-emerald-200 transition-all shadow-xs flex items-center gap-1.5 text-xs font-semibold"
+              title="Change Admin ID & Password"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
+              <span className="hidden lg:inline">Change ID / Password</span>
+              <span className="inline lg:hidden">ID & Pass</span>
+            </button>
+
             <button
               onClick={() => { triggerHaptic(10); loadData(); }}
               className="p-2 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200/80 hover:bg-slate-50 transition-all shadow-xs flex items-center gap-1.5 text-xs font-semibold"
@@ -573,7 +717,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <button
                     onClick={() => setIsAddUserModalOpen(true)}
                     className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50/70 to-teal-50/40 border border-emerald-200/80 hover:border-emerald-300 text-left transition-all duration-150 group shadow-xs hover:shadow-sm"
@@ -607,6 +751,26 @@ export const AdminDashboardScreen: React.FC = () => {
                         </h4>
                         <p className="text-xs text-slate-500 mt-0.5">
                           Inspect, edit, verify or remove
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Change Admin ID & Password Action Card */}
+                  <button
+                    onClick={openSecurityModal}
+                    className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-emerald-300 text-left transition-all duration-150 group shadow-xs hover:shadow-sm"
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800 group-hover:scale-105 transition-transform">
+                        <KeyRound className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-800 transition-colors">
+                          Change ID & Password
+                        </h4>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Update credentials & credentials
                         </p>
                       </div>
                     </div>
@@ -1135,7 +1299,7 @@ export const AdminDashboardScreen: React.FC = () => {
                   {tab.label}
                 </span>
 
-                {/* Notification Bubble for items needing attention or count */}
+                {/* Notification Bubble */}
                 {tab.count !== null && tab.count > 0 && (
                   <span className={`absolute top-0.5 right-2 text-[9px] font-bold px-1.5 py-0.2 rounded-full leading-tight shadow-xs ${
                     tab.id === 'verifications' || tab.id === 'reports'
@@ -1150,6 +1314,139 @@ export const AdminDashboardScreen: React.FC = () => {
           })}
         </nav>
       </div>
+
+      {/* ================= MODAL: CHANGE ADMIN ID & PASSWORD ================= */}
+      {isSecurityModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5 text-emerald-700">
+                <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <KeyRound className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">Change Admin ID & Password</h3>
+                  <p className="text-[11px] text-slate-500">Update your console login credentials</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsSecurityModalOpen(false)} 
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSecurity} className="space-y-4 text-xs">
+              {/* Admin ID / Email */}
+              <div className="space-y-1.5">
+                <label className="block text-slate-700 font-semibold">
+                  Admin Login ID (Email) *
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={adminFormEmail}
+                    onChange={e => setAdminFormEmail(e.target.value)}
+                    placeholder="e.g. admin@polygamymatrimony.com"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  This email is your login username for the Admin Console.
+                </p>
+              </div>
+
+              {/* Admin Name */}
+              <div className="space-y-1.5">
+                <label className="block text-slate-700 font-semibold">
+                  Administrator Display Name
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={adminFormName}
+                    onChange={e => setAdminFormName(e.target.value)}
+                    placeholder="Chief Sharia Administrator"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* New Password */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-slate-700 font-semibold">
+                    New Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    <span>{showPassword ? 'Hide' : 'Show'}</span>
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={adminFormNewPassword}
+                    onChange={e => setAdminFormNewPassword(e.target.value)}
+                    placeholder="Leave empty if keeping current password"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
+                  />
+                </div>
+              </div>
+
+              {/* Confirm New Password */}
+              {adminFormNewPassword && (
+                <div className="space-y-1.5 animate-in fade-in duration-150">
+                  <label className="block text-slate-700 font-semibold">
+                    Confirm New Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required={Boolean(adminFormNewPassword)}
+                      value={adminFormConfirmPassword}
+                      onChange={e => setAdminFormConfirmPassword(e.target.value)}
+                      placeholder="Re-enter new password"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-slate-900 focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="p-3 bg-emerald-50/60 rounded-2xl border border-emerald-100/80 text-[11px] text-emerald-900 leading-relaxed">
+                🔒 <strong>Security Note:</strong> Changing your credentials will update your Admin login immediately across all devices and databases.
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsSecurityModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingSecurity}
+                  className="px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold shadow-sm active:scale-98 transition-all"
+                >
+                  {isSavingSecurity ? 'Saving...' : 'Save New Credentials'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ================= MODAL 1: CREATE NEW PROFILE ================= */}
       {isAddUserModalOpen && (
